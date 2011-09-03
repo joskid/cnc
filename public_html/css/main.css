@@ -1,0 +1,21 @@
+@charset "UTF-8";
+/**
+ * Main CnC Stylesheet
+ *
+ * @author  Anders Evenrud <andersevenrud@gmail.com>
+ * @package CnC
+ */
+
+body {
+  margin : 20px;
+  padding : 0;
+  overflow : hidden;
+  background-color : #000;
+}
+
+#Main {
+  width : 640px;
+  height : 480px;
+  margin : 0 auto;
+  border : 1px solid #fff;
+}
