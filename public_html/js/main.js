@@ -44,6 +44,8 @@
      * @return void
      */
     init : function(sx, sy, scheme) {
+      var self = this;
+
       this._sizeX   = parseInt(sx, 10);
       this._sizeY   = parseInt(sy, 10);
       this._width   = parseInt(this._sizeX * TILE_SIZE, 10);
@@ -64,17 +66,26 @@
       var px = 0;
       var py = 0;
 
+      // Create a temporary Canvas and export to PNG, then append to Map Canvas
+      var canvas = new CanvasElement(null, this._width, this._height);
       var tile = _Resources.getTile(this._scheme);
+
       for ( y = 0; y < this._sizeY; y++ ) {
         px = 0;
         for ( x = 0; x < this._sizeX; x++ ) {
           // Insert tile
-          this._canvas.append(tile, px, py);
+          canvas.append(tile, px, py);
 
           px += TILE_SIZE;
         }
         py += TILE_SIZE;
       }
+
+      var img = new Image();
+      img.onload = function() {
+        self._canvas.append(img, 0, 0);
+      };
+      img.src = canvas.save();
 
       console.log("Created canvas");
 

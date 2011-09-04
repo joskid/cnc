@@ -7,6 +7,7 @@
 
 /**
  * CanvasElement - Create a Canvas element
+ * TODO: addEventHandler
  * @class
  */
 var Draggable = Class.extend({

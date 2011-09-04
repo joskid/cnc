@@ -15,14 +15,17 @@ var CanvasElement = Class.extend({
   _context  : null,
 
   init : function(root, width, height) {
-    var canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    canvas.style.position = "absolute";
+    var canvas             = document.createElement("canvas");
+    canvas.width           = width;
+    canvas.height          = height;
+    canvas.style.position  = "absolute";
 
     if ( canvas ) {
       if ( root ) {
         root = document.getElementById(root);
+        root.appendChild(canvas);
+      } else {
+        root = document.createDocumentFragment();
         root.appendChild(canvas);
       }
 
@@ -46,6 +49,11 @@ var CanvasElement = Class.extend({
 
   append : function(img, x, y) {
     this._context.drawImage(img, x, y);
+  },
+
+  save : function(type) {
+    type = type || "image/png";
+    return this._canvas.toDataURL(type);
   }
 
 });
