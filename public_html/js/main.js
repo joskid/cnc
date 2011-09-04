@@ -233,8 +233,8 @@
   var ResourceCore = Class.extend({
 
     _tiles : {
-      "tropic" : "img/tile_tropic.png",
-      "desert" : "img/tile_desert.png"
+      "tropic" : "/img/tile_tropic.png",
+      "desert" : "/img/tile_desert.png"
     },
 
     /**
