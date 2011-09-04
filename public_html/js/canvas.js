@@ -11,15 +11,24 @@
  */
 var CanvasElement = Class.extend({
 
-  init : function(root) {
+  _canvas   : null,
+  _context  : null,
+
+  init : function(root, width, height) {
     var canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.position = "absolute";
 
-    if ( root ) {
-      root = document.getElementById(root);
-      root.appendChild(canvas);
+    if ( canvas ) {
+      if ( root ) {
+        root = document.getElementById(root);
+        root.appendChild(canvas);
+      }
+
+      this._canvas   = canvas;
+      this._context  = canvas.getContext('2d');
     }
-
-    this._canvas = canvas;
   },
 
   destroy : function() {
@@ -30,8 +39,13 @@ var CanvasElement = Class.extend({
 
   },
 
-  append : function(img, x, y) {
+  move : function(x, y) {
+    this._canvas.style.top  = (y + "px");
+    this._canvas.style.left = (x + "px");
+  },
 
+  append : function(img, x, y) {
+    this._context.drawImage(img, x, y);
   }
 
 });

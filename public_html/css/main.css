@@ -18,4 +18,6 @@ body {
   height : 480px;
   margin : 0 auto;
   border : 1px solid #fff;
+  overflow : hidden;
+  position : relative;
 }

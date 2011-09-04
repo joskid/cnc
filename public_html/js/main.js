@@ -37,6 +37,7 @@
     _scheme  : null,
     _objects : [],
     _canvas  : null,
+    _pos     : [0, 0],
 
     /**
      * Constructor
@@ -59,17 +60,15 @@
       console.log("Creating canvas...");
       this._canvas  = new CanvasElement(CANVAS_CONTAINER, this._width, this._height);
 
-      var x = 0;
-      var y = 0;
+      var x, y;
       var px = 0;
       var py = 0;
 
       var tile = _Resources.getTile(this._scheme);
-      for ( y; y < this._height; y++ ) {
+      for ( y = 0; y < this._sizeY; y++ ) {
         px = 0;
-        for ( x; x < this._width; x++ ) {
+        for ( x = 0; x < this._sizeX; x++ ) {
           // Insert tile
-
           this._canvas.append(tile, px, py);
 
           px += TILE_SIZE;
@@ -135,6 +134,19 @@
       }
 
       return false;
+    },
+
+    /**
+     * Move the map
+     * @param  int   x    X-Coordinate
+     * @param  int   y    Y-Coordinate
+     * @return void
+     */
+    move : function(x, y) {
+      this._pos[0] += x;
+      this._pos[1] += y;
+
+      this._canvas.move(this._pos[0], this._pos[1]);
     },
 
     /**
@@ -301,6 +313,8 @@
 
     _map   : null,
     _loop  : null,
+    _root  : null,
+    _drag  : null,
 
     /**
      * Constructor
@@ -309,15 +323,20 @@
     init : function() {
       console.group("GameCore::init()");
 
+      this._root = document.getElementById(CANVAS_CONTAINER);
+
       // Load some example data
 
       console.log("Creating Map");
-      this._map = new Map(64,64, "desert");
+      this._map = new Map(64, 64, "desert");
 
-      /*
       console.log("Creating MapObject(s)");
+      /*
       this._map.addObject(new MapObject(1, 1, "tank"));
       */
+
+      console.log("Initializing Input");
+      this._drag = new Draggable(this._root, this._map._canvas, this._map._pos);
 
       console.log("Going into main loop");
       //this._loop = setInterval(this.loop, LOOP_INTERVAL);
@@ -332,6 +351,12 @@
      */
     destroy : function() {
       console.log("GameCore::destroy()");
+
+      if ( this._root ) {
+        this._root.onmousedown = null;
+        window.onmousemove     = null;
+        window.onmouseup       = null;
+      }
 
       if ( this._loop ) {
         clearInterval(this._loop);
