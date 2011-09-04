@@ -9,7 +9,7 @@
  * Global helpers
  * @class
  */
-var $ = (function() {
+var $ = (function(undefined) {
 
   return {
     'mousePosX' : function(ev, el) {

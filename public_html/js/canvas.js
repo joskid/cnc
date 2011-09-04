@@ -13,6 +13,15 @@ var CanvasElement = Class.extend({
 
   _canvas   : null,
   _context  : null,
+  _try      : [
+    /*
+    "moz-webgl",          // Firefox
+    "webkit-3d",          // Webkit
+    "experimental-webgl", // Misc
+    "3d",                 // Test
+    */
+    "2d"                  // Default fallback
+  ],
 
   init : function(root, width, height, zi) {
     zi = zi || 0;
@@ -33,7 +42,22 @@ var CanvasElement = Class.extend({
       }
 
       this._canvas   = canvas;
-      this._context  = canvas.getContext('2d');
+
+      var gl = null, i = 0, c = null;
+      while ( !gl ) {
+        c = this._try[i];
+        gl = canvas.getContext(c);
+        i++;
+      }
+
+      if ( gl ) {
+        this._context  = gl;
+        console.info("Found canvas context", c, gl);
+      } else {
+        throw "Failed to get Canvas Context!";
+      }
+    } else {
+      throw "Failed to create Canvas.";
     }
   },
 
