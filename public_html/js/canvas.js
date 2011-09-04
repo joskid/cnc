@@ -14,11 +14,14 @@ var CanvasElement = Class.extend({
   _canvas   : null,
   _context  : null,
 
-  init : function(root, width, height) {
+  init : function(root, width, height, zi) {
+    zi = zi || 0;
+
     var canvas             = document.createElement("canvas");
     canvas.width           = width;
     canvas.height          = height;
     canvas.style.position  = "absolute";
+    canvas.style.zIndex    = zi;
 
     if ( canvas ) {
       if ( root ) {

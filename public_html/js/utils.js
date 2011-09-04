@@ -15,17 +15,15 @@ var Draggable = Class.extend({
   _x : 0,
   _y : 0,
   _root : null,
-  _element : null,
   _active : false,
   _position : [0, 0],
   _clickX   : -1,
   _clickY   : -1,
 
-  init : function(root, element, position) {
+  init : function(root, position) {
     var self = this;
 
     this._root     = root;
-    this._element  = element._canvas;
     this._position = position;
 
     this._root.onmousedown = function(ev) {
@@ -35,7 +33,6 @@ var Draggable = Class.extend({
 
   destroy : function() {
     this._root             = null;
-    this._element          = null;
     this._root.onmousedown = null;
 
     window.onmouseup       = null;
@@ -61,8 +58,8 @@ var Draggable = Class.extend({
       self._x = (self._position[0] + (ev.clientX - self._clickX));
       self._y = (self._position[1] + (ev.clientY - self._clickY));
 
-      self._element.style.left = (self._x) + "px";
-      self._element.style.top  = (self._y) + "px";
+      self._root.style.left = (self._x) + "px";
+      self._root.style.top  = (self._y) + "px";
     }
   },
 

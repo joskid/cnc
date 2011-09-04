@@ -18,7 +18,7 @@
   // CONSTANTS
   /////////////////////////////////////////////////////////////////////////////
 
-  var CANVAS_CONTAINER = "Main";
+  var CANVAS_CONTAINER = "MainContainer";
   var LOOP_INTERVAL    = 10;
   var TILE_SIZE        = 24;
 
@@ -170,7 +170,7 @@
       var l  = os.length;
 
       for ( i; i < l; i++ ) {
-        os[i].render();
+        os[i].render(this._canvas);
       }
     }
 
@@ -195,7 +195,7 @@
       this._x       = parseInt(x, 10);
       this._y       = parseInt(y, 10);
       this._gfx     = gfx;
-      this._canvas  = new CanvasElement();
+      this._canvas  = new CanvasElement(CANVAS_CONTAINER, 32, 32, 10);
 
       console.group("MapObject::init()");
       console.log("Position X", this._x);
@@ -216,8 +216,14 @@
      * Render MapObject
      * @return void
      */
-    render : function() {
+    render : function(canvas) {
+      var self = this;
 
+      var img = new Image();
+      img.onload = function() {
+        self._canvas.append(img, self._x, self._y);
+      };
+      img.src = "/img/" + this._gfx + ".png";
     }
 
   });
@@ -342,12 +348,10 @@
       this._map = new Map(64, 64, "desert");
 
       console.log("Creating MapObject(s)");
-      /*
-      this._map.addObject(new MapObject(1, 1, "tank"));
-      */
+      this._map.addObject(new MapObject(1, 1, "tank_n"));
 
       console.log("Initializing Input");
-      this._drag = new Draggable(this._root, this._map._canvas, this._map._pos);
+      this._drag = new Draggable(this._root, this._map._pos);
 
       console.log("Going into main loop");
       //this._loop = setInterval(this.loop, LOOP_INTERVAL);

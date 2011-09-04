@@ -21,3 +21,6 @@ body {
   overflow : hidden;
   position : relative;
 }
+#MainContainer {
+  position : relative;
+}
