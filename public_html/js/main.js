@@ -20,6 +20,10 @@
   // Object helpers
   var _Selected   = [];
   var _Objects    = 0;
+  var _Cache      = {
+    tiles  : {},
+    sounds : {}
+  };
 
   /////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
@@ -584,6 +588,15 @@
       "desert" : "/img/tile_desert.png"
     },
 
+    _sounds : {
+      "unit_move"       : ["ackno", "affirm1", "noprob", "movout1", "ritaway", "ugotit", "yessir1"],
+      "unit_toggle"     : ["await1", "ready", "unit1"],
+      "unit_attack"     : ["mgun2"],
+      "unit_die"        : ["yell1", "nuyell5", "nuyell4", "nuyell3", "nuyell1"],
+      "building_toggle" : [],
+      "building_action" : []
+    },
+
     /**
      * Constructor
      * @return void
@@ -602,7 +615,33 @@
     },
 
     /**
-     * Get tile graphics
+     * Preload data
+     * @return void
+     */
+    preload : function(callback) {
+      callback(); // TODO
+    },
+
+    /**
+     * Get Sound
+     * @return Mixed
+     */
+    getSound : function(snd) {
+      if ( this._sounds[snd] ) {
+        var index = Math.floor(Math.random()* (this._sounds[snd].length));
+        var sound = this._sounds[snd][index];
+        var file  = "/snd/" + SOUND_TYPE + "/" + sound + "." + SOUND_TYPE;
+
+        console.log("ResourceCore::play()", snd, index, sound, file);
+
+        return new Audio(file);
+      }
+
+      return null;
+    },
+
+    /**
+     * Get Tile graphics
      * @return Mixed
      */
     getTile : function(tile) {
@@ -624,22 +663,12 @@
    */
   var SoundCore = Class.extend({
 
-    _sounds : {
-      "unit_move"       : ["ackno", "affirm1", "noprob", "movout1", "ritaway", "ugotit", "yessir1"],
-      "unit_toggle"     : ["await1", "ready", "unit1"],
-      "unit_attack"     : ["mgun2"],
-      "unit_die"        : ["yell1", "nuyell5", "nuyell4", "nuyell3", "nuyell1"],
-      "building_toggle" : [],
-      "building_action" : []
-    },
-
     /**
      * Constructor
      * @return void
      */
     init : function() {
-      console.group("SoundCore::init()");
-      console.groupEnd();
+      console.log("SoundCore::init()");
     },
 
     /**
@@ -655,14 +684,9 @@
      * @return void
      */
     play : function(snd) {
-      if ( this._sounds[snd] ) {
-        var index = Math.floor(Math.random()* (this._sounds[snd].length));
-        var sound = this._sounds[snd][index];
-        var file  = "/snd/" + SOUND_TYPE + "/" + sound + "." + SOUND_TYPE;
-
-        console.log("SoundCore::play()", snd, index, sound, file);
-
-        (new Audio(file)).play();
+      var res = _Resources.getSound(snd);
+      if ( res ) {
+        res.play();
       }
     }
 
@@ -896,8 +920,10 @@
     _Core      = new GameCore();
 
     if ( _Resources && _Sound && _Core ) {
-      _Core.run();
-      _Inited = true;
+      _Resources.preload(function() {
+        _Core.run();
+        _Inited = true;
+      });
     } else {
       try {
         throw "Failed to start up!";
