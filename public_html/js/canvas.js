@@ -33,6 +33,12 @@ var CanvasElement = Class.extend({
 
     this._canvas   = canvas;
     this._context  = canvas.getContext(type);
+
+    // Defaults
+    this._context.fillStyle   = "#00ff00";
+    this._context.strokeStyle = "#00ff00";
+    this._context.lineWidth   = 1;
+    this._context.font        = "20px Times New Roman";
   },
 
   destroy : function() {
@@ -41,6 +47,14 @@ var CanvasElement = Class.extend({
 
   clear : function() {
 
+  },
+
+  rectangle : function(en) {
+    this._context.strokeStyle = en ? "#00ff00" : "#ffffff";
+    this._context.beginPath();
+    this._context.rect(0, 0, this._canvas.width, this._canvas.height);
+    this._context.closePath();
+    this._context.stroke();
   },
 
   append : function(img, x, y) {

@@ -112,7 +112,7 @@
       console.log("Objects", _Selected);
 
       for ( i = 0; i < _Selected.length; i++ ) {
-        _Selected[i].move(pos[0], pos[1]);
+        _Selected[i].addPath(pos, false);
       }
 
       console.groupEnd();
@@ -278,7 +278,6 @@
      * @return void
      */
     render : function() {
-      /* FIXME
       var os = this._objects;
       var i  = 0;
       var l  = os.length;
@@ -286,7 +285,6 @@
       for ( i; i < l; i++ ) {
         os[i].render(this._canvas);
       }
-      */
     },
 
     setPosition : function(x, y) {
@@ -318,6 +316,7 @@
     _gfx      : null,
     _canvas   : null,
     _selected : false,
+    _path     : [],
 
     /**
      * Constructor
@@ -357,7 +356,6 @@
 
       // Set CSS
       var canvas = this._canvas.get();
-      canvas.style.position = "absolute";
       canvas.style.top      = (this._y) + 'px';
       canvas.style.left     = (this._x) + 'px';
 
@@ -365,6 +363,7 @@
       var img = new Image();
       img.onload = function() {
         self._canvas.append(img, 0, 0);
+        self._canvas.rectangle(false);
       };
       img.src = "/img/" + this._gfx + ".png";
 
@@ -385,6 +384,8 @@
       if ( s !== undefined ) {
         this._selected = s;
         console.log(this._selected ? "Selected" : "Unselected", this._id, this);
+
+        this._canvas.rectangle(this._selected);
       }
 
       return this._selected;
@@ -409,6 +410,19 @@
      * @return void
      */
     render : function(canvas) {
+      if ( this._path.length ) {
+        var p = this._path.shift();
+        this.move(p[0], p[1]);
+      }
+    },
+
+    addPath : function(path, override) {
+      if ( override === true ) {
+        this._path = [path];
+      } else {
+        this._path.push(path);
+      }
+      console.log("MapObject::addPath()", this._id, "->", path, "New path", (override ? "overridden" : "appended") ,this._path);
     }
 
   });
