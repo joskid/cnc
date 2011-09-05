@@ -584,8 +584,7 @@
   var ResourceCore = Class.extend({
 
     _tiles : {
-      "tropic" : "/img/tile_tropic.png",
-      "desert" : "/img/tile_desert.png"
+      "desert" : "tile_desert"
     },
 
     _sounds : {
@@ -618,25 +617,53 @@
      * Preload data
      * @return void
      */
-    preload : function(callback) {
-      callback(); // TODO
-    },
+    preload : (function() {
+      return function(callback) {
+        console.group("ResourceManager::preload()");
+
+        var file;
+
+        for ( var s in this._sounds ) {
+          if ( this._sounds.hasOwnProperty(s) ) {
+            for ( var i in this._sounds[s] ) {
+              file  = "/snd/" + SOUND_TYPE + "/" + this._sounds[s][i] + "." + SOUND_TYPE;
+              console.log("Sound", file);
+              if ( !_Cache.sounds[s] ) {
+                _Cache.sounds[s] = [];
+              }
+              _Cache.sounds[s][i] = new Audio(file);
+            }
+          }
+        }
+
+        for ( var t in this._tiles ) {
+          if ( this._tiles.hasOwnProperty(t) ) {
+            file = "/img/" + this._tiles[t] + ".png";
+            console.log("Image", file);
+
+            var img = new Image();
+            img.src = file;
+
+            _Cache.tiles[t] = img;
+          }
+        }
+
+        callback(); // TODO
+
+        console.groupEnd();
+      };
+    })(),
 
     /**
      * Get Sound
      * @return Mixed
      */
     getSound : function(snd) {
-      if ( this._sounds[snd] ) {
-        var index = Math.floor(Math.random()* (this._sounds[snd].length));
-        var sound = this._sounds[snd][index];
-        var file  = "/snd/" + SOUND_TYPE + "/" + sound + "." + SOUND_TYPE;
-
-        console.log("ResourceCore::play()", snd, index, sound, file);
-
-        return new Audio(file);
+      console.log("ResourceCore::getSound()", snd);
+      if ( _Cache.sounds[snd] ) {
+        var index = Math.floor(Math.random()* (_Cache.sounds[snd].length));
+        return _Cache.sounds[snd][index];
       }
-
       return null;
     },
 
@@ -646,10 +673,8 @@
      */
     getTile : function(tile) {
       console.log("ResourceCore::getTile()", tile);
-      if ( this._tiles[tile] ) {
-        var img = new Image();
-        img.src = this._tiles[tile];
-        return img;
+      if ( _Cache.tiles[tile] ) {
+        return _Cache.tiles[tile];
       }
 
       return null;
