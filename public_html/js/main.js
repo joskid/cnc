@@ -403,16 +403,29 @@
    */
   var MapObject = Class.extend({
 
-    _id       : -1,
-    _x        : -1,
-    _y        : -1,
-    _angle    : 90,
-    _width    : 32,
-    _height   : 32,
-    _gfx      : null,
-    _canvas   : null,
-    _selected : false,
-    _path     : [],
+    _id         : -1,
+    _x          : -1,
+    _y          : -1,
+    _angle      : 90,
+    _width      : 32,
+    _height     : 32,
+    _gfx        : null,
+    _canvas     : null,
+    _selected   : false,
+    _path       : [],
+    _health     : 100,
+    _shield     : 0,
+
+    // Default attributes
+    _attributes : {
+      player   : -1,
+      type     : 0,
+      health   : 100,
+      shield   : 0,
+      speed    : 1,
+      strength : 1,
+      price    : 100
+    },
 
     /**
      * Constructor

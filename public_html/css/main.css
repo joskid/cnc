@@ -30,6 +30,7 @@ body {
   height : 180px;
   border : 1px solid #fff;
   overflow : hidden;
+  background-color : #aa8555;
 }
 #MiniMapRect {
   position : absolute;
