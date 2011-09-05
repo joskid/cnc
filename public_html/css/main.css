@@ -62,5 +62,7 @@ body {
 }
 
 .MapObject {
+  position : absolute;
   cursor : pointer;
+  z-index : 10;
 }

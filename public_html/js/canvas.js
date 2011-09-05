@@ -13,15 +13,16 @@ var CanvasElement = Class.extend({
 
   _canvas   : null,
   _context  : null,
+  _image    : null,
+  _width    : -1,
+  _height   : -1,
 
-  init : function(type, root, width, height, zi) {
-    zi = zi || 0;
-
+  init : function(type, root, width, height) {
+    this._width  = parseInt(width, 10);
+    this._height = parseInt(height, 10);
     var canvas             = document.createElement("canvas");
-    canvas.width           = width;
-    canvas.height          = height;
-    canvas.style.position  = "absolute";
-    canvas.style.zIndex    = zi;
+    canvas.width           = this._width;
+    canvas.height          = this._height;
 
     if ( root ) {
       root = document.getElementById(root);
@@ -46,15 +47,23 @@ var CanvasElement = Class.extend({
   },
 
   clear : function() {
-
+    this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
   },
 
-  rotate : function(deg) {
-    // FIXME
-    //var rot = ($.degToRad(deg));
-    //this._context.save();
-    //this._context.rotate(rot);
-    //this._context.restore();
+  rotate : function(deg, en) {
+    /* FIXME
+    var rot = ($.degToRad(deg));
+    this.clear();
+    this._context.save();
+    this._context.translate(this._width / 2, this._height / 2);
+    this._context.rotate(rot);
+    this._context.translate(-this._width / 2, -this._height / 2);
+    this.redraw();
+    if ( en ) {
+      this.highlight();
+    }
+    this._context.restore();
+    */
 
     var deg_str          = deg + "";
     var rotate_transform = "rotate(" + deg + "deg)";
@@ -65,12 +74,21 @@ var CanvasElement = Class.extend({
     this._canvas.style.WebkitTransform = rotate_transform; // Webkit/Safari/Chrome
   },
 
-  rectangle : function(en) {
-    this._context.strokeStyle = en ? "#00ff00" : "#ffffff";
+  highlight : function() {
+    this._context.strokeStyle = "#00ff00";
     this._context.beginPath();
     this._context.rect(0, 0, this._canvas.width, this._canvas.height);
     this._context.closePath();
     this._context.stroke();
+  },
+
+  rectangle : function(en) {
+    this.clear();
+    this.redraw();
+
+    if ( en ) {
+      this.highlight();
+    }
   },
 
   append : function(img, x, y) {
@@ -80,6 +98,24 @@ var CanvasElement = Class.extend({
   save : function(type) {
     type = type || "image/png";
     return this._canvas.toDataURL(type);
+  },
+
+  redraw : function() {
+    if ( this._image ) {
+      this.append(this._image, 0, 0);
+    }
+  },
+
+  setImage : function(path, draw) {
+    var self = this;
+
+    var img = new Image();
+    img.onload = function() {
+      self.append(img, 0, 0);
+    };
+    img.src = path;
+
+    this._image = img;
   },
 
   get : function() {

@@ -436,7 +436,7 @@
       this._x       = parseInt(x, 10);
       this._y       = parseInt(y, 10);
       this._gfx     = gfx;
-      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height, 10);
+      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height);
 
       console.group("MapObject::init()");
       console.log("Index",      this._id);
@@ -468,18 +468,12 @@
 
       // Set CSS
       var canvas = this._canvas.get();
-      canvas.className  = "MapObject";
-      canvas.id         = "MapObject" + this._id;
-      canvas.style.top  = (this._y) + 'px';
-      canvas.style.left = (this._x) + 'px';
+      canvas.className      = "MapObject";
+      canvas.id             = "MapObject" + this._id;
+      canvas.style.top      = (this._y) + 'px';
+      canvas.style.left     = (this._x) + 'px';
 
-      // Load the image
-      var img = new Image();
-      img.onload = function() {
-        self._canvas.append(img, 0, 0);
-        self._canvas.rectangle(false);
-      };
-      img.src = "/img/" + this._gfx + ".png";
+      this._canvas.setImage("/img/" + this._gfx + ".png", true);
 
       // Add events
       $.addEvent(this._canvas.get(), "click", function(ev) {
@@ -532,7 +526,7 @@
       var deg      = Math.atan2((y2-y1),(x2-x1)) * (180 / Math.PI);
       var rotation = (this._angle + deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
 
-      this._canvas.rotate(rotation);
+      this._canvas.rotate(rotation, this._selected);
     },
 
     /**
