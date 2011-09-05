@@ -546,6 +546,9 @@
       return;
     }
 
+    $.disableContext(document.getElementById("Main"));
+    $.disableContext(document.getElementById("MainContainer"));
+
     _Resources = new ResourceCore();
     _Sound     = new SoundCore();
     _Core      = new GameCore();

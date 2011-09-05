@@ -20,6 +20,16 @@ var $ = (function(undefined) {
       return ev.clientY;
     },
 
+    'mouseButton' : function(ev) {
+      var button = 1;
+      if ( ev.which ) {
+        button= (ev.which < 2) ? 1 : ((ev.which == 2) ? 2 : 3);
+      } else {
+        button= (ev.button < 2) ? 1 : ((ev.button == 4) ? 2 : 3);
+      }
+      return button;
+    },
+
     'addEvent'  : function(el, ev, callback) {
       /*
       if ( el.addEventListener ) {
@@ -48,6 +58,12 @@ var $ = (function(undefined) {
 
     'preventDefault' : function(ev) {
       ev.preventDefault();
+    },
+
+    'disableContext' : function(el) {
+      el.oncontextmenu = function() {
+        return false;
+      };
     }
   };
 
@@ -75,7 +91,9 @@ var Draggable = Class.extend({
     this._position = position;
 
     $.addEvent(this._root, "mousedown", function(ev) {
-      self._onmousedown(ev, self);
+      if ( $.mouseButton(ev) == 3 ) {
+        self._onmousedown(ev, self);
+      }
     });
   },
 
