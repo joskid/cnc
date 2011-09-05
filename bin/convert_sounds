@@ -1,0 +1,21 @@
+#!/bin/sh
+
+rm public_html/snd/mp3/*
+rm public_html/snd/ogg/*
+
+FILES=`ls "src/snd/"`
+
+echo $FILES
+
+for i in $FILES; do
+  FPATH="src/snd/${i}"
+  FNAME=`basename "$i" .wav`
+
+  # Convert to MP3
+  OP="public_html/snd/mp3/${FNAME}.mp3"
+  lame -h -b 192 "$FPATH" "$OP"
+
+  # Convert to OGG
+  OP="public_html/snd/ogg/${FNAME}.ogg"
+  oggenc "$FPATH" -o "$OP"
+done

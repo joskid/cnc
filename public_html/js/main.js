@@ -67,10 +67,10 @@
 
   // Sound support
   var SOUND_TYPE  = "";
-  var SOUND_TYPES = [
-    'audio/ogg; codecs="vorbis"', // OGG
-    'audio/mpeg'                  // MP3
-  ];
+  var SOUND_TYPES = {
+    "ogg" : 'audio/ogg; codecs="vorbis"', // OGG
+    "mp3" : 'audio/mpeg'                  // MP3
+  };
 
   // Video support
   var VIDEO_TYPE = "";
@@ -107,8 +107,14 @@
     }
 
     // Then select them
+    var selected = 0;
     for ( i = 0; i < _Selected.length; i++ ) {
       _Selected[i].select(true);
+      selected++;
+    }
+
+    if ( selected ) {
+      _Sound.play("unit_toggle");
     }
 
     console.groupEnd();
@@ -125,8 +131,14 @@
       console.log("Position", pos);
       console.log("Objects", _Selected);
 
+      var selected = 0;
       for ( i = 0; i < _Selected.length; i++ ) {
         _Selected[i].addPath(pos, true);
+        selected++;
+      }
+
+      if ( selected ) {
+        _Sound.play("unit_move");
       }
 
       console.groupEnd();
@@ -613,10 +625,10 @@
   var SoundCore = Class.extend({
 
     _sounds : {
-      "unit_move"       : [],
-      "unit_toggle"     : [],
-      "unit_attack"     : [],
-      "unit_die"        : [],
+      "unit_move"       : ["ackno", "affirm1", "noprob", "movout1", "ritaway", "ugotit", "yessir1"],
+      "unit_toggle"     : ["await1", "ready", "unit1"],
+      "unit_attack"     : ["mgun2"],
+      "unit_die"        : ["yell1", "nuyell5", "nuyell4", "nuyell3", "nuyell1"],
       "building_toggle" : [],
       "building_action" : []
     },
@@ -643,9 +655,14 @@
      * @return void
      */
     play : function(snd) {
-      console.log("SoundCore::play()", snd);
       if ( this._sounds[snd] ) {
-        (function(){})();
+        var index = Math.floor(Math.random()* (this._sounds[snd].length));
+        var sound = this._sounds[snd][index];
+        var file  = "/snd/" + SOUND_TYPE + "/" + sound + "." + SOUND_TYPE;
+
+        console.log("SoundCore::play()", snd, index, sound, file);
+
+        (new Audio(file)).play();
       }
     }
 
@@ -827,10 +844,15 @@
       }
 
       if ( SUPPORT_AUDIO ) {
-        for ( i = 0; i < SOUND_TYPES.length; i++ ) {
-          if ( (!!document.createElement('audio').canPlayType(SOUND_TYPES[i])) ) {
-            SOUND_TYPE = SOUND_TYPES[i];
-            break;
+        var t;
+        for ( var s in SOUND_TYPES ) {
+          if ( SOUND_TYPES.hasOwnProperty(s) ) {
+            t = SOUND_TYPES[s];
+
+            if ( (!!document.createElement('audio').canPlayType(t)) ) {
+              SOUND_TYPE = s;
+              break;
+            }
           }
         }
       }

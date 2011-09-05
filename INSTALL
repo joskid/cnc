@@ -1,1 +1,3 @@
-Set up a vhost. See '00_cnc.conf'
+* Set up a vhost. See '00_cnc.conf'
+* Extract 'sounds.tar.bz2' to 'src/snd'
+* Run './bin/convert_sounds' from root directroy
