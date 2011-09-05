@@ -27,7 +27,7 @@
   var WEBSOCKET_URI    = "ws://localhost:8888";
 
   // Game internals
-  var LOOP_INTERVAL    = 1000;
+  var LOOP_INTERVAL    = 500;
   var TILE_SIZE        = 24;
   var MARGIN_LEFT      = 10;
   var MARGIN_TOP       = 10;
@@ -81,7 +81,6 @@
     var i;
 
     console.group("SelectMapObjects()");
-    console.log(o);
 
     // Unselect old objects
     for ( i = 0; i < _Selected.length; i++ ) {
@@ -107,12 +106,12 @@
 
   function MoveMapObjects(pos) {
     if ( _Selected.length ) {
-      console.group("SelectMapObjects()");
+      console.group("MoveMapObjects()");
       console.log("Position", pos);
       console.log("Objects", _Selected);
 
       for ( i = 0; i < _Selected.length; i++ ) {
-        _Selected[i].addPath(pos, false);
+        _Selected[i].addPath(pos, true);
       }
 
       console.groupEnd();
@@ -169,6 +168,8 @@
           this.removeObject(this._objects[o]);
         }
       }
+
+      this._canvas.destroy();
     },
 
     /**
@@ -203,6 +204,9 @@
         self._canvas.append(img, 0, 0);
       };
       img.src = canvas.save();
+
+      canvas.destroy();
+      delete canvas;
 
       // Add events
       $.addEvent(this._canvas.get(), "mouseup", function(ev) {
@@ -283,7 +287,7 @@
       var l  = os.length;
 
       for ( i; i < l; i++ ) {
-        os[i].render(this._canvas);
+        os[i].render();
       }
     },
 
@@ -311,6 +315,7 @@
     _id       : -1,
     _x        : -1,
     _y        : -1,
+    _angle    : 90,
     _width    : 32,
     _height   : 32,
     _gfx      : null,
@@ -334,6 +339,7 @@
       console.log("Position X", this._x);
       console.log("Position Y", this._y);
       console.log("Graphics",   this._gfx);
+      console.log("Canvas",     this._canvas.get());
       console.groupEnd();
 
       _Objects++;
@@ -345,6 +351,8 @@
      */
     destroy : function() {
       console.log("MapObject::destroy()");
+
+      this._canvas.destroy();
     },
 
     /**
@@ -356,8 +364,10 @@
 
       // Set CSS
       var canvas = this._canvas.get();
-      canvas.style.top      = (this._y) + 'px';
-      canvas.style.left     = (this._x) + 'px';
+      canvas.className  = "MapObject";
+      canvas.id         = "MapObject" + this._id;
+      canvas.style.top  = (this._y) + 'px';
+      canvas.style.left = (this._x) + 'px';
 
       // Load the image
       var img = new Image();
@@ -383,7 +393,7 @@
     select : function(s) {
       if ( s !== undefined ) {
         this._selected = s;
-        console.log(this._selected ? "Selected" : "Unselected", this._id, this);
+        console.log(this._selected ? "Selected" : "Unselected", this._id, this._canvas.get());
 
         this._canvas.rectangle(this._selected);
       }
@@ -398,6 +408,8 @@
      * @return void
      */
     move : function(x, y) {
+      this.rotate(x, y);
+
       this._x = parseInt(x, 10) - (this._width / 2);
       this._y = parseInt(y, 10) - (this._height / 2);
 
@@ -405,11 +417,31 @@
       this._canvas.get().style.left = (this._x + "px");
     },
 
+    rotate : function(x, y) {
+      var x1 = this._x;
+      var y1 = this._y;
+      var x2 = x;
+      var y2 = y;
+
+      var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
+      var deg      = Math.atan2((y2-y1),(x2-x1)) * (180 / Math.PI);
+      var rotation = this._angle + deg;
+
+      if ( x < 0 )
+        rotation += 180;
+      else if ( y < 0 )
+        rotation += 360;
+
+      var degs = $.degToRad(rotation);
+
+      this._canvas.rotate(rotation);
+    },
+
     /**
      * Render MapObject
      * @return void
      */
-    render : function(canvas) {
+    render : function() {
       if ( this._path.length ) {
         var p = this._path.shift();
         this.move(p[0], p[1]);
@@ -417,12 +449,18 @@
     },
 
     addPath : function(path, override) {
+      console.group("MapObject::addPath()");
+      console.log("MapObject Id", this._id);
+
       if ( override === true ) {
         this._path = [path];
+        console.log("New coordinate", path);
       } else {
         this._path.push(path);
+        console.log("Append coordinate", path, "total", this._path);
       }
-      console.log("MapObject::addPath()", this._id, "->", path, "New path", (override ? "overridden" : "appended") ,this._path);
+
+      console.groupEnd();
     }
 
   });
@@ -589,8 +627,8 @@
 
       console.log("Inserting Map and Objects");
       this._map.insert(this._drag);
-      this._map.addObject(new MapObject(100, 100, "tank_n"));
       this._map.addObject(new MapObject(50, 50, "tank_n"));
+      this._map.addObject(new MapObject(100, 100, "tank_n"));
 
       console.log("Going into main loop");
       this._loop = setInterval(function(ev) { self.loop(ev); }, LOOP_INTERVAL);
@@ -711,6 +749,11 @@
       }
       return;
     }
+
+    console.group("Configuration");
+    console.log("Server", WEBSOCKET_URI);
+    console.log("Interval", LOOP_INTERVAL);
+    console.groupEnd();
 
     $.disableContext(document.getElementById("Main"));
     $.disableContext(document.getElementById("MainContainer"));

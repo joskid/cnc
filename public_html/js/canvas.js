@@ -49,6 +49,21 @@ var CanvasElement = Class.extend({
 
   },
 
+  rotate : function(deg) {
+    // FIXME
+    //this._context.save();
+    //this._context.rotate(0.5);
+    //this._context.restore();
+
+    var deg_str          = deg + "";
+    var rotate_transform = "rotate(" + deg + "deg)";
+
+    this._canvas.style["rotation"] = deg_str + "deg"; // CSS3
+    this._canvas.style.MozTransform = rotate_transform; // Moz
+    this._canvas.style.OTransform = rotate_transform; // Opera
+    this._canvas.style.WebkitTransform = rotate_transform; // Webkit/Safari/Chrome
+  },
+
   rectangle : function(en) {
     this._context.strokeStyle = en ? "#00ff00" : "#ffffff";
     this._context.beginPath();

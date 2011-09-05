@@ -98,7 +98,13 @@ var $ = (function(undefined) {
       el.oncontextmenu = function() {
         return false;
       };
+    },
+
+    'degToRad' : function(degree) {
+      return degree*(Math.PI/180);
     }
+
+
   };
 
 })();
@@ -177,6 +183,8 @@ var Draggable = Class.extend({
       self._dragged = true;
 
       self.ondragmove(ev, self, self._position);
+
+      document.body.style.cursor = "move";
     }
   },
 
@@ -191,6 +199,8 @@ var Draggable = Class.extend({
     $.removeEvent(window, "mousemove", self._onmousemove);
 
     self.ondragstop(ev, self, self._position);
+
+    document.body.style.cursor = "default";
   },
 
   dragged : function() {
