@@ -21,12 +21,29 @@
     <script type="text/javascript" src="/js/utils.js"></script>
     <script type="text/javascript" src="/js/canvas.js"></script>
     <script type="text/javascript" src="/js/main.js"></script>
+
+    <script type="text/javascript">
+      // Make sure everything runs without a debugging console
+      (function(undefined) {
+        if ( (window.console === undefined) || (!window.console) ) {
+          window.console = {
+            log      : function() {},
+            info     : function() {},
+            error    : function() {},
+            group    : function() {},
+            groupEnd : function() {}
+          };
+        }
+       })();
+    </script>
   </head>
   <body>
     <!-- Sidebar -->
     <div id="Sidebar"></div>
 
     <!-- Main Container -->
-    <div id="Main"><div id="MainContainer"></div></div>
+    <div id="Main">
+      <div id="MainContainer"><!-- Canvas --></div>
+    </div>
   </body>
 </html>
