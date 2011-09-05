@@ -18,8 +18,41 @@
   // CONSTANTS
   /////////////////////////////////////////////////////////////////////////////
 
+  var WEBSOCKET_URI    = "ws://localhost:8888";
+
+  var SUPPORT_CANVAS   = (!!document.createElement('canvas').getContext);
+  var SUPPORT_LSTORAGE = (('localStorage' in window) && window['localStorage'] !== null);
+  var SUPPORT_SSTORAGE = (('sessionStorage' in window) && window['sessionStorage'] !== null);
+  var SUPPORT_GSTORAGE = (('globalStorage' in window) && window['globalStorage'] !== null);
+  var SUPPORT_DSTORAGE = (('openDatabase' in window) && window['openDatabase'] !== null);
+  var SUPPORT_SOCKET   = ('WebSocket' in window && window['WebSocket'] !== null);
+  var SUPPORT_VIDEO    = (!!document.createElement('video').canPlayType);
+  var SUPPORT_AUDIO    = (!!document.createElement('audio').canPlayType);
+
   var CANVAS_CONTAINER = "MainContainer";
-  var LOOP_INTERVAL    = 10;
+  var CANVAS_TYPE      = "";
+  var CANVAS_TYPES = [
+    /*
+    "moz-webgl",          // Firefox
+    "webkit-3d",          // Webkit
+    "experimental-webgl", // Misc
+    "3d",                 // Test
+    */
+    "2d"                  // Default fallback
+  ];
+
+  var SOUND_TYPE  = "";
+  var SOUND_TYPES = [
+    'audio/ogg; codecs="vorbis"', // OGG
+    'audio/mpeg'                  // MP3
+  ];
+
+  var VIDEO_TYPE = "";
+  var VIDEO_TYPES = [
+
+  ];
+
+  var LOOP_INTERVAL    = 1000;
   var TILE_SIZE        = 24;
 
   /////////////////////////////////////////////////////////////////////////////
@@ -60,14 +93,14 @@
       console.log("Scheme", this._scheme);
 
       console.log("Creating canvas...");
-      this._canvas  = new CanvasElement(CANVAS_CONTAINER, this._width, this._height);
+      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height);
 
       var x, y;
       var px = 0;
       var py = 0;
 
       // Create a temporary Canvas and export to PNG, then append to Map Canvas
-      var canvas = new CanvasElement(null, this._width, this._height);
+      var canvas = new CanvasElement(CANVAS_TYPE, null, this._width, this._height);
       var tile = _Resources.getTile(this._scheme);
 
       for ( y = 0; y < this._sizeY; y++ ) {
@@ -117,6 +150,8 @@
 
         this._objects.push(o);
 
+        o.insert(this._canvas); // FIXME
+
         return true;
       }
 
@@ -165,6 +200,7 @@
      * @return void
      */
     render : function() {
+      /* FIXME
       var os = this._objects;
       var i  = 0;
       var l  = os.length;
@@ -172,6 +208,7 @@
       for ( i; i < l; i++ ) {
         os[i].render(this._canvas);
       }
+      */
     }
 
   });
@@ -195,7 +232,7 @@
       this._x       = parseInt(x, 10);
       this._y       = parseInt(y, 10);
       this._gfx     = gfx;
-      this._canvas  = new CanvasElement(CANVAS_CONTAINER, 32, 32, 10);
+      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, 32, 32, 10);
 
       console.group("MapObject::init()");
       console.log("Position X", this._x);
@@ -213,10 +250,11 @@
     },
 
     /**
-     * Render MapObject
+     * Insert MapObject
+     * @param  Canvas   canvas   Destination canvas
      * @return void
      */
-    render : function(canvas) {
+    insert : function(canvas) {
       var self = this;
 
       var img = new Image();
@@ -224,6 +262,13 @@
         self._canvas.append(img, self._x, self._y);
       };
       img.src = "/img/" + this._gfx + ".png";
+    },
+
+    /**
+     * Render MapObject
+     * @return void
+     */
+    render : function(canvas) {
     }
 
   });
@@ -332,12 +377,15 @@
     _loop  : null,
     _root  : null,
     _drag  : null,
+    _time  : -1,
 
     /**
      * Constructor
      * @return void
      */
     init : function() {
+      var self = this;
+
       console.group("GameCore::init()");
 
       this._root = document.getElementById(CANVAS_CONTAINER);
@@ -354,8 +402,8 @@
       this._drag = new Draggable(this._root, this._map._pos);
 
       console.log("Going into main loop");
-      //this._loop = setInterval(this.loop, LOOP_INTERVAL);
-      this.loop(); // FIXME TODO
+      this._time = new Date().getTime();
+      this._loop = setInterval(function(ev) { self.loop(ev); }, LOOP_INTERVAL);
 
       console.groupEnd();
     },
@@ -386,10 +434,16 @@
 
     /**
      * Main loop
+     * @param  Event    timer event
      * @return void
      */
-    loop : function() {
+    loop : function(ev) {
+      var now = new Date().getTime();
+      var diff = Math.floor(1000/(now - this._time));
+
       this._map.render();
+
+      this._time = now;
     }
 
   });
@@ -432,6 +486,65 @@
    */
   window.onload = function() {
     console.info("window::onload()");
+
+    // Check compability
+    var canvas;
+    var context;
+    var sound;
+
+    console.group("Checking compability");
+
+    try {
+      if ( SUPPORT_CANVAS ) {
+        canvas = document.createElement("canvas");
+
+        if ( canvas ) {
+          var ctype = "";
+          var i = 0;
+          for ( i = 0; i < CANVAS_TYPES.length; i++ ) {
+            context = canvas.getContext(CANVAS_TYPES[i]);
+            if ( context ) {
+              CANVAS_TYPE = CANVAS_TYPES[i];
+              break;
+            }
+          }
+        }
+      }
+
+      if ( SUPPORT_AUDIO ) {
+        for ( i = 0; i < SOUND_TYPES.length; i++ ) {
+          if ( (!!document.createElement('audio').canPlayType(SOUND_TYPES[i])) ) {
+            SOUND_TYPE = SOUND_TYPES[i];
+            break;
+          }
+        }
+      }
+    } catch ( eee ) {
+      console.error("FATAL ERROR:". eee);
+    }
+
+
+    console.log("Browser: ", navigator.appName, navigator.appVersion);
+    console.log("Headers: ", navigator.userAgent);
+    console.log("Canvas Context: ", CANVAS_TYPE || "ERROR - None found");
+    console.log("Sound Support: ", SUPPORT_AUDIO ? "YES" : "NO" ,",", SOUND_TYPE || "ERROR - None found");
+    console.log("Video Support: ", SUPPORT_VIDEO ? "YES" : "NO");
+    console.log("WebSocket Support: ", SUPPORT_SOCKET ? "YES" : "NO");
+    console.log("Local Storage Support: ", SUPPORT_LSTORAGE ? "YES" : "NO");
+    console.log("Session Storage Support: ", SUPPORT_SSTORAGE ? "YES" : "NO");
+    console.log("Global Storage Support: ", SUPPORT_GSTORAGE ? "YES" : "NO");
+    console.log("OpenDatabase Support: ", SUPPORT_DSTORAGE ? "YES" : "NO");
+
+    console.groupEnd();
+
+    if ( !CANVAS_TYPE || !SOUND_TYPE ) {
+      try {
+        throw "Your browser is not supported!";
+      } catch ( eee ) {
+        alert("Your browser is not supported!");
+      }
+      return;
+    }
 
     _Resources = new ResourceCore();
     _Sound     = new SoundCore();

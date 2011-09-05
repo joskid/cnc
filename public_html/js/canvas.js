@@ -13,17 +13,8 @@ var CanvasElement = Class.extend({
 
   _canvas   : null,
   _context  : null,
-  _try      : [
-    /*
-    "moz-webgl",          // Firefox
-    "webkit-3d",          // Webkit
-    "experimental-webgl", // Misc
-    "3d",                 // Test
-    */
-    "2d"                  // Default fallback
-  ],
 
-  init : function(root, width, height, zi) {
+  init : function(type, root, width, height, zi) {
     zi = zi || 0;
 
     var canvas             = document.createElement("canvas");
@@ -32,33 +23,16 @@ var CanvasElement = Class.extend({
     canvas.style.position  = "absolute";
     canvas.style.zIndex    = zi;
 
-    if ( canvas ) {
-      if ( root ) {
-        root = document.getElementById(root);
-        root.appendChild(canvas);
-      } else {
-        root = document.createDocumentFragment();
-        root.appendChild(canvas);
-      }
-
-      this._canvas   = canvas;
-
-      var gl = null, i = 0, c = null;
-      while ( !gl ) {
-        c = this._try[i];
-        gl = canvas.getContext(c);
-        i++;
-      }
-
-      if ( gl ) {
-        this._context  = gl;
-        console.info("Found canvas context", c, gl);
-      } else {
-        throw "Failed to get Canvas Context!";
-      }
+    if ( root ) {
+      root = document.getElementById(root);
+      root.appendChild(canvas);
     } else {
-      throw "Failed to create Canvas.";
+      root = document.createDocumentFragment();
+      root.appendChild(canvas);
     }
+
+    this._canvas   = canvas;
+    this._context  = canvas.getContext(type);
   },
 
   destroy : function() {
