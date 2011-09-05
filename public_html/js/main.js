@@ -234,6 +234,8 @@
       this._gfx     = gfx;
       this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, 32, 32, 10);
 
+      this._canvas.setClass("MapObject");
+
       console.group("MapObject::init()");
       console.log("Position X", this._x);
       console.log("Position Y", this._y);
@@ -259,9 +261,11 @@
 
       var img = new Image();
       img.onload = function() {
-        self._canvas.append(img, self._x, self._y);
+        self._canvas.append(img, 0, 0);
+        self._canvas.move(self._x, self._y);
       };
       img.src = "/img/" + this._gfx + ".png";
+
     },
 
     /**
@@ -397,6 +401,7 @@
 
       console.log("Creating MapObject(s)");
       this._map.addObject(new MapObject(1, 1, "tank_n"));
+      this._map.addObject(new MapObject(50, 50, "tank_n"));
 
       console.log("Initializing Input");
       this._drag = new Draggable(this._root, this._map._pos);

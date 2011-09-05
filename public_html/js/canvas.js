@@ -55,6 +55,15 @@ var CanvasElement = Class.extend({
   save : function(type) {
     type = type || "image/png";
     return this._canvas.toDataURL(type);
+  },
+
+  move : function(x, y) {
+    this._canvas.style.top = (y) + 'px';
+    this._canvas.style.left = (x) + 'px';
+  },
+
+  setClass : function(cname) {
+    this._canvas.className = cname;
   }
 
 });
