@@ -10,6 +10,8 @@
   // GLOBALS
   /////////////////////////////////////////////////////////////////////////////
 
+  var _Inited     = false;
+
   // Class instance references
   var _Core       = null;
   var _Resources  = null;
@@ -28,9 +30,12 @@
 
   // Game internals
   var LOOP_INTERVAL    = 500;
+  var RESIZE_INTERVAL  = 50;
   var TILE_SIZE        = 24;
   var MARGIN_LEFT      = 10;
   var MARGIN_TOP       = 10;
+  var MINIMAP_WIDTH    = 180;
+  var MINIMAP_HEIGHT   = 180;
 
   // Browser support
   var SUPPORT_CANVAS   = (!!document.createElement('canvas').getContext);
@@ -42,8 +47,13 @@
   var SUPPORT_VIDEO    = (!!document.createElement('video').canPlayType);
   var SUPPORT_AUDIO    = (!!document.createElement('audio').canPlayType);
 
+  // DOM Elements
+  var MAIN_CONTAINER     = "Main";
+  var CANVAS_CONTAINER   = "MainContainer";
+  var MINIMAP_CONTAINER  = "MiniMap";
+  var MINIMAP_RECTANGLE  = "MiniMapRect";
+
   // Canvas support
-  var CANVAS_CONTAINER = "MainContainer";
   var CANVAS_TYPE      = "";
   var CANVAS_TYPES = [
     /*
@@ -126,6 +136,82 @@
   /////////////////////////////////////////////////////////////////////////////
   // ABSTRACT CLASSES
   /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * MiniMap - Creates a MiniMap
+   * @class
+   */
+  var MiniMap = Class.extend({
+
+    _mmap  : null,
+    _mmapr : null,
+    _main  : null,
+    _root  : null,
+
+    /**
+     * Constructor
+     * @return void
+     */
+    init : function(main, root, map) {
+      console.log("MiniMap::init()");
+
+      this._main  = main;
+      this._root  = root;
+      this._mmap  = document.getElementById(MINIMAP_CONTAINER);
+      this._mmapr = document.getElementById(MINIMAP_RECTANGLE);
+    },
+
+    /**
+     * Destructor
+     * @return void
+     */
+    destroy : function() {
+      console.log("MiniMap::destroy()");
+
+      this._main  = null;
+      this._root  = null;
+      this._mmap  = null;
+      this._mmapr = null;
+    },
+
+    /**
+     * Update MiniMap
+     * @return void
+     */
+    setPosition : function(x, y) {
+      var w  = this._root.offsetWidth;
+      var h  = this._root.offsetHeight;
+      var rx = -((MINIMAP_WIDTH / w) * x);
+      var ry = -((MINIMAP_HEIGHT / h) * y);
+
+      this._mmapr.style.left = (rx - 1) + 'px';
+      this._mmapr.style.top  = (ry - 1) + 'px';
+    },
+
+    /**
+     * Update MiniMap Size
+     * @return void
+     */
+    resize : function() {
+      var scaleX = this._root.offsetWidth / this._main.offsetWidth;
+      var scaleY = this._root.offsetHeight / this._main.offsetHeight;
+
+      var rw = Math.round(MINIMAP_WIDTH / scaleX);
+      var rh = Math.round(MINIMAP_HEIGHT / scaleY);
+
+      this._mmapr.style.width  = (rw) + 'px';
+      this._mmapr.style.height = (rh) + 'px';
+    },
+
+    /**
+     * Render the MiniMap
+     * @return void
+     */
+    render : function() {
+
+    }
+
+  });
 
   /**
    * Map - Creates a tiled Map
@@ -565,7 +651,9 @@
   var GameCore = Class.extend({
 
     _map   : null,
+    _mmap  : null,
     _loop  : null,
+    _main  : null,
     _root  : null,
     _drag  : null,
     _time  : -1,
@@ -578,7 +666,8 @@
       var self = this;
       console.log("GameCore::init()");
 
-      this._root = document.getElementById(CANVAS_CONTAINER);
+      this._main  = document.getElementById(MAIN_CONTAINER);
+      this._root  = document.getElementById(CANVAS_CONTAINER);
     },
 
     /**
@@ -618,10 +707,15 @@
       this._time = new Date().getTime();
 
       this._map  = new Map(64, 64, "desert");
+      this._root.style.width = (this._map._width) + "px";
+      this._root.style.height = (this._map._height) + "px";
+
+      this._mmap = new MiniMap(this._main, this._root, this._map);
 
       this._drag = new Draggable(this._root, this._map._pos);
       this._drag.ondragstop = function(ev, ref, pos) {
         self._map.setPosition(pos[0], pos[1]);
+        self._mmap.setPosition(pos[0], pos[1]);
       };
 
       console.log("Inserting Map and Objects");
@@ -633,6 +727,16 @@
       this._loop = setInterval(function(ev) { self.loop(ev); }, LOOP_INTERVAL);
 
       console.groupEnd();
+
+      this.resize();
+    },
+
+    /**
+     * The resize event from browser
+     * @return void
+     */
+    resize : function() {
+      this._mmap.resize();
     },
 
     /**
@@ -645,6 +749,7 @@
       var diff = Math.floor(1000/(now - this._time));
 
       this._map.render();
+      this._mmap.render();
 
       this._time = now;
     }
@@ -763,6 +868,7 @@
 
     if ( _Resources && _Sound && _Core ) {
       _Core.run();
+      _Inited = true;
     } else {
       try {
         throw "Failed to start up!";
@@ -794,8 +900,25 @@
       _Resources = undefined;
     }
 
-    window.onload = undefined;
+    window.onload   = undefined;
     window.onunload = undefined;
+    window.onresize = undefined;
   };
+
+  window.onresize = (function() {
+    var _t = null;
+    return function() {
+      if ( _Inited ) {
+        if ( _t ) {
+          clearTimeout(_t);
+          _t = null;
+        }
+        _t = setTimeout(function() {
+          _Core.resize();
+        }, RESIZE_INTERVAL);
+      }
+    };
+
+  })();
 
 })();
