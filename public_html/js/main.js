@@ -10,16 +10,29 @@
   // GLOBALS
   /////////////////////////////////////////////////////////////////////////////
 
+  // Class instance references
   var _Core       = null;
   var _Resources  = null;
   var _Sound      = null;
+
+  // Object helpers
+  var _Selected   = [];
+  var _Objects    = 0;
 
   /////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
   /////////////////////////////////////////////////////////////////////////////
 
+  // Network internals
   var WEBSOCKET_URI    = "ws://localhost:8888";
 
+  // Game internals
+  var LOOP_INTERVAL    = 1000;
+  var TILE_SIZE        = 24;
+  var MARGIN_LEFT      = 10;
+  var MARGIN_TOP       = 10;
+
+  // Browser support
   var SUPPORT_CANVAS   = (!!document.createElement('canvas').getContext);
   var SUPPORT_LSTORAGE = (('localStorage' in window) && window['localStorage'] !== null);
   var SUPPORT_SSTORAGE = (('sessionStorage' in window) && window['sessionStorage'] !== null);
@@ -29,6 +42,7 @@
   var SUPPORT_VIDEO    = (!!document.createElement('video').canPlayType);
   var SUPPORT_AUDIO    = (!!document.createElement('audio').canPlayType);
 
+  // Canvas support
   var CANVAS_CONTAINER = "MainContainer";
   var CANVAS_TYPE      = "";
   var CANVAS_TYPES = [
@@ -41,19 +55,69 @@
     "2d"                  // Default fallback
   ];
 
+  // Sound support
   var SOUND_TYPE  = "";
   var SOUND_TYPES = [
     'audio/ogg; codecs="vorbis"', // OGG
     'audio/mpeg'                  // MP3
   ];
 
+  // Video support
   var VIDEO_TYPE = "";
   var VIDEO_TYPES = [
 
   ];
 
-  var LOOP_INTERVAL    = 1000;
-  var TILE_SIZE        = 24;
+  /////////////////////////////////////////////////////////////////////////////
+  // HELPER FUNCTIONS
+  /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Select MapObject(s)
+   * @param  Mixed   o    Either an array or Object
+   * @return void
+   */
+  function SelectMapObjects(o) {
+    var i;
+
+    console.group("SelectMapObjects()");
+    console.log(o);
+
+    // Unselect old objects
+    for ( i = 0; i < _Selected.length; i++ ) {
+      _Selected[i].select(false);
+    }
+
+    // Now figure out what to select
+    if ( o instanceof MapObject ) {
+      _Selected = [o];
+    } else if ( o instanceof Array ) {
+      _Selected = o;
+    } else {
+      _Selected = [];
+    }
+
+    // Then select them
+    for ( i = 0; i < _Selected.length; i++ ) {
+      _Selected[i].select(true);
+    }
+
+    console.groupEnd();
+  }
+
+  function MoveMapObjects(pos) {
+    if ( _Selected.length ) {
+      console.group("SelectMapObjects()");
+      console.log("Position", pos);
+      console.log("Objects", _Selected);
+
+      for ( i = 0; i < _Selected.length; i++ ) {
+        _Selected[i].move(pos[0], pos[1]);
+      }
+
+      console.groupEnd();
+    }
+  }
 
   /////////////////////////////////////////////////////////////////////////////
   // ABSTRACT CLASSES
@@ -77,13 +141,12 @@
      * @return void
      */
     init : function(sx, sy, scheme) {
-      var self = this;
-
       this._sizeX   = parseInt(sx, 10);
       this._sizeY   = parseInt(sy, 10);
       this._width   = parseInt(this._sizeX * TILE_SIZE, 10);
       this._height  = parseInt(this._sizeY * TILE_SIZE, 10);
       this._scheme  = scheme || "tropic";
+      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height);
 
       console.group("Map::init()");
       console.log("Container", CANVAS_CONTAINER);
@@ -91,9 +154,29 @@
       console.log("Width",  this._width);
       console.log("Height", this._height);
       console.log("Scheme", this._scheme);
+      console.groupEnd();
+    },
 
-      console.log("Creating canvas...");
-      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height);
+    /**
+     * Destructor
+     * @return void
+     */
+    destroy : function() {
+      console.log("Map::destroy()");
+
+      for ( var o in this._objects ) {
+        if ( o && this._objects.hasOwnProperty(o) ) {
+          this.removeObject(this._objects[o]);
+        }
+      }
+    },
+
+    /**
+     * Insert Map
+     * @return void
+     */
+    insert : function(drag) {
+      var self = this;
 
       var x, y;
       var px = 0;
@@ -114,29 +197,23 @@
         py += TILE_SIZE;
       }
 
+      // Insert Map background to canvas
       var img = new Image();
       img.onload = function() {
         self._canvas.append(img, 0, 0);
       };
       img.src = canvas.save();
 
-      console.log("Created canvas");
-
-      console.groupEnd();
-    },
-
-    /**
-     * Destructor
-     * @return void
-     */
-    destroy : function() {
-      console.log("Map::destroy()");
-
-      for ( var o in this._objects ) {
-        if ( o && this._objects.hasOwnProperty(o) ) {
-          this.removeObject(this._objects[o]);
+      // Add events
+      $.addEvent(this._canvas.get(), "mouseup", function(ev) {
+        if ( $.mouseButton(ev) > 1 ) {
+          if ( !drag.dragged() ) {
+            SelectMapObjects(null);
+          }
+        } else {
+          MoveMapObjects(self.getRelativePosition(ev));
         }
-      }
+      });
     },
 
     /**
@@ -150,7 +227,7 @@
 
         this._objects.push(o);
 
-        o.insert(this._canvas); // FIXME
+        o.insert(); // FIXME
 
         return true;
       }
@@ -192,7 +269,8 @@
       this._pos[0] += x;
       this._pos[1] += y;
 
-      this._canvas.move(this._pos[0], this._pos[1]);
+      this._canvas.get().style.top  = (this._pos[1] + "px");
+      this._canvas.get().style.left = (this._pos[0] + "px");
     },
 
     /**
@@ -209,6 +287,19 @@
         os[i].render(this._canvas);
       }
       */
+    },
+
+    setPosition : function(x, y) {
+      this._pos = [x, y];
+    },
+
+    getRelativePosition : function(ev) {
+      var mX = $.mousePosX(ev) - MARGIN_LEFT;
+      var mY = $.mousePosY(ev) - MARGIN_TOP;
+      var rX = (mX - this._pos[0]);
+      var rY = (mY - this._pos[1]);
+
+      return [rX, rY];
     }
 
   });
@@ -219,28 +310,34 @@
    */
   var MapObject = Class.extend({
 
-    _x       : -1,
-    _y       : -1,
-    _gfx     : null,
-    _canvas  : null,
+    _id       : -1,
+    _x        : -1,
+    _y        : -1,
+    _width    : 32,
+    _height   : 32,
+    _gfx      : null,
+    _canvas   : null,
+    _selected : false,
 
     /**
      * Constructor
      * @return void
      */
     init : function(x, y, gfx) {
+      this._id      = _Objects;
       this._x       = parseInt(x, 10);
       this._y       = parseInt(y, 10);
       this._gfx     = gfx;
-      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, 32, 32, 10);
-
-      this._canvas.setClass("MapObject");
+      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height, 10);
 
       console.group("MapObject::init()");
+      console.log("Index",      this._id);
       console.log("Position X", this._x);
       console.log("Position Y", this._y);
       console.log("Graphics",   this._gfx);
       console.groupEnd();
+
+      _Objects++;
     },
 
     /**
@@ -253,19 +350,58 @@
 
     /**
      * Insert MapObject
-     * @param  Canvas   canvas   Destination canvas
      * @return void
      */
-    insert : function(canvas) {
+    insert : function() {
       var self = this;
 
+      // Set CSS
+      var canvas = this._canvas.get();
+      canvas.style.position = "absolute";
+      canvas.style.top      = (this._y) + 'px';
+      canvas.style.left     = (this._x) + 'px';
+
+      // Load the image
       var img = new Image();
       img.onload = function() {
         self._canvas.append(img, 0, 0);
-        self._canvas.move(self._x, self._y);
       };
       img.src = "/img/" + this._gfx + ".png";
 
+      // Add events
+      $.addEvent(this._canvas.get(), "click", function(ev) {
+        if ( $.mouseButton(ev) == 1 ) {
+          SelectMapObjects(self);
+        }
+      });
+
+    },
+
+    /**
+     * Set/Get Select MapObject
+     * @return void
+     */
+    select : function(s) {
+      if ( s !== undefined ) {
+        this._selected = s;
+        console.log(this._selected ? "Selected" : "Unselected", this._id, this);
+      }
+
+      return this._selected;
+    },
+
+    /**
+     * Move the MapObject
+     * @param  int   x    X-Coordinate
+     * @param  int   y    Y-Coordinate
+     * @return void
+     */
+    move : function(x, y) {
+      this._x = parseInt(x, 10) - (this._width / 2);
+      this._y = parseInt(y, 10) - (this._height / 2);
+
+      this._canvas.get().style.top  = (this._y + "px");
+      this._canvas.get().style.left = (this._x + "px");
     },
 
     /**
@@ -389,28 +525,9 @@
      */
     init : function() {
       var self = this;
-
-      console.group("GameCore::init()");
+      console.log("GameCore::init()");
 
       this._root = document.getElementById(CANVAS_CONTAINER);
-
-      // Load some example data
-
-      console.log("Creating Map");
-      this._map = new Map(64, 64, "desert");
-
-      console.log("Creating MapObject(s)");
-      this._map.addObject(new MapObject(1, 1, "tank_n"));
-      this._map.addObject(new MapObject(50, 50, "tank_n"));
-
-      console.log("Initializing Input");
-      this._drag = new Draggable(this._root, this._map._pos);
-
-      console.log("Going into main loop");
-      this._time = new Date().getTime();
-      this._loop = setInterval(function(ev) { self.loop(ev); }, LOOP_INTERVAL);
-
-      console.groupEnd();
     },
 
     /**
@@ -435,6 +552,36 @@
         this._map.destroy();
         this._map = undefined;
       }
+    },
+
+    /**
+     * Run the Game
+     * FIXME: This is just example data
+     * @return void
+     */
+    run : function() {
+      var self = this;
+
+      console.group("GameCore::run()");
+
+      this._time = new Date().getTime();
+
+      this._map  = new Map(64, 64, "desert");
+
+      this._drag = new Draggable(this._root, this._map._pos);
+      this._drag.ondragstop = function(ev, ref, pos) {
+        self._map.setPosition(pos[0], pos[1]);
+      };
+
+      console.log("Inserting Map and Objects");
+      this._map.insert(this._drag);
+      this._map.addObject(new MapObject(100, 100, "tank_n"));
+      this._map.addObject(new MapObject(50, 50, "tank_n"));
+
+      console.log("Going into main loop");
+      this._loop = setInterval(function(ev) { self.loop(ev); }, LOOP_INTERVAL);
+
+      console.groupEnd();
     },
 
     /**
@@ -557,6 +704,16 @@
     _Resources = new ResourceCore();
     _Sound     = new SoundCore();
     _Core      = new GameCore();
+
+    if ( _Resources && _Sound && _Core ) {
+      _Core.run();
+    } else {
+      try {
+        throw "Failed to start up!";
+      } catch ( eee ) {
+        alert("Failed to start up!");
+      }
+    }
   };
 
   /**

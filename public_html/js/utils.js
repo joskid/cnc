@@ -117,6 +117,7 @@ var Draggable = Class.extend({
   _position : [0, 0],
   _clickX   : -1,
   _clickY   : -1,
+  _dragged  : false,
 
   init : function(root, position) {
     var self = this;
@@ -140,6 +141,15 @@ var Draggable = Class.extend({
     this._root             = null;
   },
 
+  ondragstart : function(ev, self) {
+  },
+
+  ondragmove : function(ev, self) {
+  },
+
+  ondragstop : function(ev, self) {
+  },
+
   _onmousedown : function(ev, self) {
     $.addEvent(window, "mousemove", function(e) {
       self._onmousemove(e, self);
@@ -148,9 +158,12 @@ var Draggable = Class.extend({
       self._onmouseup(e, self);
     });
 
-    self._active = true;
-    self._clickX = $.mousePosX(ev);
-    self._clickY = $.mousePosY(ev);
+    self._active  = true;
+    self._dragged = false;
+    self._clickX  = $.mousePosX(ev);
+    self._clickY  = $.mousePosY(ev);
+
+    self.ondragstart(ev, self, self._position);
   },
 
   _onmousemove : function(ev, self) {
@@ -160,6 +173,10 @@ var Draggable = Class.extend({
 
       self._root.style.left = (self._x) + "px";
       self._root.style.top  = (self._y) + "px";
+
+      self._dragged = true;
+
+      self.ondragmove(ev, self, self._position);
     }
   },
 
@@ -172,6 +189,12 @@ var Draggable = Class.extend({
 
     $.removeEvent(window, "mouseup",   self._onmouseup);
     $.removeEvent(window, "mousemove", self._onmousemove);
+
+    self.ondragstop(ev, self, self._position);
+  },
+
+  dragged : function() {
+    return this._dragged;
   }
 
 });

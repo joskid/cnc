@@ -43,11 +43,6 @@ var CanvasElement = Class.extend({
 
   },
 
-  move : function(x, y) {
-    this._canvas.style.top  = (y + "px");
-    this._canvas.style.left = (x + "px");
-  },
-
   append : function(img, x, y) {
     this._context.drawImage(img, x, y);
   },
@@ -57,13 +52,8 @@ var CanvasElement = Class.extend({
     return this._canvas.toDataURL(type);
   },
 
-  move : function(x, y) {
-    this._canvas.style.top = (y) + 'px';
-    this._canvas.style.left = (x) + 'px';
-  },
-
-  setClass : function(cname) {
-    this._canvas.className = cname;
+  get : function() {
+    return this._canvas;
   }
 
 });
