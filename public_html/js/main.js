@@ -623,6 +623,7 @@
 
         var file;
 
+        // Load sounds
         for ( var s in this._sounds ) {
           if ( this._sounds.hasOwnProperty(s) ) {
             for ( var i in this._sounds[s] ) {
@@ -636,6 +637,7 @@
           }
         }
 
+        // Load tiles
         for ( var t in this._tiles ) {
           if ( this._tiles.hasOwnProperty(t) ) {
             file = "/img/" + this._tiles[t] + ".png";
@@ -648,9 +650,11 @@
           }
         }
 
-        callback(); // TODO
-
         console.groupEnd();
+
+        setTimeout(function() {
+          callback(); // TODO
+        }, 500);
       };
     })(),
 
@@ -979,6 +983,8 @@
       _Resources.destroy();
       _Resources = undefined;
     }
+
+    _Cache = null;
 
     window.onload   = undefined;
     window.onunload = undefined;
