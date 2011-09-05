@@ -51,8 +51,9 @@ var CanvasElement = Class.extend({
 
   rotate : function(deg) {
     // FIXME
+    //var rot = ($.degToRad(deg));
     //this._context.save();
-    //this._context.rotate(0.5);
+    //this._context.rotate(rot);
     //this._context.restore();
 
     var deg_str          = deg + "";

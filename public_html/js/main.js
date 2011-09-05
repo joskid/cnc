@@ -104,6 +104,11 @@
     console.groupEnd();
   }
 
+  /**
+   * Move selected MapObject(s)
+   * @param  Array   pos    Position coordinates
+   * @return void
+   */
   function MoveMapObjects(pos) {
     if ( _Selected.length ) {
       console.group("MoveMapObjects()");
@@ -408,7 +413,14 @@
      * @return void
      */
     move : function(x, y) {
-      this.rotate(x, y);
+      var x1 = this._x,
+          y1 = this._y,
+          x2 = x,
+          y2 = y;
+
+      //var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
+
+      this.rotate(x1, y1, x2, y2);
 
       this._x = parseInt(x, 10) - (this._width / 2);
       this._y = parseInt(y, 10) - (this._height / 2);
@@ -417,22 +429,9 @@
       this._canvas.get().style.left = (this._x + "px");
     },
 
-    rotate : function(x, y) {
-      var x1 = this._x;
-      var y1 = this._y;
-      var x2 = x;
-      var y2 = y;
-
-      var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
+    rotate : function(x1, y1, x2, y2) {
       var deg      = Math.atan2((y2-y1),(x2-x1)) * (180 / Math.PI);
-      var rotation = this._angle + deg;
-
-      if ( x < 0 )
-        rotation += 180;
-      else if ( y < 0 )
-        rotation += 360;
-
-      var degs = $.degToRad(rotation);
+      var rotation = (this._angle + deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
 
       this._canvas.rotate(rotation);
     },
@@ -502,7 +501,7 @@
      * @return Mixed
      */
     getTile : function(tile) {
-      console.log("ResourceCore::getResource()", tile);
+      console.log("ResourceCore::getTile()", tile);
       if ( this._tiles[tile] ) {
         var img = new Image();
         img.src = this._tiles[tile];
