@@ -70,15 +70,17 @@
   ];
 
   // Sound support
-  var SOUND_TYPE  = "";
-  var SOUND_TYPES = {
+  var SOUND_ENABLED = true;
+  var SOUND_TYPE    = "";
+  var SOUND_TYPES   = {
     "ogg" : 'audio/ogg; codecs="vorbis"', // OGG
     "mp3" : 'audio/mpeg'                  // MP3
   };
 
   // Video support
-  var VIDEO_TYPE = "";
-  var VIDEO_TYPES = [
+  var VIDEO_ENABLED = true;
+  var VIDEO_TYPE    = "";
+  var VIDEO_TYPES   = [
 
   ];
 
@@ -713,9 +715,11 @@
      * @return void
      */
     play : function(snd) {
-      var res = _Resources.getSound(snd);
-      if ( res ) {
-        res.play();
+      if ( SOUND_ENABLED ) {
+        var res = _Resources.getSound(snd);
+        if ( res ) {
+          res.play();
+        }
       }
     }
 
