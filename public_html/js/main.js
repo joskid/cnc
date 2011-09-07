@@ -626,15 +626,17 @@
         var file;
 
         // Load sounds
-        for ( var s in this._sounds ) {
-          if ( this._sounds.hasOwnProperty(s) ) {
-            for ( var i in this._sounds[s] ) {
-              file  = "/snd/" + SOUND_TYPE + "/" + this._sounds[s][i] + "." + SOUND_TYPE;
-              console.log("Sound", file);
-              if ( !_Cache.sounds[s] ) {
-                _Cache.sounds[s] = [];
+        if ( SOUND_ENABLED ) {
+          for ( var s in this._sounds ) {
+            if ( this._sounds.hasOwnProperty(s) ) {
+              for ( var i in this._sounds[s] ) {
+                file  = "/snd/" + SOUND_TYPE + "/" + this._sounds[s][i] + "." + SOUND_TYPE;
+                console.log("Sound", file);
+                if ( !_Cache.sounds[s] ) {
+                  _Cache.sounds[s] = [];
+                }
+                _Cache.sounds[s][i] = new Audio(file);
               }
-              _Cache.sounds[s][i] = new Audio(file);
             }
           }
         }
@@ -943,6 +945,8 @@
     console.group("Configuration");
     console.log("Server", WEBSOCKET_URI);
     console.log("Interval", LOOP_INTERVAL);
+    console.log("Sound enabled", SOUND_ENABLED ? "true" :"false");
+    console.log("Video enabled", VIDEO_ENABLED ? "true" : "false");
     console.groupEnd();
 
     $.disableContext(document.getElementById("Main"));
