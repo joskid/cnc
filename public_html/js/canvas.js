@@ -95,6 +95,15 @@ var CanvasElement = Class.extend({
     this._context.drawImage(img, x, y);
   },
 
+  appendString : function(str, x, y) {
+    var self = this;
+    var img = new Image();
+    img.onload = function() {
+      self.append(img, 0, 0);
+    };
+    img.src = str;
+  },
+
   save : function(type) {
     type = type || "image/png";
     return this._canvas.toDataURL(type);

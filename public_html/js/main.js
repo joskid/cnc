@@ -308,12 +308,7 @@
       }
 
       // Insert Map background to canvas
-      var img = new Image();
-      img.onload = function() {
-        self._canvas.append(img, 0, 0);
-      };
-      img.src = canvas.save();
-
+      self._canvas.appendString(canvas.save(), 0, 0);
       canvas.destroy();
       delete canvas;
 
