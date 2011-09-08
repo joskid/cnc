@@ -85,6 +85,25 @@
   ];
 
   /////////////////////////////////////////////////////////////////////////////
+  // RESOURCES
+  /////////////////////////////////////////////////////////////////////////////
+
+  var RESOURCE_TILES_COUNT = 1;
+  var RESOURCE_TILES = {
+    "desert" : "tile_desert"
+  };
+
+  var RESOURCE_SOUNDS_COUNT = 16;
+  var RESOURCE_SOUNDS = {
+    "unit_move"       : ["ackno", "affirm1", "noprob", "movout1", "ritaway", "ugotit", "yessir1"],
+    "unit_toggle"     : ["await1", "ready", "unit1"],
+    "unit_attack"     : ["mgun2"],
+    "unit_die"        : ["yell1", "nuyell5", "nuyell4", "nuyell3", "nuyell1"],
+    "building_toggle" : [],
+    "building_action" : []
+  };
+
+  /////////////////////////////////////////////////////////////////////////////
   // HELPER FUNCTIONS
   /////////////////////////////////////////////////////////////////////////////
 
@@ -580,19 +599,6 @@
    */
   var ResourceCore = Class.extend({
 
-    _tiles : {
-      "desert" : "tile_desert"
-    },
-
-    _sounds : {
-      "unit_move"       : ["ackno", "affirm1", "noprob", "movout1", "ritaway", "ugotit", "yessir1"],
-      "unit_toggle"     : ["await1", "ready", "unit1"],
-      "unit_attack"     : ["mgun2"],
-      "unit_die"        : ["yell1", "nuyell5", "nuyell4", "nuyell3", "nuyell1"],
-      "building_toggle" : [],
-      "building_action" : []
-    },
-
     /**
      * Constructor
      * @return void
@@ -615,34 +621,76 @@
      * @return void
      */
     preload : (function() {
+
+      var _total  = 0;
+      var _loaded = 0;
+      var _errors = 0;
+      var _interval = null;
+
+      function _checkProgress() {
+        return (_loaded >= _total);
+      }
+
       return function(callback) {
         console.group("ResourceManager::preload()");
 
-        var file;
+        var file, aud;
+
+        _total += RESOURCE_TILES_COUNT;
 
         // Load sounds
         if ( SOUND_ENABLED ) {
-          for ( var s in this._sounds ) {
-            if ( this._sounds.hasOwnProperty(s) ) {
-              for ( var i in this._sounds[s] ) {
-                file  = "/snd/" + SOUND_TYPE + "/" + this._sounds[s][i] + "." + SOUND_TYPE;
+          _total += RESOURCE_SOUNDS_COUNT;
+
+          for ( var s in RESOURCE_SOUNDS ) {
+            if ( RESOURCE_SOUNDS.hasOwnProperty(s) ) {
+              for ( var i in RESOURCE_SOUNDS[s] ) {
+                file  = "/snd/" + SOUND_TYPE + "/" + RESOURCE_SOUNDS[s][i] + "." + SOUND_TYPE;
                 console.log("Sound", file);
                 if ( !_Cache.sounds[s] ) {
                   _Cache.sounds[s] = [];
                 }
-                _Cache.sounds[s][i] = new Audio(file);
+
+                try {
+                  aud = new Audio(file);
+                  aud.type = SOUND_TYPE;
+                  aud.preload = "auto";
+                  aud.controls = false;
+                  aud.autobuffer = true;
+                  aud.loop = false;
+                  aud.load();
+
+                  _Cache.sounds[s][i] = aud;
+
+                  console.info("Loaded sound", file);
+                } catch ( aex ) {
+                  console.error("Failed loading sound", file);
+
+                  _errors++;
+                }
+
+                _loaded++;
               }
             }
           }
         }
 
         // Load tiles
-        for ( var t in this._tiles ) {
-          if ( this._tiles.hasOwnProperty(t) ) {
-            file = "/img/" + this._tiles[t] + ".png";
+
+        for ( var t in RESOURCE_TILES ) {
+          if ( RESOURCE_TILES.hasOwnProperty(t) ) {
+            file = "/img/" + RESOURCE_TILES[t] + ".png";
             console.log("Image", file);
 
             var img = new Image();
+            img.onload = function() {
+              console.info("Loaded image", this.src);
+              _loaded++;
+            };
+            img.onerror = function() {
+              console.error("Failed loading image", this.src);
+              _errors++;
+            };
             img.src = file;
 
             _Cache.tiles[t] = img;
@@ -651,9 +699,14 @@
 
         console.groupEnd();
 
-        setTimeout(function() {
-          callback(); // TODO
-        }, 500);
+        _interval = setInterval(function() {
+          if ( _checkProgress() ) {
+            callback();
+            clearInterval(_interval);
+            _interval = null;
+          }
+        }, 10);
+
       };
     })(),
 
