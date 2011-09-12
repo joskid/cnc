@@ -433,7 +433,7 @@
    * MapObject - Creates a Map Object
    * @class
    */
-  var MapObject = Class.extend({
+  var MapObject = CanvasObject.extend({
 
     _id         : -1,
     _x          : -1,
@@ -468,6 +468,7 @@
       this._x       = parseInt(x, 10);
       this._y       = parseInt(y, 10);
       this._gfx     = gfx;
+
       this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height);
 
       console.group("MapObject::init()");
@@ -475,10 +476,11 @@
       console.log("Position X", this._x);
       console.log("Position Y", this._y);
       console.log("Graphics",   this._gfx);
-      console.log("Canvas",     this._canvas.get());
       console.groupEnd();
 
       _Objects++;
+
+      this._super(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height, this._gfx);
     },
 
     /**
@@ -488,7 +490,7 @@
     destroy : function() {
       console.log("MapObject::destroy()");
 
-      this._canvas.destroy();
+      this._super();
     },
 
     /**
@@ -498,17 +500,11 @@
     insert : function() {
       var self = this;
 
-      // Set CSS
-      var canvas = this._canvas.get();
-      canvas.className      = "MapObject";
-      canvas.id             = "MapObject" + this._id;
-      canvas.style.top      = (this._y) + 'px';
-      canvas.style.left     = (this._x) + 'px';
-
-      this._canvas.setImage("/img/" + this._gfx + ".png", true);
+      this.setRotation(this._angle);
+      this.setPosition(this._x, this._y);
 
       // Add events
-      $.addEvent(this._canvas.get(), "click", function(ev) {
+      $.addEvent(this.getCanvas(), "click", function(ev) {
         if ( $.mouseButton(ev) == 1 ) {
           SelectMapObjects(self);
         }
@@ -523,7 +519,7 @@
     select : function(s) {
       if ( s !== undefined ) {
         this._selected = s;
-        console.log(this._selected ? "Selected" : "Unselected", this._id, this._canvas.get());
+        console.log(this._selected ? "Selected" : "Unselected", this._id, this.getCanvas());
 
         this._canvas.rectangle(this._selected);
       }
@@ -550,15 +546,14 @@
       this._x = parseInt(x, 10) - (this._width / 2);
       this._y = parseInt(y, 10) - (this._height / 2);
 
-      this._canvas.get().style.top  = (this._y + "px");
-      this._canvas.get().style.left = (this._x + "px");
+      this.setPosition(this._x, this._y);
     },
 
     rotate : function(x1, y1, x2, y2) {
       var deg      = Math.atan2((y2-y1),(x2-x1)) * (180 / Math.PI);
       var rotation = (this._angle + deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
 
-      this._canvas.rotate(rotation, this._selected);
+      this.setRotation(rotation);
     },
 
     /**
@@ -570,6 +565,8 @@
         var p = this._path.shift();
         this.move(p[0], p[1]);
       }
+
+      this._super(this._selected);
     },
 
     addPath : function(path, override) {
