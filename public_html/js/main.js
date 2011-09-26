@@ -29,7 +29,7 @@
     'WebSocket'      : (('WebSocket'      in window) && (window['WebSocket']      !== null))
   };
 
-  var LOOP_INTERVAL    = 333;
+  var LOOP_INTERVAL    = (1000 / 60);
   var TILE_SIZE        = 24;
   var MINIMAP_WIDTH    = 180;
   var MINIMAP_HEIGHT   = 180;
@@ -109,10 +109,12 @@
     },
 
     init : function() {
+
       console.group("Sounds::init()");
       if ( this._enabled ) {
         var s, t, codec;
 
+        // Check for supported audio codec
         var types = {
           "ogg" : 'audio/ogg; codecs="vorbis"', // OGG
           "mp3" : 'audio/mpeg'                  // MP3
@@ -135,16 +137,18 @@
           this._enabled = false;
         }
       }
+
       console.log("Enabled", this._enabled);
       console.log("Codec", this._codec, this._ext);
 
+      // Preload audio files
       if ( this._enabled ) {
         console.group("Preloading audio");
         for ( var i in this._preloaded ) {
           if ( this._preloaded.hasOwnProperty(i) ) {
             var src  = "/snd/" + this._codec + "/" + i + "." + this._ext;
 
-            console.log("Preloading", i, src);
+            console.log(i, src);
 
             s = new Audio(src);
             s.type = this._codec;
@@ -240,17 +244,32 @@
       if ( !this._running ) {
         var self = this;
 
+        // http://www.playmycode.com/blog/2011/08/building-a-game-mainloop-in-javascript/
         this._map.prepare(function() {
 
-          /*
-          if ( !self._interval ) {
-            self._interval = setInterval(function() {
-              self.loop();
-            }, LOOP_INTERVAL);
-          }
-          */
+          var t = (window.requestAnimationFrame       ||
+                   window.webkitRequestAnimationFrame ||
+                   window.mozRequestAnimationFrame    ||
+                   window.oRequestAnimationFrame      ||
+                   window.msRequestAnimationFrame     ||
+                   null);
 
-          self.loop();
+          if ( t ) {
+            //var canvas = self.getCanvas();
+            var frame = function() {
+              self.loop();
+
+              t(frame/*, canvas*/);
+            };
+
+            t(frame/*, canvas*/);
+          } else {
+            if ( !self._interval ) {
+              self._interval = setInterval(function() {
+                self.loop();
+              }, LOOP_INTERVAL);
+            }
+          }
 
           console.groupEnd();
         });
@@ -272,14 +291,16 @@
   var MapObject = CanvasObject.extend({
 
     _selected : false,
+    _angle    : 0.0,
 
     init : function(x, y) {
       console.group("MapObject::init()");
 
-      this._super(30, 30, x, y);
+      this._super(30, 30, x, y, this._angle);
 
+      this.__canvas.className    = "MapObject";
       this.__context.fillStyle   = "rgba(255,255,255,0.9)";
-      this.__context.strokeStyle = "rgba(100,100,100,0.9)";
+      this.__context.strokeStyle = "rgba(0,0,0,0.9)";
       this.__context.lineWidth   = 1;
 
       var self = this;
@@ -292,6 +313,8 @@
       console.log("Pos Y", y);
 
       console.groupEnd();
+
+      this.render();
     },
 
     destroy : function() {
@@ -301,16 +324,22 @@
     render : function() {
       var self = this;
 
-      this._super(function(c, w, h, x, y) {
-        c.arc((w / 2), (h / 2), 10, (Math.PI * 2), false);
-        c.fill();
+      this._super(function(c, w, h, x, y)
+      {
+        c.beginPath();
+          c.arc((w / 2), (h / 2), 10, (Math.PI * 2), false);
+          c.fill();
+          if ( self._selected ) {
+            c.stroke();
+          }
+        c.closePath();
 
-        c.moveTo((w / 2), (h / 2));
-        c.lineTo(0, (h / 2));
-
-        if ( self._selected ) {
+        c.beginPath();
+          c.moveTo((w / 2), (h / 2));
+          c.lineTo(0, (h / 2));
           c.stroke();
-        }
+        c.closePath();
+
       });
     },
 
@@ -318,27 +347,34 @@
       console.log("MapObject::select()", this);
 
       this._selected = true;
+
+      this.render();
     },
 
     unselect : function() {
       console.log("MapObject::unselect()", this);
 
       this._selected = false;
+
+      this.render();
     },
 
     move : function(pos) {
       var x1 = this.getPosition()[0];
       var y1 = this.getPosition()[1];
-      var x2 = pos.x - (this.getDimension()[0] / 2);
-      var y2 = pos.y - (this.getDimension()[1] / 2);
+      var x2 = pos.x;
+      var y2 = pos.y;
 
-      var deg      = Math.atan2((y2-y1),(x2-x1)) * (180 / Math.PI);
+      var deg      = Math.atan2((y2-y1), (x2-x1)) * (180 / Math.PI);
       var rotation = (deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
+      var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
 
-      console.log("MapObject::move()", pos, x2, y2, rotation, deg);
+      console.log("MapObject::move()", pos, x2, y2, rotation, "(" + deg + ")", distance);
 
       this.setPosition(x2, y2, true);
       this.setDirection(rotation);
+
+      this.render();
     },
 
     onClick : function(ev) {
@@ -545,11 +581,14 @@
 
         console.log("Inserted", i, "object(s)");
 
-        // Run callback to continue
-        callback();
-
+        // Re-init map stuff
         self.onResize();
         self.onDragMove(null, {x : self._posX, y : self._posY});
+
+        // Run callback to continue
+        setTimeout(function() {
+          callback();
+        }, 0);
       };
       img.src = "/img/tile_desert.png";
 
@@ -557,9 +596,11 @@
     },
 
     render : function() {
+      /*
       for ( var i = 0; i < this._objects.length; i++ ) {
         this._objects[i].render();
       }
+      */
 
       //this._super(); // Do not call!
     }

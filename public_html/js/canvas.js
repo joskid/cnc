@@ -11,7 +11,7 @@ var CanvasObject = Class.extend({
   __height  : -1,
   __x       : 0,
   __y       : 0,
-  __angle   : 0,
+  __angle   : 0.0,
   __canvas  : null,
   __context : null,
 
@@ -72,8 +72,8 @@ var CanvasObject = Class.extend({
     this.__y = parseInt(y, 10);
 
     if ( set ) {
-      this.__canvas.style.left = (x) + "px";
-      this.__canvas.style.top  = (y) + "px";
+      this.__canvas.style.left = (x - (this.getDimension()[0] / 2)) + "px";
+      this.__canvas.style.top  = (y - (this.getDimension()[1] / 2)) + "px";
     }
   },
 
@@ -83,7 +83,9 @@ var CanvasObject = Class.extend({
   },
 
   setDirection : function(d) {
-    this.__angle = parseFloat(d, 10);
+    if ( !isNaN(d) && d ) {
+      this.__angle = parseFloat(d);
+    }
   },
 
   /// GETTERS
