@@ -5,105 +5,99 @@
  * @package CnC
  */
 
-/**
- * CanvasObject - Canvas abstraction class
- * @class
- */
 var CanvasObject = Class.extend({
 
+  __width   : -1,
+  __height  : -1,
+  __x       : 0,
+  __y       : 0,
+  __angle   : 0,
+  __canvas  : null,
+  __context : null,
 
-  __canvas    : null,
-  __context   : null,
-  __image     : null,
-  __width     : null,
-  __height    : null,
-  __x         : 0,
-  __y         : 0,
-  __rotation  : null,
+  /// MAGICS
 
-  init : function(type, root, width, height, image) {
-    this.__width  = parseInt(width, 10);
-    this.__height = parseInt(height, 10);
+  init : function(w, h, x, y, a) {
+    this.setDimension(w, h);
+    this.setPosition(x, y);
+    this.setDirection(a);
 
+    var canvas            = document.createElement('canvas');
+    var context           = canvas.getContext('2d');
+    canvas.width          = (this.__width);
+    canvas.height         = (this.__height);
+    canvas.style.position = "absolute";
+    canvas.style.left     = (this.__x) + "px";
+    canvas.style.top      = (this.__y) + "px";
 
-    var img  = new Image();
-    img.src = "/img/" + image + ".png";
-
-    var canvas             = document.createElement("canvas");
-    canvas.width           = this.__width;
-    canvas.height          = this.__height;
-    canvas.className       = "MapObject";
-    canvas.style.top       = this.__x + "px";
-    canvas.style.left      = this.__y + "px";
-
-    if ( root ) {
-      root = document.getElementById(root);
-      root.appendChild(canvas);
-    } else {
-      root = document.createDocumentFragment();
-      root.appendChild(canvas);
-    }
-
-    this.__canvas   = canvas;
-    this.__context  = canvas.getContext(type);
-    this.__image    = img;
-
-    // Defaults
-    this.__context.fillStyle   = "rgba(255,255,255,0.5)";
-    this.__context.strokeStyle = "rgba(0,0,0,0.5)";
-    this.__context.lineWidth   = 1;
-    this.__context.font        = "12px Times New Roman";
+    this.__canvas = canvas;
+    this.__context = context;
   },
 
-  destroy : function() {
-    if ( this.__canvas ) {
-      this.__canvas.parentNode.removeChild(this.__canvas);
-    }
+  /// METHODS
 
-    this.__context = null;
-    this.__canvas  = null;
-  },
+  render : function(callback) {
+    callback = callback || function() {};
 
-  render : function(en) {
     var w = this.__width;
     var h = this.__height;
     var x = this.__x;
     var y = this.__y;
     var c = this.__context;
 
-    // Move
-    this.__canvas.style.left      = x + "px";
-    this.__canvas.style.top       = y + "px";
-
     // Clear
-    c.clearRect(0, 0, this.__canvas.width, this.__canvas.height);
+    c.clearRect(0, 0, w, h);
     c.save();
 
-    // Rotate
+    // Transform
     c.translate(w / 2, h / 2);
-    c.rotate(this.__rotation);
+    c.rotate(this.__angle);
     c.translate(-(w / 2), -(h / 2));
 
-    // Render
-    if ( en ) {
-      c.arc((w / 2), (h / 2), 15, (Math.PI * 2), false);
-      c.fill();
-      c.stroke();
-    }
+    // Draw
+    callback(c, w, h, x, y);
 
-    c.drawImage(this.__image, 0, 0);
-
-    // Save
+    // Display
     c.restore();
   },
 
-  setPosition : function(x, y) {
-    this.__x = parseInt(x, 10);
-    this.__y = parseInt(y, 10);
+  drawImage : function(img, x, y) {
+    this.__context.drawImage(img, x, y);
   },
 
-  setRotation : function(deg) {
-    this.__rotation = ($.degToRad(deg));
+  /// SETTERS
+
+  setPosition : function(x, y, set) {
+    this.__x = parseInt(x, 10);
+    this.__y = parseInt(y, 10);
+
+    if ( set ) {
+      this.__canvas.style.left = (x) + "px";
+      this.__canvas.style.top  = (y) + "px";
+    }
+  },
+
+  setDimension : function(w, h) {
+    this.__width = parseInt(w, 10);
+    this.__height = parseInt(h, 10);
+  },
+
+  setDirection : function(d) {
+    this.__angle = parseFloat(d, 10);
+  },
+
+  /// GETTERS
+
+  getPosition : function() {
+    return [this.__x, this.__y];
+  },
+
+  getDimension : function() {
+    return [this.__width, this.__height];
+  },
+
+  getDirection : function() {
+    return this.__angle;
   },
 
   getCanvas : function() {
@@ -112,147 +106,6 @@ var CanvasObject = Class.extend({
 
   getContext : function() {
     return this.__context;
-  }
-
-});
-
-/**
- * CanvasElement - Create a Canvas element
- * @class
- */
-var CanvasElement = Class.extend({
-
-  _canvas   : null,
-  _context  : null,
-  _image    : null,
-  _width    : -1,
-  _height   : -1,
-
-  init : function(type, root, width, height) {
-    this._width  = parseInt(width, 10);
-    this._height = parseInt(height, 10);
-    var canvas             = document.createElement("canvas");
-    canvas.width           = this._width;
-    canvas.height          = this._height;
-
-    if ( root ) {
-      root = document.getElementById(root);
-      root.appendChild(canvas);
-    } else {
-      root = document.createDocumentFragment();
-      root.appendChild(canvas);
-    }
-
-    this._canvas   = canvas;
-    this._context  = canvas.getContext(type);
-
-    // Defaults
-    this._context.fillStyle   = "#00ff00";
-    this._context.strokeStyle = "#00ff00";
-    this._context.lineWidth   = 1;
-    this._context.font        = "20px Times New Roman";
-  },
-
-  destroy : function() {
-    this._canvas = null;
-  },
-
-  clear : function() {
-    this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
-  },
-
-  rotate : function(deg, en) {
-    var rot = ($.degToRad(deg));
-
-
-    this.clear();
-    this._context.save();
-    this._context.translate(this._width / 2, this._height / 2);
-    this._context.rotate(rot);
-    this._context.translate(-(this._width / 2), -(this._height / 2));
-
-    /*
-    if ( en ) {
-      this.highlight();
-    }
-    */
-    this.redraw();
-    this._context.restore();
-
-    /* FIXME
-    this.clear();
-    this._context.translate(this._width / 2, this._height / 2);
-    this._context.rotate(rot);
-    this._context.translate(-this._width / 2, -this._height / 2);
-    this.redraw();
-    */
-
-    /*
-    var deg_str          = deg + "";
-    var rotate_transform = "rotate(" + deg + "deg)";
-
-    this._canvas.style["rotation"] = deg_str + "deg"; // CSS3
-    this._canvas.style.MozTransform = rotate_transform; // Moz
-    this._canvas.style.OTransform = rotate_transform; // Opera
-    this._canvas.style.WebkitTransform = rotate_transform; // Webkit/Safari/Chrome
-    */
-  },
-
-  highlight : function() {
-    this._context.strokeStyle = "#00ff00";
-    this._context.beginPath();
-    this._context.rect(0, 0, this._canvas.width, this._canvas.height);
-    this._context.closePath();
-    this._context.stroke();
-  },
-
-  rectangle : function(en) {
-    this.clear();
-    this.redraw();
-
-    if ( en ) {
-      this.highlight();
-    }
-  },
-
-  append : function(img, x, y) {
-    this._context.drawImage(img, x, y);
-  },
-
-  appendString : function(str, x, y) {
-    var self = this;
-    var img = new Image();
-    img.onload = function() {
-      self.append(img, 0, 0);
-    };
-    img.src = str;
-  },
-
-  save : function(type) {
-    type = type || "image/png";
-    return this._canvas.toDataURL(type);
-  },
-
-  redraw : function() {
-    if ( this._image ) {
-      this.append(this._image, 0, 0);
-    }
-  },
-
-  setImage : function(path, draw) {
-    var self = this;
-
-    var img = new Image();
-    img.onload = function() {
-      self.append(img, 0, 0);
-    };
-    img.src = path;
-
-    this._image = img;
-  },
-
-  get : function() {
-    return this._canvas;
   }
 
 });

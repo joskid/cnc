@@ -19,6 +19,7 @@ require "../main.php";
     <!-- Stylesheets -->
     <link rel="stylesheet" type="text/css" href="/css/main.css" />
 
+
     <!-- JavaScript -->
     <script type="text/javascript" src="/js/vendor.js"></script>
     <script type="text/javascript" src="/js/utils.js"></script>
@@ -48,7 +49,7 @@ require "../main.php";
 
     <!-- Main Container -->
     <div id="Main">
-      <div id="MainContainer"><!-- Canvas --></div>
+      <div id="Map"><!-- Canvas --></div>
     </div>
   </body>
 </html>

@@ -1,3 +1,4 @@
+
 /**
  * Main CnC Libraries etc
  *
@@ -10,906 +11,560 @@
   // GLOBALS
   /////////////////////////////////////////////////////////////////////////////
 
-  var _Inited     = false;
-
-  // Class instance references
-  var _Core       = null;
-  var _Resources  = null;
-  var _Sound      = null;
-
-  // Object helpers
-  var _Selected   = [];
-  var _Objects    = 0;
-  var _Cache      = {
-    tiles  : {},
-    sounds : {}
-  };
+  var _Main = null;
+  var _Sound = null;
 
   /////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
   /////////////////////////////////////////////////////////////////////////////
 
-  // Network internals
-  var WEBSOCKET_URI    = "ws://localhost:8888";
-
-  // Game internals
-  var LOOP_INTERVAL    = 500;
-  var RESIZE_INTERVAL  = 50;
-  var TILE_SIZE        = 24;
-  var MARGIN_LEFT      = 10;
-  var MARGIN_TOP       = 10;
-  var MINIMAP_WIDTH    = 180;
-  var MINIMAP_HEIGHT   = 180;
-
-  // Browser support
-  var SUPPORT_CANVAS   = (!!document.createElement('canvas').getContext);
-  var SUPPORT_LSTORAGE = (('localStorage' in window) && window['localStorage'] !== null);
-  var SUPPORT_SSTORAGE = (('sessionStorage' in window) && window['sessionStorage'] !== null);
-  var SUPPORT_GSTORAGE = (('globalStorage' in window) && window['globalStorage'] !== null);
-  var SUPPORT_DSTORAGE = (('openDatabase' in window) && window['openDatabase'] !== null);
-  var SUPPORT_SOCKET   = ('WebSocket' in window && window['WebSocket'] !== null);
-  var SUPPORT_VIDEO    = (!!document.createElement('video').canPlayType);
-  var SUPPORT_AUDIO    = (!!document.createElement('audio').canPlayType);
-
-  // DOM Elements
-  var MAIN_CONTAINER     = "Main";
-  var CANVAS_CONTAINER   = "MainContainer";
-  var MINIMAP_CONTAINER  = "MiniMap";
-  var MINIMAP_RECTANGLE  = "MiniMapRect";
-
-  // Canvas support
-  var CANVAS_TYPE      = "";
-  var CANVAS_TYPES = [
-    /*
-    "moz-webgl",          // Firefox
-    "webkit-3d",          // Webkit
-    "experimental-webgl", // Misc
-    "3d",                 // Test
-    */
-    "2d"                  // Default fallback
-  ];
-
-  // Sound support
-  var SOUND_ENABLED = true;
-  var SOUND_TYPE    = "";
-  var SOUND_TYPES   = {
-    "ogg" : 'audio/ogg; codecs="vorbis"', // OGG
-    "mp3" : 'audio/mpeg'                  // MP3
+  var SUPPORT = {
+    'canvas'         : (!!document.createElement('canvas').getContext),
+    'audio'          : (!!document.createElement('audio').canPlayType),
+    'video'          : (!!document.createElement('video').canPlayType),
+    'localStorage'   : (('localStorage'   in window) && (window['localStorage']   !== null)),
+    'sessionStorage' : (('sessionStorage' in window) && (window['sessionStorage'] !== null)),
+    'globalStorage'  : (('globalStorage'  in window) && (window['globalStorage']  !== null)),
+    'openDatabase'   : (('openDatabase'   in window) && (window['openDatabase']   !== null)),
+    'WebSocket'      : (('WebSocket'      in window) && (window['WebSocket']      !== null))
   };
 
-  // Video support
-  var VIDEO_ENABLED = true;
-  var VIDEO_TYPE    = "";
-  var VIDEO_TYPES   = [
-
-  ];
+  var LOOP_INTERVAL    = 333;
+  var TILE_SIZE        = 24;
+  var MINIMAP_WIDTH    = 180;
+  var MINIMAP_HEIGHT   = 180;
 
   /////////////////////////////////////////////////////////////////////////////
   // RESOURCES
   /////////////////////////////////////////////////////////////////////////////
 
-  var RESOURCE_TILES_COUNT = 1;
-  var RESOURCE_TILES = {
-    "desert" : "tile_desert"
-  };
+  var RESOURCES = {
 
-  var RESOURCE_SOUNDS_COUNT = 16;
-  var RESOURCE_SOUNDS = {
-    "unit_move"       : ["ackno", "affirm1", "noprob", "movout1", "ritaway", "ugotit", "yessir1"],
-    "unit_toggle"     : ["await1", "ready", "unit1"],
-    "unit_attack"     : ["mgun2"],
-    "unit_die"        : ["yell1", "nuyell5", "nuyell4", "nuyell3", "nuyell1"],
-    "building_toggle" : [],
-    "building_action" : []
   };
 
   /////////////////////////////////////////////////////////////////////////////
   // HELPER FUNCTIONS
   /////////////////////////////////////////////////////////////////////////////
 
-  /**
-   * Select MapObject(s)
-   * @param  Mixed   o    Either an array or Object
-   * @return void
-   */
-  function SelectMapObjects(o) {
-    var i;
+  var ObjectAction = (function() {
+    var _Selected = [];
 
-    console.group("SelectMapObjects()");
-
-    // Unselect old objects
-    for ( i = 0; i < _Selected.length; i++ ) {
-      _Selected[i].select(false);
-    }
-
-    // Now figure out what to select
-    if ( o instanceof MapObject ) {
-      _Selected = [o];
-    } else if ( o instanceof Array ) {
-      _Selected = o;
-    } else {
-      _Selected = [];
-    }
-
-    // Then select them
-    var selected = 0;
-    for ( i = 0; i < _Selected.length; i++ ) {
-      _Selected[i].select(true);
-      selected++;
-    }
-
-    if ( selected ) {
-      _Sound.play("unit_toggle");
-    }
-
-    console.groupEnd();
-  }
-
-  /**
-   * Move selected MapObject(s)
-   * @param  Array   pos    Position coordinates
-   * @return void
-   */
-  function MoveMapObjects(pos) {
-    if ( _Selected.length ) {
-      console.group("MoveMapObjects()");
-      console.log("Position", pos);
-      console.log("Objects", _Selected);
-
-      var selected = 0;
-      for ( i = 0; i < _Selected.length; i++ ) {
-        _Selected[i].addPath(pos, true);
-        selected++;
+    function SelectObjects(lst) {
+      for ( var i = 0; i < lst.length; i++ ) {
+        lst[i].select();
       }
+    }
 
-      if ( selected ) {
-        _Sound.play("unit_move");
+    function UnSelectObjects(lst) {
+      for ( var i = 0; i < lst.length; i++ ) {
+        lst[i].unselect();
+      }
+    }
+
+    function MoveObjects(lst, pos) {
+      for ( var i = 0; i < lst.length; i++ ) {
+        lst[i].move(pos);
+      }
+    }
+
+    return function (act) {
+      if ( act instanceof Array ) {
+        if ( _Selected.length ) {
+          UnSelectObjects(_Selected);
+        }
+
+        _Selected = act;
+
+        if ( _Selected.length ) {
+          SelectObjects(_Selected);
+
+          _Sound.play("await1");
+        }
+      } else if ( act instanceof Object ) {
+        if ( _Selected.length ) {
+          MoveObjects(_Selected, act);
+
+          _Sound.play("ackno");
+        }
+      }
+    };
+  })();
+
+  /////////////////////////////////////////////////////////////////////////////
+  // BASE CLASSES
+  /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Sounds -- Sound Manager
+   * @class
+   */
+  var Sounds = Class.extend({
+    _enabled   : SUPPORT.audio ? true : false,
+    _codec     : "mp3",
+    _ext       : "mp3",
+
+    _preloaded : {
+      "await1"   : null,
+      "ackno"    : null
+    },
+
+    init : function() {
+      console.group("Sounds::init()");
+      if ( this._enabled ) {
+        var s, t, codec;
+
+        var types = {
+          "ogg" : 'audio/ogg; codecs="vorbis"', // OGG
+          "mp3" : 'audio/mpeg'                  // MP3
+        };
+
+        for ( s in types ) {
+          if ( types.hasOwnProperty(s) ) {
+            t = types[s];
+            if ( (!!document.createElement('audio').canPlayType(t)) ) {
+              codec = s;
+              break;
+            }
+          }
+        }
+
+        if ( codec ) {
+          this._codec = codec;
+          this._ext   = codec;
+        } else {
+          this._enabled = false;
+        }
+      }
+      console.log("Enabled", this._enabled);
+      console.log("Codec", this._codec, this._ext);
+
+      if ( this._enabled ) {
+        console.group("Preloading audio");
+        for ( var i in this._preloaded ) {
+          if ( this._preloaded.hasOwnProperty(i) ) {
+            var src  = "/snd/" + this._codec + "/" + i + "." + this._ext;
+
+            console.log("Preloading", i, src);
+
+            s = new Audio(src);
+            s.type = this._codec;
+            s.preload = "auto";
+            s.controls = false;
+            s.autobuffer = true;
+            s.loop = false;
+            s.load();
+
+            this._preloaded[i] = s;
+          }
+        }
+        console.groupEnd();
       }
 
       console.groupEnd();
+    },
+
+    destroy : function() {
+      console.group("Sounds::destroy()");
+      for ( var i in this._preloaded ) {
+        if ( this._preloaded.hasOwnProperty(i) ) {
+          if ( this._preloaded[i] ) {
+            delete this._preloaded[i];
+            console.log("Unloaded", i);
+          }
+        }
+      }
+      console.groupEnd();
+    },
+
+    play : function(snd) {
+      if ( this._enabled ) {
+        if ( this._preloaded[snd] ) {
+          this._preloaded[snd].play();
+        }
+      }
     }
-  }
+  });
+
+  /**
+   * Game -- Main Class
+   * @class
+   */
+  var Game = Class.extend({
+
+    _interval : null,
+    _running  : false,
+    _map      : null,
+
+    init : function() {
+      console.group("Game::init()");
+
+      // Example data
+      this._map = new Map();
+
+      this._map.addObject((new MapObject(10, 10)));
+      this._map.addObject((new MapObject(10, 40)));
+      this._map.addObject((new MapObject(10, 70)));
+
+      console.groupEnd();
+    },
+
+    destroy : function() {
+      console.group("Game::destroy()");
+
+      if ( this._interval ) {
+        clearInterval(this._interval);
+        this._interval = null;
+      }
+
+      if ( this._map ) {
+        this._map.destroy();
+        this._map = null;
+      }
+
+      console.groupEnd();
+    },
+
+    resize : function() {
+      if ( this._map ) {
+        this._map.onResize();
+      }
+    },
+
+    loop : function() {
+      this._map.render();
+    },
+
+    run : function() {
+      console.group("Game::run()");
+
+      if ( !this._running ) {
+        var self = this;
+
+        this._map.prepare(function() {
+
+          /*
+          if ( !self._interval ) {
+            self._interval = setInterval(function() {
+              self.loop();
+            }, LOOP_INTERVAL);
+          }
+          */
+
+          self.loop();
+
+          console.groupEnd();
+        });
+
+        this._running = true;
+      }
+    }
+
+  });
 
   /////////////////////////////////////////////////////////////////////////////
   // ABSTRACT CLASSES
   /////////////////////////////////////////////////////////////////////////////
 
   /**
-   * MiniMap - Creates a MiniMap
+   * MapObject -- Map Object Base Class
    * @class
    */
-  var MiniMap = Class.extend({
+  var MapObject = CanvasObject.extend({
 
-    _mmap  : null,
-    _mmapr : null,
-    _main  : null,
-    _root  : null,
+    _selected : false,
 
-    /**
-     * Constructor
-     * @return void
-     */
-    init : function(main, root, map) {
-      console.log("MiniMap::init()");
+    init : function(x, y) {
+      console.group("MapObject::init()");
 
-      this._main  = main;
-      this._root  = root;
-      this._mmap  = document.getElementById(MINIMAP_CONTAINER);
-      this._mmapr = document.getElementById(MINIMAP_RECTANGLE);
+      this._super(30, 30, x, y);
+
+      this.__context.fillStyle   = "rgba(255,255,255,0.9)";
+      this.__context.strokeStyle = "rgba(100,100,100,0.9)";
+      this.__context.lineWidth   = 1;
+
+      var self = this;
+
+      $.addEvent(this.__canvas, "click", function(ev) {
+        self.onClick(ev);
+      }, true);
+
+      console.log("Pos X", x);
+      console.log("Pos Y", y);
+
+      console.groupEnd();
     },
 
-    /**
-     * Destructor
-     * @return void
-     */
     destroy : function() {
-      console.log("MiniMap::destroy()");
-
-      this._main  = null;
-      this._root  = null;
-      this._mmap  = null;
-      this._mmapr = null;
+      this.__context.onclick = null;
     },
 
-    /**
-     * Update MiniMap
-     * @return void
-     */
-    setPosition : function(x, y) {
-      var w  = this._root.offsetWidth;
-      var h  = this._root.offsetHeight;
-      var rx = -((MINIMAP_WIDTH / w) * x);
-      var ry = -((MINIMAP_HEIGHT / h) * y);
+    render : function() {
+      var self = this;
 
-      this._mmapr.style.left = (rx - 1) + 'px';
-      this._mmapr.style.top  = (ry - 1) + 'px';
+      this._super(function(c, w, h, x, y) {
+        c.arc((w / 2), (h / 2), 10, (Math.PI * 2), false);
+        c.fill();
+
+        c.moveTo((w / 2), (h / 2));
+        c.lineTo(0, (h / 2));
+
+        if ( self._selected ) {
+          c.stroke();
+        }
+      });
     },
 
-    /**
-     * Update MiniMap Size
-     * @return void
-     */
-    resize : function() {
+    select : function() {
+      console.log("MapObject::select()", this);
+
+      this._selected = true;
+    },
+
+    unselect : function() {
+      console.log("MapObject::unselect()", this);
+
+      this._selected = false;
+    },
+
+    move : function(pos) {
+      var x1 = this.getPosition()[0];
+      var y1 = this.getPosition()[1];
+      var x2 = pos.x - (this.getDimension()[0] / 2);
+      var y2 = pos.y - (this.getDimension()[1] / 2);
+
+      var deg      = Math.atan2((y2-y1),(x2-x1)) * (180 / Math.PI);
+      var rotation = (deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
+
+      console.log("MapObject::move()", pos, x2, y2, rotation, deg);
+
+      this.setPosition(x2, y2, true);
+      this.setDirection(rotation);
+    },
+
+    onClick : function(ev) {
+      $.preventDefault(ev);
+      $.stopPropagation(ev);
+
+      ObjectAction([this]);
+    }
+
+  });
+
+  /**
+   * Map -- Main Map Class
+   * @class
+   */
+  var Map = CanvasObject.extend({
+
+    _objects  : [],
+    _sizeX    : 100,
+    _sizeY    : 100,
+    _posX     : 0,
+    _posY     : 0,
+    _main     : null,
+    _root     : null,
+    _minimap  : null,
+    _minirect : null,
+
+    init : function() {
+      console.group("Map::init()");
+
+      var w = TILE_SIZE * this._sizeX;
+      var h = TILE_SIZE * this._sizeY;
+
+      this._super(w, h, 0, 0, 0);
+
+      this._main     = document.getElementById("Main");
+      this._root     = document.getElementById("Map");
+      this._minimap  = document.getElementById("MiniMap");
+      this._minirect = document.getElementById("MiniMapRect");
+
+      this._root.style.width = w + "px";
+      this._root.style.height = h + "px";
+
+      console.log("Size X", this._sizeX);
+      console.log("Size Y", this._sizeY);
+      console.log("Dimension", w, "x", h);
+      console.groupEnd();
+    },
+
+    destroy : function() {
+      for ( var i = 0; i < this._objects.length; i++ ) {
+        this._objects[i].destroy();
+        this._objects[i] = null;
+      }
+      this._objects = [];
+    },
+
+    addObject : function(o) {
+      if ( o instanceof MapObject ) {
+        this._objects.push(o);
+      }
+    },
+
+    onDragStart : function(ev, pos) {
+      this._root.style.top  = (this._posY) + "px";
+      this._root.style.left = (this._posX) + "px";
+    },
+
+    onDragStop : function(ev, pos) {
+      if ( pos === false ) {
+        ObjectAction([]);
+      } else {
+        this._posX = this._posX + pos.x;
+        this._posY = this._posY + pos.y;
+      }
+    },
+
+    onResize : function() {
+      // Resize minimap rectangle
       var scaleX = this._root.offsetWidth / this._main.offsetWidth;
       var scaleY = this._root.offsetHeight / this._main.offsetHeight;
 
       var rw = Math.round(MINIMAP_WIDTH / scaleX);
       var rh = Math.round(MINIMAP_HEIGHT / scaleY);
 
-      this._mmapr.style.width  = (rw) + 'px';
-      this._mmapr.style.height = (rh) + 'px';
+      this._minirect.style.width  = (rw) + 'px';
+      this._minirect.style.height = (rh) + 'px';
     },
 
-    /**
-     * Render the MiniMap
-     * @return void
-     */
-    render : function() {
+    onDragMove : function(ev, pos) {
+      // Move the map container
+      var x = this._posX + pos.x;
+      var y = this._posY + pos.y;
 
-    }
+      this._root.style.left = (x) + "px";
+      this._root.style.top  = (y) + "px";
 
-  });
+      // Move minimap rectangle
+      var w  = this._root.offsetWidth;
+      var h  = this._root.offsetHeight;
+      var rx = -((MINIMAP_WIDTH / w) * x);
+      var ry = -((MINIMAP_HEIGHT / h) * y);
 
-  /**
-   * Map - Creates a tiled Map
-   * @class
-   */
-  var Map = Class.extend({
-
-    _width   : -1,
-    _height  : -1,
-    _scheme  : null,
-    _objects : [],
-    _canvas  : null,
-    _pos     : [0, 0],
-
-    /**
-     * Constructor
-     * @return void
-     */
-    init : function(sx, sy, scheme) {
-      this._sizeX   = parseInt(sx, 10);
-      this._sizeY   = parseInt(sy, 10);
-      this._width   = parseInt(this._sizeX * TILE_SIZE, 10);
-      this._height  = parseInt(this._sizeY * TILE_SIZE, 10);
-      this._scheme  = scheme || "tropic";
-      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height);
-
-      console.group("Map::init()");
-      console.log("Container", CANVAS_CONTAINER);
-      console.log("Tiles",  this._sizeX, "x", this._sizeY);
-      console.log("Width",  this._width);
-      console.log("Height", this._height);
-      console.log("Scheme", this._scheme);
-      console.groupEnd();
+      this._minirect.style.left = (rx - 1) + 'px';
+      this._minirect.style.top  = (ry - 1) + 'px';
     },
 
-    /**
-     * Destructor
-     * @return void
-     */
-    destroy : function() {
-      console.log("Map::destroy()");
-
-      for ( var o in this._objects ) {
-        if ( o && this._objects.hasOwnProperty(o) ) {
-          this.removeObject(this._objects[o]);
-        }
-      }
-
-      this._canvas.destroy();
+    onObjectUpdate : function() {
+      // Update minimap
     },
 
-    /**
-     * Insert Map
-     * @return void
-     */
-    insert : function(drag) {
+    prepare : function(callback) {
+      console.group("Map::prepare()");
+
       var self = this;
 
-      var x, y;
+      var img = new Image();
       var px = 0;
       var py = 0;
 
-      // Create a temporary Canvas and export to PNG, then append to Map Canvas
-      var canvas = new CanvasElement(CANVAS_TYPE, null, this._width, this._height);
-      var tile = _Resources.getTile(this._scheme);
+      // Map dragging and clicking
+      var dragging = false;
+      var startX = 0;
+      var startY = 0;
 
-      for ( y = 0; y < this._sizeY; y++ ) {
-        px = 0;
-        for ( x = 0; x < this._sizeX; x++ ) {
-          // Insert tile
-          canvas.append(tile, px, py);
+      var mousemove = function(ev) {
+        if ( dragging ) {
+          var curX = $.mousePosX(ev);
+          var curY = $.mousePosY(ev);
 
-          px += TILE_SIZE;
+          var diffX = curX - startX;
+          var diffY = curY - startY;
+
+          self.onDragMove(ev, {x: diffX, y: diffY});
         }
-        py += TILE_SIZE;
-      }
+      };
 
-      // Insert Map background to canvas
-      self._canvas.appendString(canvas.save(), 0, 0);
-      canvas.destroy();
-      delete canvas;
+      var mouseup = function(ev) {
+        $.removeEvent(document, "mousemove", mousemove);
+        $.removeEvent(document, "mouseup", mouseup);
 
-      // Add events
-      $.addEvent(this._canvas.get(), "mouseup", function(ev) {
+        if ( dragging ) {
+          var curX = $.mousePosX(ev);
+          var curY = $.mousePosY(ev);
+
+          var diffX = curX - startX;
+          var diffY = curY - startY;
+
+          if ( diffX || diffY ) {
+            self.onDragStop(ev, {x: diffX, y: diffY});
+          } else {
+            self.onDragStop(ev, false);
+          }
+        }
+
+        dragging = false;
+      };
+
+      var mousedown = function(ev) {
         if ( $.mouseButton(ev) > 1 ) {
-          if ( !drag.dragged() ) {
-            SelectMapObjects(null);
-          }
+          $.addEvent(document, "mousemove", mousemove);
+          $.addEvent(document, "mouseup", mouseup);
+
+          startX = $.mousePosX(ev);
+          startY = $.mousePosY(ev);
+
+          self.onDragStart(ev, {x: startX, y: startY});
+
+          dragging = true;
         } else {
-          MoveMapObjects(self.getRelativePosition(ev));
+          var mX = Math.abs(self._posX - $.mousePosX(ev)) - 10;
+          var mY = Math.abs(self._posY - $.mousePosY(ev)) - 10;
+
+          ObjectAction({x: mX, y: mY});
+
+          dragging = false;
         }
-      });
-    },
-
-    /**
-     * Insert MapObject into Map
-     * @param  MapObject o
-     * @return bool
-     */
-    addObject : function(o) {
-      if ( o instanceof MapObject ) {
-        console.log("Map::adObject()", "Added", o);
-
-        this._objects.push(o);
-
-        o.insert(); // FIXME
-
-        return true;
-      }
-
-      return false;
-    },
-
-    /**
-     * Remove MapObject from Map
-     * @param  MapObject o
-     * @return bool
-     */
-    removeObject : function(o) {
-      var os = this._objects;
-      var i  = 0;
-      var l  = os.length;
-
-      console.log("Map::removeObject()", o);
-
-      for ( i; i < l; i++ ) {
-        if ( os[i] === o ) {
-          console.log("Map::removeObject()", "Removing", i);
-
-          this._objects.splice(i, 1);
-          return true;
-        }
-      }
-
-      return false;
-    },
-
-    /**
-     * Move the map
-     * @param  int   x    X-Coordinate
-     * @param  int   y    Y-Coordinate
-     * @return void
-     */
-    move : function(x, y) {
-      this._pos[0] += x;
-      this._pos[1] += y;
-
-      this._canvas.get().style.top  = (this._pos[1] + "px");
-      this._canvas.get().style.left = (this._pos[0] + "px");
-    },
-
-    /**
-     * Render Map
-     * @return void
-     */
-    render : function() {
-      var os = this._objects;
-      var i  = 0;
-      var l  = os.length;
-
-      for ( i; i < l; i++ ) {
-        os[i].render();
-      }
-    },
-
-    setPosition : function(x, y) {
-      this._pos = [x, y];
-    },
-
-    getRelativePosition : function(ev) {
-      var mX = $.mousePosX(ev) - MARGIN_LEFT;
-      var mY = $.mousePosY(ev) - MARGIN_TOP;
-      var rX = (mX - this._pos[0]);
-      var rY = (mY - this._pos[1]);
-
-      return [rX, rY];
-    }
-
-  });
-
-  /**
-   * MapObject - Creates a Map Object
-   * @class
-   */
-  var MapObject = CanvasObject.extend({
-
-    _id         : -1,
-    _x          : -1,
-    _y          : -1,
-    _angle      : 90,
-    _width      : 32,
-    _height     : 32,
-    _gfx        : null,
-    _canvas     : null,
-    _selected   : false,
-    _path       : [],
-    _health     : 100,
-    _shield     : 0,
-
-    // Default attributes
-    _attributes : {
-      player   : -1,
-      type     : 0,
-      health   : 100,
-      shield   : 0,
-      speed    : 1,
-      strength : 1,
-      price    : 100
-    },
-
-    /**
-     * Constructor
-     * @return void
-     */
-    init : function(x, y, gfx) {
-      this._id      = _Objects;
-      this._x       = parseInt(x, 10);
-      this._y       = parseInt(y, 10);
-      this._gfx     = gfx;
-
-      this._canvas  = new CanvasElement(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height);
-
-      console.group("MapObject::init()");
-      console.log("Index",      this._id);
-      console.log("Position X", this._x);
-      console.log("Position Y", this._y);
-      console.log("Graphics",   this._gfx);
-      console.groupEnd();
-
-      _Objects++;
-
-      this._super(CANVAS_TYPE, CANVAS_CONTAINER, this._width, this._height, this._gfx);
-    },
-
-    /**
-     * Destructor
-     * @return void
-     */
-    destroy : function() {
-      console.log("MapObject::destroy()");
-
-      this._super();
-    },
-
-    /**
-     * Insert MapObject
-     * @return void
-     */
-    insert : function() {
-      var self = this;
-
-      this.setRotation(this._angle);
-      this.setPosition(this._x, this._y);
-
-      // Add events
-      $.addEvent(this.getCanvas(), "click", function(ev) {
-        if ( $.mouseButton(ev) == 1 ) {
-          SelectMapObjects(self);
-        }
-      });
-
-    },
-
-    /**
-     * Set/Get Select MapObject
-     * @return void
-     */
-    select : function(s) {
-      if ( s !== undefined ) {
-        this._selected = s;
-        console.log(this._selected ? "Selected" : "Unselected", this._id, this.getCanvas());
-
-        this._canvas.rectangle(this._selected);
-      }
-
-      return this._selected;
-    },
-
-    /**
-     * Move the MapObject
-     * @param  int   x    X-Coordinate
-     * @param  int   y    Y-Coordinate
-     * @return void
-     */
-    move : function(x, y) {
-      var x1 = this._x,
-          y1 = this._y,
-          x2 = x,
-          y2 = y;
-
-      //var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
-
-      this.rotate(x1, y1, x2, y2);
-
-      this._x = parseInt(x, 10) - (this._width / 2);
-      this._y = parseInt(y, 10) - (this._height / 2);
-
-      this.setPosition(this._x, this._y);
-    },
-
-    rotate : function(x1, y1, x2, y2) {
-      var deg      = Math.atan2((y2-y1),(x2-x1)) * (180 / Math.PI);
-      var rotation = (this._angle + deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
-
-      this.setRotation(rotation);
-    },
-
-    /**
-     * Render MapObject
-     * @return void
-     */
-    render : function() {
-      if ( this._path.length ) {
-        var p = this._path.shift();
-        this.move(p[0], p[1]);
-      }
-
-      this._super(this._selected);
-    },
-
-    addPath : function(path, override) {
-      console.group("MapObject::addPath()");
-      console.log("MapObject Id", this._id);
-
-      if ( override === true ) {
-        this._path = [path];
-        console.log("New coordinate", path);
-      } else {
-        this._path.push(path);
-        console.log("Append coordinate", path, "total", this._path);
-      }
-
-      console.groupEnd();
-    }
-
-  });
-
-  /////////////////////////////////////////////////////////////////////////////
-  // CORE CLASSES
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * ResourceCore - Resource Manager
-   * @class
-   */
-  var ResourceCore = Class.extend({
-
-    /**
-     * Constructor
-     * @return void
-     */
-    init : function() {
-      console.group("ResourceCore::init()");
-      console.groupEnd();
-    },
-
-    /**
-     * Destructor
-     * @return void
-     */
-    destroy : function() {
-      console.log("ResourceCore::destroy()");
-    },
-
-    /**
-     * Preload data
-     * @return void
-     */
-    preload : (function() {
-
-      var _total  = 0;
-      var _loaded = 0;
-      var _errors = 0;
-      var _interval = null;
-
-      function _checkProgress() {
-        return (_loaded >= _total);
-      }
-
-      return function(callback) {
-        console.group("ResourceManager::preload()");
-
-        var file, aud;
-
-        _total += RESOURCE_TILES_COUNT;
-
-        // Load sounds
-        if ( SOUND_ENABLED ) {
-          _total += RESOURCE_SOUNDS_COUNT;
-
-          for ( var s in RESOURCE_SOUNDS ) {
-            if ( RESOURCE_SOUNDS.hasOwnProperty(s) ) {
-              for ( var i in RESOURCE_SOUNDS[s] ) {
-                file  = "/snd/" + SOUND_TYPE + "/" + RESOURCE_SOUNDS[s][i] + "." + SOUND_TYPE;
-                console.log("Sound", file);
-                if ( !_Cache.sounds[s] ) {
-                  _Cache.sounds[s] = [];
-                }
-
-                try {
-                  aud = new Audio(file);
-                  aud.type = SOUND_TYPE;
-                  aud.preload = "auto";
-                  aud.controls = false;
-                  aud.autobuffer = true;
-                  aud.loop = false;
-                  aud.load();
-
-                  _Cache.sounds[s][i] = aud;
-
-                  console.info("Loaded sound", file);
-                } catch ( aex ) {
-                  console.error("Failed loading sound", file);
-
-                  _errors++;
-                }
-
-                _loaded++;
-              }
-            }
-          }
-        }
-
-        // Load tiles
-
-        for ( var t in RESOURCE_TILES ) {
-          if ( RESOURCE_TILES.hasOwnProperty(t) ) {
-            file = "/img/" + RESOURCE_TILES[t] + ".png";
-            console.log("Image", file);
-
-            var img = new Image();
-            img.onload = function() {
-              console.info("Loaded image", this.src);
-              _loaded++;
-            };
-            img.onerror = function() {
-              console.error("Failed loading image", this.src);
-              _errors++;
-            };
-            img.src = file;
-
-            _Cache.tiles[t] = img;
-          }
-        }
-
-        console.groupEnd();
-
-        _interval = setInterval(function() {
-          if ( _checkProgress() ) {
-            callback();
-            clearInterval(_interval);
-            _interval = null;
-          }
-        }, 10);
-
-      };
-    })(),
-
-    /**
-     * Get Sound
-     * @return Mixed
-     */
-    getSound : function(snd) {
-      console.log("ResourceCore::getSound()", snd);
-      if ( _Cache.sounds[snd] ) {
-        var index = Math.floor(Math.random()* (_Cache.sounds[snd].length));
-        return _Cache.sounds[snd][index];
-      }
-      return null;
-    },
-
-    /**
-     * Get Tile graphics
-     * @return Mixed
-     */
-    getTile : function(tile) {
-      console.log("ResourceCore::getTile()", tile);
-      if ( _Cache.tiles[tile] ) {
-        return _Cache.tiles[tile];
-      }
-
-      return null;
-    }
-
-  });
-
-  /**
-   * SoundCore - Sound Manager
-   * @class
-   */
-  var SoundCore = Class.extend({
-
-    /**
-     * Constructor
-     * @return void
-     */
-    init : function() {
-      console.log("SoundCore::init()");
-    },
-
-    /**
-     * Destructor
-     * @return void
-     */
-    destroy : function() {
-      console.log("SoundCore::destroy()");
-    },
-
-    /**
-     * Play a sound
-     * @return void
-     */
-    play : function(snd) {
-      if ( SOUND_ENABLED ) {
-        var res = _Resources.getSound(snd);
-        if ( res ) {
-          res.play();
-        }
-      }
-    }
-
-  });
-
-  /**
-   * GameCore - Main Game Core
-   * @class
-   */
-  var GameCore = Class.extend({
-
-    _map   : null,
-    _mmap  : null,
-    _loop  : null,
-    _main  : null,
-    _root  : null,
-    _drag  : null,
-    _time  : -1,
-
-    /**
-     * Constructor
-     * @return void
-     */
-    init : function() {
-      var self = this;
-      console.log("GameCore::init()");
-
-      this._main  = document.getElementById(MAIN_CONTAINER);
-      this._root  = document.getElementById(CANVAS_CONTAINER);
-    },
-
-    /**
-     * Destructor
-     * @return void
-     */
-    destroy : function() {
-      console.log("GameCore::destroy()");
-
-      if ( this._root ) {
-        this._root.onmousedown = null;
-        window.onmousemove     = null;
-        window.onmouseup       = null;
-      }
-
-      if ( this._loop ) {
-        clearInterval(this._loop);
-        this._loop = undefined;
-      }
-
-      if ( this._map ) {
-        this._map.destroy();
-        this._map = undefined;
-      }
-    },
-
-    /**
-     * Run the Game
-     * FIXME: This is just example data
-     * @return void
-     */
-    run : function() {
-      var self = this;
-
-      console.group("GameCore::run()");
-
-      this._time = new Date().getTime();
-
-      this._map  = new Map(64, 64, "desert");
-      this._root.style.width = (this._map._width) + "px";
-      this._root.style.height = (this._map._height) + "px";
-
-      this._mmap = new MiniMap(this._main, this._root, this._map);
-
-      this._drag = new Draggable(this._root, this._map._pos);
-      this._drag.ondragstop = function(ev, ref, pos) {
-        self._map.setPosition(pos[0], pos[1]);
-        self._mmap.setPosition(pos[0], pos[1]);
       };
 
-      console.log("Inserting Map and Objects");
-      this._map.insert(this._drag);
-      this._map.addObject(new MapObject(50, 50, "tank_n"));
-      this._map.addObject(new MapObject(100, 100, "tank_n"));
+      $.addEvent(self._root, "mousedown", mousedown);
+      $.disableContext(self._root);
 
-      console.log("Going into main loop");
-      this._loop = setInterval(function(ev) { self.loop(ev); }, LOOP_INTERVAL);
+      // Load tiles (async)
+      img.onload = function() {
+        console.log("Loaded image", this.src);
+
+        for ( var y = 0; y < self._sizeY; y++ ) {
+          px = 0;
+          for ( var x = 0; x < self._sizeX; x++ ) {
+            self.drawImage(img, px, py);
+            px += TILE_SIZE;
+          }
+          py += TILE_SIZE;
+        }
+
+        console.log("Created tiles", self._sizeX, "x", self._sizeY);
+
+        self._root.appendChild(self.getCanvas());
+
+        // Load objects
+        for ( var i = 0; i < self._objects.length; i++ ) {
+          self._root.appendChild(self._objects[i].getCanvas());
+        }
+
+        console.log("Inserted", i, "object(s)");
+
+        // Run callback to continue
+        callback();
+
+        self.onResize();
+        self.onDragMove(null, {x : self._posX, y : self._posY});
+      };
+      img.src = "/img/tile_desert.png";
 
       console.groupEnd();
-
-      this.resize();
     },
 
-    /**
-     * The resize event from browser
-     * @return void
-     */
-    resize : function() {
-      this._mmap.resize();
-    },
+    render : function() {
+      for ( var i = 0; i < this._objects.length; i++ ) {
+        this._objects[i].render();
+      }
 
-    /**
-     * Main loop
-     * @param  Event    timer event
-     * @return void
-     */
-    loop : function(ev) {
-      var now = new Date().getTime();
-      var diff = Math.floor(1000/(now - this._time));
-
-      this._map.render();
-      this._mmap.render();
-
-      this._time = now;
+      //this._super(); // Do not call!
     }
 
-  });
 
-  /////////////////////////////////////////////////////////////////////////////
-  // OBJECT CLASSES
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * @class
-   */
-  var MapObjectBuilding = MapObject.extend({
-    init    : function(type) {
-      this._super();
-    },
-    destroy : function() {
-      this._super();
-    }
-  });
-
-  /**
-   * @class
-   */
-  var MapObjectSoldier = MapObject.extend({
-    init    : function(type) {
-      this._super();
-    },
-    destroy : function() {
-      this._super();
-    }
   });
 
   /////////////////////////////////////////////////////////////////////////////
@@ -921,97 +576,18 @@
    * @return void
    */
   window.onload = function() {
-    console.info("window::onload()");
-
-    // Check compability
-    var canvas;
-    var context;
-    var sound;
-
-    console.group("Checking compability");
-
-    try {
-      if ( SUPPORT_CANVAS ) {
-        canvas = document.createElement("canvas");
-
-        if ( canvas ) {
-          var ctype = "";
-          var i = 0;
-          for ( i = 0; i < CANVAS_TYPES.length; i++ ) {
-            context = canvas.getContext(CANVAS_TYPES[i]);
-            if ( context ) {
-              CANVAS_TYPE = CANVAS_TYPES[i];
-              break;
-            }
-          }
-        }
-      }
-
-      if ( SUPPORT_AUDIO ) {
-        var t;
-        for ( var s in SOUND_TYPES ) {
-          if ( SOUND_TYPES.hasOwnProperty(s) ) {
-            t = SOUND_TYPES[s];
-
-            if ( (!!document.createElement('audio').canPlayType(t)) ) {
-              SOUND_TYPE = s;
-              break;
-            }
-          }
-        }
-      }
-    } catch ( eee ) {
-      console.error("FATAL ERROR:". eee);
-    }
-
-
-    console.log("Browser: ", navigator.appName, navigator.appVersion);
-    console.log("Headers: ", navigator.userAgent);
-    console.log("Canvas Context: ", CANVAS_TYPE || "ERROR - None found");
-    console.log("Sound Support: ", SUPPORT_AUDIO ? "YES" : "NO" ,",", SOUND_TYPE || "ERROR - None found");
-    console.log("Video Support: ", SUPPORT_VIDEO ? "YES" : "NO");
-    console.log("WebSocket Support: ", SUPPORT_SOCKET ? "YES" : "NO");
-    console.log("Local Storage Support: ", SUPPORT_LSTORAGE ? "YES" : "NO");
-    console.log("Session Storage Support: ", SUPPORT_SSTORAGE ? "YES" : "NO");
-    console.log("Global Storage Support: ", SUPPORT_GSTORAGE ? "YES" : "NO");
-    console.log("OpenDatabase Support: ", SUPPORT_DSTORAGE ? "YES" : "NO");
-
+    console.group("window::onload()");
+    console.log("Browser agent", navigator.userAgent);
+    console.log("Browser features", SUPPORT);
     console.groupEnd();
 
-    if ( !CANVAS_TYPE || !SOUND_TYPE ) {
-      try {
-        throw "Your browser is not supported!";
-      } catch ( eee ) {
-        alert("Your browser is not supported!");
-      }
-      return;
-    }
+    _Sound = new Sounds();
 
-    console.group("Configuration");
-    console.log("Server", WEBSOCKET_URI);
-    console.log("Interval", LOOP_INTERVAL);
-    console.log("Sound enabled", SOUND_ENABLED ? "true" :"false");
-    console.log("Video enabled", VIDEO_ENABLED ? "true" : "false");
-    console.groupEnd();
-
-    $.disableContext(document.getElementById("Main"));
-    $.disableContext(document.getElementById("MainContainer"));
-
-    _Resources = new ResourceCore();
-    _Sound     = new SoundCore();
-    _Core      = new GameCore();
-
-    if ( _Resources && _Sound && _Core ) {
-      _Resources.preload(function() {
-        _Core.run();
-        _Inited = true;
-      });
+    if ( SUPPORT.canvas ) {
+      _Main = new Game();
+      _Main.run();
     } else {
-      try {
-        throw "Failed to start up!";
-      } catch ( eee ) {
-        alert("Failed to start up!");
-      }
+      alert("Your browser is not supported!");
     }
   };
 
@@ -1020,44 +596,29 @@
    * @return void
    */
   window.onunload = function() {
-    console.info("window::onunload()");
-
-    if ( _Core ) {
-      _Core.destroy();
-      _Core = undefined;
+    if ( _Main ) {
+      _Main.destroy();
+      delete _Main;
     }
-
     if ( _Sound ) {
       _Sound.destroy();
-      _Sound = undefined;
+      delete _Sound;
     }
-
-    if ( _Resources ) {
-      _Resources.destroy();
-      _Resources = undefined;
-    }
-
-    _Cache = null;
 
     window.onload   = undefined;
     window.onunload = undefined;
     window.onresize = undefined;
   };
 
-  window.onresize = (function() {
-    var _t = null;
-    return function() {
-      if ( _Inited ) {
-        if ( _t ) {
-          clearTimeout(_t);
-          _t = null;
-        }
-        _t = setTimeout(function() {
-          _Core.resize();
-        }, RESIZE_INTERVAL);
-      }
-    };
-
-  })();
+  /**
+   * Window 'onresize' function
+   * @return void
+   */
+  window.onresize = function() {
+    if ( _Main ) {
+      _Main.resize();
+    }
+  };
 
 })();
+
