@@ -29,13 +29,6 @@
     'WebSocket'      : (('WebSocket'      in window) && (window['WebSocket']      !== null))
   };
 
-  var CONFIG = {
-    'audio_on'    : true,
-    'audio_sfx'   : 90,
-    'audio_gui'   : 100,
-    'audio_music' : 80
-  };
-
   var LOOP_INTERVAL    = (1000 / 60);
   var TILE_SIZE        = 24;
   var MINIMAP_WIDTH    = 180;
@@ -106,7 +99,7 @@
    * @class
    */
   var Sounds = Class.extend({
-    _enabled   : (CONFIG.audio_on && SUPPORT.audio),
+    _enabled   : (CnC.CONFIG.audio_on && SUPPORT.audio),
     _codec     : "mp3",
     _ext       : "mp3",
 
@@ -146,7 +139,7 @@
       }
 
       console.log("Supported", this._enabled);
-      console.log("Enabled", CONFIG.audio_on);
+      console.log("Enabled", CnC.CONFIG.audio_on);
       console.log("Codec", this._codec, this._ext);
 
       // Preload audio files

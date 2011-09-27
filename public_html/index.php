@@ -19,16 +19,9 @@ require "../main.php";
     <!-- Stylesheets -->
     <link rel="stylesheet" type="text/css" href="/css/main.css" />
 
-
-    <!-- JavaScript -->
-    <script type="text/javascript" src="/js/vendor.js"></script>
-    <script type="text/javascript" src="/js/utils.js"></script>
-    <script type="text/javascript" src="/js/canvas.js"></script>
-    <script type="text/javascript" src="/js/main.js"></script>
-
     <script type="text/javascript">
-      // Make sure everything runs without a debugging console
       (function(undefined) {
+        // Make sure everything runs without a debugging console
         if ( (window.console === undefined) || (!window.console) ) {
           window.console = {
             log      : function() {},
@@ -40,6 +33,14 @@ require "../main.php";
         }
        })();
     </script>
+
+
+    <!-- JavaScript -->
+    <script type="text/javascript" src="/js/config.js"></script>
+    <script type="text/javascript" src="/js/vendor.js"></script>
+    <script type="text/javascript" src="/js/utils.js"></script>
+    <script type="text/javascript" src="/js/canvas.js"></script>
+    <script type="text/javascript" src="/js/main.js"></script>
   </head>
   <body>
     <!-- Sidebar -->
