@@ -367,6 +367,35 @@
           c.stroke();
         c.closePath();
 
+        if ( self._selected ) {
+          c.beginPath();
+            c.moveTo(0, 0);
+            c.lineTo(10, 0);
+            c.moveTo(0, 0);
+            c.lineTo(0, 10);
+            c.stroke();
+
+            c.moveTo(w - 10,  0);
+            c.lineTo(w, 0);
+            c.moveTo(w, 0);
+            c.lineTo(w, 10);
+            c.stroke();
+
+            c.moveTo(w - 10,  h);
+            c.lineTo(w, h);
+            c.moveTo(w, h);
+            c.lineTo(w, h - 10);
+            c.stroke();
+
+            c.moveTo(0, h);
+            c.lineTo(10, h);
+            c.moveTo(0, h);
+            c.lineTo(0, h - 10);
+            c.stroke();
+
+          c.closePath();
+        }
+
       });
     },
 
