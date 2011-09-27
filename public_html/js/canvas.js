@@ -11,7 +11,7 @@ var CanvasObject = Class.extend({
   __height  : -1,
   __x       : 0,
   __y       : 0,
-  __angle   : 0.0,
+  __angle   : 0,
   __canvas  : null,
   __context : null,
 
@@ -84,7 +84,7 @@ var CanvasObject = Class.extend({
 
   setDirection : function(d) {
     if ( !isNaN(d) && d ) {
-      this.__angle = parseFloat(d);
+      this.__angle = $.degToRad(parseInt(d, 10));
     }
   },
 

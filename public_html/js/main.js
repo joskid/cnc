@@ -29,6 +29,13 @@
     'WebSocket'      : (('WebSocket'      in window) && (window['WebSocket']      !== null))
   };
 
+  var CONFIG = {
+    'audio_on'    : true,
+    'audio_sfx'   : 90,
+    'audio_gui'   : 100,
+    'audio_music' : 80
+  };
+
   var LOOP_INTERVAL    = (1000 / 60);
   var TILE_SIZE        = 24;
   var MINIMAP_WIDTH    = 180;
@@ -99,7 +106,7 @@
    * @class
    */
   var Sounds = Class.extend({
-    _enabled   : SUPPORT.audio ? true : false,
+    _enabled   : (CONFIG.audio_on && SUPPORT.audio),
     _codec     : "mp3",
     _ext       : "mp3",
 
@@ -291,7 +298,7 @@
   var MapObject = CanvasObject.extend({
 
     _selected : false,
-    _angle    : 0.0,
+    _angle    : 0,
 
     init : function(x, y) {
       console.group("MapObject::init()");
@@ -336,7 +343,7 @@
 
         c.beginPath();
           c.moveTo((w / 2), (h / 2));
-          c.lineTo(0, (h / 2));
+          c.lineTo(w, (h / 2));
           c.stroke();
         c.closePath();
 
