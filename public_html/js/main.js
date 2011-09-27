@@ -29,7 +29,7 @@
     'WebSocket'      : (('WebSocket'      in window) && (window['WebSocket']      !== null))
   };
 
-  var LOOP_INTERVAL    = (1000 / 60);
+  var LOOP_INTERVAL    = (1000 / 30);
   var TILE_SIZE        = 24;
   var MINIMAP_WIDTH    = 180;
   var MINIMAP_HEIGHT   = 180;
@@ -240,12 +240,15 @@
         // http://www.playmycode.com/blog/2011/08/building-a-game-mainloop-in-javascript/
         this._map.prepare(function() {
 
+          /*
           var t = (window.requestAnimationFrame       ||
                    window.webkitRequestAnimationFrame ||
                    window.mozRequestAnimationFrame    ||
                    window.oRequestAnimationFrame      ||
                    window.msRequestAnimationFrame     ||
                    null);
+        */
+          var t = null;
 
           if ( t ) {
             //var canvas = self.getCanvas();
@@ -283,11 +286,12 @@
    */
   var MapObject = CanvasObject.extend({
 
-    _selected : false,
-    _angle    : 0,
-    _movable  : true,
-    _speed    : 1,
-    _strength : 10,
+    _selected     : false,
+    _angle        : 0,
+    _movable      : true,
+    _speed        : 5,
+    _strength     : 10,
+    _destination  : null,
 
     init : function(x, y) {
       console.group("MapObject::init()");
@@ -320,6 +324,35 @@
     render : function() {
       var self = this;
 
+      if ( this._destination ) {
+        // http://www.actionscript.org/forums/showthread.php3?t=168264
+        var x = this.__x;
+        var y = this.__y;
+
+        // Find direction
+        var i = this._destination.x - x;
+        var j = this._destination.y - y;
+
+        // Get and check closest distance
+        var mag = Math.sqrt(i * i + j * j);
+        var dif = Math.min(mag, this._speed);
+
+        if ( dif < this._speed ) {
+          this._destination = null;
+          return;
+        }
+
+        // Direction vector
+        i /= mag;
+        j /= mag;
+
+        // Velocity vector
+        i *= dif;
+        j *= dif;
+
+        this.setPosition(x + i, y + j, true);
+      }
+
       this._super(function(c, w, h, x, y)
       {
         c.beginPath();
@@ -343,23 +376,21 @@
       console.log("MapObject::select()", this);
 
       this._selected = true;
-
-      this.render();
     },
 
     unselect : function() {
       console.log("MapObject::unselect()", this);
 
       this._selected = false;
-
-      this.render();
     },
 
     move : function(pos) {
-      var x1 = this.getPosition()[0];
-      var y1 = this.getPosition()[1];
-      var x2 = pos.x;
-      var y2 = pos.y;
+      var w  = this.getDimension()[0],
+          h  = this.getDimension()[1],
+          x1 = this.getPosition()[0] - (w / 2),
+          y1 = this.getPosition()[1] - (h / 2),
+          x2 = pos.x - (w / 2),
+          y2 = pos.y - (h / 2);
 
       var deg      = Math.atan2((y2-y1), (x2-x1)) * (180 / Math.PI);
       var rotation = (this._angle + deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
@@ -367,10 +398,15 @@
 
       console.log("MapObject::move()", pos, x2, y2, rotation, "(" + deg + ")", distance);
 
+      /*
       this.setPosition(x2, y2, true);
+      */
       this.setDirection(rotation);
 
-      this.render();
+      this._destination = {
+        x : pos.x - (w  /2),
+        y : pos.y - (h / 2)
+      };
     },
 
     onClick : function(ev) {
@@ -595,11 +631,9 @@
     },
 
     render : function() {
-      /*
       for ( var i = 0; i < this._objects.length; i++ ) {
         this._objects[i].render();
       }
-      */
 
       //this._super(); // Do not call!
     }

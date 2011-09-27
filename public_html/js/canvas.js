@@ -72,8 +72,8 @@ var CanvasObject = Class.extend({
     this.__y = parseInt(y, 10);
 
     if ( set ) {
-      this.__canvas.style.left = (x - (this.getDimension()[0] / 2)) + "px";
-      this.__canvas.style.top  = (y - (this.getDimension()[1] / 2)) + "px";
+      this.__canvas.style.left = (x) + "px";
+      this.__canvas.style.top  = (y) + "px";
     }
   },
 
