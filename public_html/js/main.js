@@ -145,7 +145,8 @@
         }
       }
 
-      console.log("Enabled", this._enabled);
+      console.log("Supported", this._enabled);
+      console.log("Enabled", CONFIG.audio_on);
       console.log("Codec", this._codec, this._ext);
 
       // Preload audio files
@@ -299,6 +300,9 @@
 
     _selected : false,
     _angle    : 0,
+    _movable  : true,
+    _speed    : 1,
+    _strength : 10,
 
     init : function(x, y) {
       console.group("MapObject::init()");
@@ -373,7 +377,7 @@
       var y2 = pos.y;
 
       var deg      = Math.atan2((y2-y1), (x2-x1)) * (180 / Math.PI);
-      var rotation = (deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
+      var rotation = (this._angle + deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
       var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
 
       console.log("MapObject::move()", pos, x2, y2, rotation, "(" + deg + ")", distance);
@@ -541,6 +545,9 @@
       };
 
       var mousedown = function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+
         if ( $.mouseButton(ev) > 1 ) {
           $.addEvent(document, "mousemove", mousemove);
           $.addEvent(document, "mouseup", mouseup);
