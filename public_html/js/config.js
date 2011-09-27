@@ -9,7 +9,7 @@
 
   window.CnC = {
     CONFIG : {
-      'audio_on'    : true,
+      'audio_on'    : false,
       'audio_sfx'   : 90,
       'audio_gui'   : 100,
       'audio_music' : 80

@@ -237,7 +237,6 @@
       if ( !this._running ) {
         var self = this;
 
-        // http://www.playmycode.com/blog/2011/08/building-a-game-mainloop-in-javascript/
         this._map.prepare(function() {
 
           /*
@@ -325,7 +324,6 @@
       var self = this;
 
       if ( this._destination ) {
-        // http://www.actionscript.org/forums/showthread.php3?t=168264
         var x = this.__x;
         var y = this.__y;
 
@@ -398,9 +396,6 @@
 
       console.log("MapObject::move()", pos, x2, y2, rotation, "(" + deg + ")", distance);
 
-      /*
-      this.setPosition(x2, y2, true);
-      */
       this.setDirection(rotation);
 
       this._destination = {
