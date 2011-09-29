@@ -11,6 +11,7 @@ body {
   padding : 0;
   overflow : hidden;
   background-color : #000;
+  cursor : default;
 }
 
 #Sidebar {
@@ -59,12 +60,22 @@ body {
 }
 #Map {
   position : relative;
+  cursor : default;
 }
 
 .MapObject {
   position : absolute;
-  cursor : pointer;
   z-index : 10;
+}
+.MapObjectRoot {
+  position : absolute;
+  z-index : 10;
+}
+.MapObjectOverlay {
+  position : absolute;
+  z-index : 11;
+  margin : -10px;
+  cursor : pointer;
 }
 
 #Rectangle {

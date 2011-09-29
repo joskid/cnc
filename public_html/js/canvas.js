@@ -7,13 +7,16 @@
 
 var CanvasObject = Class.extend({
 
-  __width   : -1,
-  __height  : -1,
-  __x       : 0,
-  __y       : 0,
-  __angle   : 0,
-  __canvas  : null,
-  __context : null,
+  __width     : -1,
+  __height    : -1,
+  __x         : 0,
+  __y         : 0,
+  __angle     : 0,
+  __root      : null,
+  __canvas    : null,
+  __context   : null,
+  __overlay   : null,
+  __coverlay  : null,
 
   /// MAGICS
 
@@ -22,16 +25,46 @@ var CanvasObject = Class.extend({
     this.setPosition(x, y);
     this.setDirection(a);
 
-    var canvas            = document.createElement('canvas');
-    var context           = canvas.getContext('2d');
-    canvas.width          = (this.__width);
-    canvas.height         = (this.__height);
-    canvas.style.position = "absolute";
-    canvas.style.left     = (this.__x) + "px";
-    canvas.style.top      = (this.__y) + "px";
+    var root                = document.createElement("div");
+    root.className          = "MapObject";
+    root.width            = (this.__width);
+    root.height           = (this.__height);
+    root.style.left       = (this.__x) + "px";
+    root.style.top        = (this.__y) + "px";
 
-    this.__canvas = canvas;
-    this.__context = context;
+    var canvas              = document.createElement('canvas');
+    var context             = canvas.getContext('2d');
+    canvas.className        = "MapObjectRoot";
+    canvas.width            = (this.__width);
+    canvas.height           = (this.__height);
+
+    var ccanvas             = document.createElement('canvas');
+    var ccontext            = ccanvas.getContext('2d');
+    ccanvas.className       = "MapObjectOverlay";
+    ccanvas.width           = (this.__width + 20);
+    ccanvas.height          = (this.__height + 20);
+
+    root.appendChild(canvas);
+    root.appendChild(ccanvas);
+
+    this.__canvas   = canvas;
+    this.__context  = context;
+    this.__overlay  = ccanvas;
+    this.__coverlay = ccontext;
+    this.__root     = root;
+  },
+
+  destroy : function() {
+    if ( this.__root ) {
+      this.__root.parentNode.removeChild(this.__root);
+    }
+
+    this.__canvas   = null;
+    this.__context  = null;
+    this.__overlay  = null;
+    this.__coverlay = null;
+
+    delete this.__root;
   },
 
   /// METHODS
@@ -39,13 +72,17 @@ var CanvasObject = Class.extend({
   render : function(callback) {
     callback = callback || function() {};
 
-    var w = this.__width;
-    var h = this.__height;
-    var x = this.__x;
-    var y = this.__y;
-    var c = this.__context;
+    var w   = this.__width;
+    var h   = this.__height;
+    var x   = this.__x;
+    var y   = this.__y;
+    var c   = this.__context;
+    var cc  = this.__coverlay;
 
     // Clear
+    cc.clearRect(0, 0, w + 20, h + 20);
+    cc.save();
+
     c.clearRect(0, 0, w, h);
     c.save();
 
@@ -54,11 +91,16 @@ var CanvasObject = Class.extend({
     c.rotate(this.__angle);
     c.translate(-(w / 2), -(h / 2));
 
+    cc.translate((w + 20) / 2, (h + 20) / 2);
+    cc.rotate(this.__angle);
+    cc.translate(-((w + 20) / 2), -((h + 20) / 2));
+
     // Draw
-    callback(c, w, h, x, y);
+    callback(c, cc, w, h, x, y);
 
     // Display
     c.restore();
+    cc.restore();
   },
 
   drawImage : function(img, x, y) {
@@ -72,8 +114,8 @@ var CanvasObject = Class.extend({
     this.__y = parseInt(y, 10);
 
     if ( set ) {
-      this.__canvas.style.left = (x) + "px";
-      this.__canvas.style.top  = (y) + "px";
+      this.__root.style.left = (this.__x) + "px";
+      this.__root.style.top  = (this.__y) + "px";
     }
   },
 
@@ -102,12 +144,25 @@ var CanvasObject = Class.extend({
     return this.__angle;
   },
 
-  getCanvas : function() {
-    return this.__canvas;
+  getCanvas : function(o) {
+    return o ? this.__overlay : this.__canvas;
   },
 
   getContext : function() {
     return this.__context;
+  },
+
+  getRect : function() {
+    return {
+      x1 : this.__x,
+      y1 : this.__y,
+      x2 : this.__x + this.__width,
+      y2 : this.__y + this.__height
+    };
+  },
+
+  getRoot : function() {
+    return this.__root;
   }
 
 });

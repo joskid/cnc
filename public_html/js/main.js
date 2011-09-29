@@ -82,6 +82,13 @@
     };
   })();
 
+  var IsInside = function(rsrc, rtst) {
+    if ( ((rtst.x1 >= rsrc.x1) && (rtst.x2 <= rsrc.x2)) && ((rtst.y1 >= rsrc.y1) && (rtst.y2 <= rsrc.y2)) ) {
+      return true;
+    }
+    return false;
+  };
+
   /////////////////////////////////////////////////////////////////////////////
   // BASE CLASSES
   /////////////////////////////////////////////////////////////////////////////
@@ -295,20 +302,19 @@
     init : function(x, y) {
       console.group("MapObject::init()");
 
-      this._super(30, 30, x, y, this._angle);
+      this._super(20, 20, x, y, this._angle);
 
-      this.__canvas.className    = "MapObject";
-      this.__context.fillStyle   = "rgba(255,255,255,0.9)";
-      this.__context.strokeStyle = "rgba(0,0,0,0.9)";
-      this.__context.lineWidth   = 1;
+      this.__coverlay.fillStyle   = "rgba(255,255,255,0.9)";
+      this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
+      this.__coverlay.lineWidth   = 1;
 
       var self = this;
 
-      $.addEvent(this.__canvas, "mousedown", function(ev) {
+      $.addEvent(this.__overlay, "mousedown", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
       });
-      $.addEvent(this.__canvas, "click", function(ev) {
+      $.addEvent(this.__overlay, "click", function(ev) {
         self.onClick(ev);
       }, true);
 
@@ -322,6 +328,8 @@
 
     destroy : function() {
       this.__context.onclick = null;
+
+      this._super();
     },
 
     render : function() {
@@ -355,55 +363,58 @@
         this.setPosition(x + i, y + j, true);
       }
 
-      this._super(function(c, w, h, x, y)
+      this._super(function(c, cc, w, h, x, y)
       {
-        c.strokeStyle = "rgba(0,0,0,0.9)";
+        var tw = w + 20;
+        var th = h + 20;
 
-        c.beginPath();
-          c.arc((w / 2), (h / 2), 10, (Math.PI * 2), false);
-          c.fill();
+        cc.strokeStyle = "rgba(0,0,0,0.9)";
+
+        cc.beginPath();
+          cc.arc((tw / 2), (th / 2), 12, (Math.PI * 2), false);
+          cc.fill();
           if ( self._selected ) {
-            c.stroke();
+            cc.stroke();
           }
-        c.closePath();
+        cc.closePath();
 
-        c.beginPath();
-          c.moveTo((w / 2), (h / 2));
-          c.lineTo(w, (h / 2));
-          c.stroke();
-        c.closePath();
+        cc.beginPath();
+          cc.moveTo((tw / 2), (th / 2));
+          cc.lineTo(tw, (th / 2));
+          cc.stroke();
+        cc.closePath();
 
-        //if ( self._selected ) {
+        if ( self._selected ) {
 
-          c.strokeStyle = "rgba(255,255,255,0.9)";
+          cc.strokeStyle = "rgba(255,255,255,0.9)";
 
-          c.beginPath();
-            c.moveTo(1, 0);
-            c.lineTo(10, 0);
-            c.moveTo(0, 0);
-            c.lineTo(0, 10);
-            c.stroke();
+          cc.beginPath();
+            cc.moveTo(5, 5);
+            cc.lineTo(15, 5);
+            cc.moveTo(5, 5);
+            cc.lineTo(5, 15);
+            cc.stroke();
 
-            c.moveTo(w - 10,  0);
-            c.lineTo(w, 0);
-            c.moveTo(w, 0);
-            c.lineTo(w, 10);
-            c.stroke();
+            cc.moveTo(tw - 15,  5);
+            cc.lineTo(tw - 5, 5);
+            cc.moveTo(tw - 5, 5);
+            cc.lineTo(tw - 5, 15);
+            cc.stroke();
 
-            c.moveTo(w - 10,  h);
-            c.lineTo(w, h);
-            c.moveTo(w, h);
-            c.lineTo(w, h - 10);
-            c.stroke();
+            cc.moveTo(tw - 15,  th - 5);
+            cc.lineTo(tw - 5, th - 5);
+            cc.moveTo(tw - 5, th - 5);
+            cc.lineTo(tw - 5, th - 15);
+            cc.stroke();
 
-            c.moveTo(0, h);
-            c.lineTo(10, h);
-            c.moveTo(0, h);
-            c.lineTo(0, h - 10);
-            c.stroke();
+            cc.moveTo(5, th - 5);
+            cc.lineTo(15, th - 5);
+            cc.moveTo(5, th - 5);
+            cc.lineTo(5, th - 15);
+            cc.stroke();
 
-          c.closePath();
-        //}
+          cc.closePath();
+        }
 
       });
     },
@@ -548,8 +559,22 @@
     },
 
     onSelect : function(ev, rect) {
+      console.group("Map::onSelect");
+      console.log("Rect", rect);
+
       // Select object within rectangle
-      console.log("Map::onSelect", rect);
+      var select = [];
+      for ( var i = 0; i < this._objects.length; i++ ) {
+        if ( IsInside(rect, this._objects[i].getRect()) ) {
+          select.push(this._objects[i]);
+        }
+      }
+
+      console.log("Hits", select.length);
+
+      ObjectAction(select);
+
+      console.groupEnd();
     },
 
     onObjectUpdate : function() {
@@ -728,7 +753,7 @@
 
         // Load objects
         for ( var i = 0; i < self._objects.length; i++ ) {
-          self._root.appendChild(self._objects[i].getCanvas());
+          self._root.appendChild(self._objects[i].getRoot());
         }
 
         console.log("Inserted", i, "object(s)");
