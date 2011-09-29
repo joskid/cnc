@@ -51,6 +51,7 @@ require "../main.php";
     <!-- Main Container -->
     <div id="Main">
       <div id="Map"><!-- Canvas --></div>
+      <div id="Rectangle"><!-- Empty --></div>
     </div>
   </body>
 </html>

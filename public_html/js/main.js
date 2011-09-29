@@ -304,6 +304,10 @@
 
       var self = this;
 
+      $.addEvent(this.__canvas, "mousedown", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+      });
       $.addEvent(this.__canvas, "click", function(ev) {
         self.onClick(ev);
       }, true);
@@ -353,6 +357,8 @@
 
       this._super(function(c, w, h, x, y)
       {
+        c.strokeStyle = "rgba(0,0,0,0.9)";
+
         c.beginPath();
           c.arc((w / 2), (h / 2), 10, (Math.PI * 2), false);
           c.fill();
@@ -367,9 +373,12 @@
           c.stroke();
         c.closePath();
 
-        if ( self._selected ) {
+        //if ( self._selected ) {
+
+          c.strokeStyle = "rgba(255,255,255,0.9)";
+
           c.beginPath();
-            c.moveTo(0, 0);
+            c.moveTo(1, 0);
             c.lineTo(10, 0);
             c.moveTo(0, 0);
             c.lineTo(0, 10);
@@ -394,7 +403,7 @@
             c.stroke();
 
           c.closePath();
-        }
+        //}
 
       });
     },
@@ -538,6 +547,11 @@
       this._minirect.style.top  = (ry - 1) + 'px';
     },
 
+    onSelect : function(ev, rect) {
+      // Select object within rectangle
+      console.log("Map::onSelect", rect);
+    },
+
     onObjectUpdate : function() {
       // Update minimap
     },
@@ -547,14 +561,16 @@
 
       var self = this;
 
+      var rect = document.getElementById("Rectangle");
       var img = new Image();
       var px = 0;
       var py = 0;
 
       // Map dragging and clicking
-      var dragging = false;
-      var startX = 0;
-      var startY = 0;
+      var dragging  = false;
+      var selecting = false;
+      var startX    = 0;
+      var startY    = 0;
 
       var mousemove = function(ev) {
         if ( dragging ) {
@@ -565,12 +581,31 @@
           var diffY = curY - startY;
 
           self.onDragMove(ev, {x: diffX, y: diffY});
+        } else if ( selecting ) {
+          var mX = $.mousePosX(ev);
+          var mY = $.mousePosY(ev);
+
+          var rx = Math.min((mX - 10), (startX - 10));
+          var ry = Math.min((mY - 10), (startY - 10));
+          var rw = Math.abs((mX - 10) - (startX - 10));
+          var rh = Math.abs((mY - 10) - (startY - 10));
+
+          rect.style.left    = (rx) + 'px';
+          rect.style.top     = (ry) + 'px';
+          rect.style.width   = (rw) + 'px';
+          rect.style.height  = (rh) + 'px';
         }
       };
 
       var mouseup = function(ev) {
         $.removeEvent(document, "mousemove", mousemove);
         $.removeEvent(document, "mouseup", mouseup);
+
+        rect.style.display = 'none';
+        rect.style.top     = '0px';
+        rect.style.left    = '0px';
+        rect.style.width   = '0px';
+        rect.style.height  = '0px';
 
         if ( dragging ) {
           var curX = $.mousePosX(ev);
@@ -584,16 +619,44 @@
           } else {
             self.onDragStop(ev, false);
           }
+        } else {
+          if ( selecting ) {
+            var mX = $.mousePosX(ev);
+            var mY = $.mousePosY(ev);
+
+            var rx = Math.min((mX - 10), (startX - 10));
+            var ry = Math.min((mY - 10), (startY - 10));
+            var rw = Math.abs((mX - 10) - (startX - 10));
+            var rh = Math.abs((mY - 10) - (startY - 10));
+
+            var re = {
+              'x1' : rx,
+              'y1' : ry,
+              'x2' : rx + rw,
+              'y2' : ry + rh
+            };
+
+            if ( re.x1 != re.x2 || re.y1 != re.y2 ) {
+              self.onSelect(ev, re);
+            } else {
+
+              mX = Math.abs(self._posX - mX) - 10;
+              mY = Math.abs(self._posY - mY) - 10;
+
+              ObjectAction({x: mX, y: mY});
+            }
+          }
         }
 
         dragging = false;
+        selecting = false;
       };
 
       var mousedown = function(ev) {
-        $.preventDefault(ev);
-        $.stopPropagation(ev);
-
         if ( $.mouseButton(ev) > 1 ) {
+          $.preventDefault(ev);
+          $.stopPropagation(ev);
+
           $.addEvent(document, "mousemove", mousemove);
           $.addEvent(document, "mouseup", mouseup);
 
@@ -602,19 +665,49 @@
 
           self.onDragStart(ev, {x: startX, y: startY});
 
-          dragging = true;
-        } else {
-          var mX = Math.abs(self._posX - $.mousePosX(ev)) - 10;
-          var mY = Math.abs(self._posY - $.mousePosY(ev)) - 10;
+          rect.style.display = 'none';
+          rect.style.top     = '0px';
+          rect.style.left    = '0px';
+          rect.style.width   = '0px';
+          rect.style.height  = '0px';
 
-          ObjectAction({x: mX, y: mY});
+          dragging  = true;
+          selecting = false;
+        }
+      };
 
-          dragging = false;
+      var main_mousedown = function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+
+        $.addEvent(document, "mousemove", mousemove);
+        $.addEvent(document, "mouseup", mouseup);
+
+        if ( $.mouseButton(ev) <= 1 ) {
+          var mX = $.mousePosX(ev);
+          var mY = $.mousePosY(ev);
+          var rX = mX - 10;
+          var rY = mY - 10;
+
+          startX = mX;
+          startY = mY;
+
+          rect.style.display = 'block';
+          rect.style.left    = rX + 'px';
+          rect.style.top     = rY + 'px';
+          rect.style.width   = '0px';
+          rect.style.height  = '0px';
+
+          dragging  = false;
+          selecting = true;
         }
       };
 
       $.addEvent(self._root, "mousedown", mousedown);
       $.disableContext(self._root);
+
+      $.addEvent(self._main, "mousedown", main_mousedown);
+      $.disableContext(self._main);
 
       // Load tiles (async)
       img.onload = function() {

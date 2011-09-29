@@ -66,3 +66,16 @@ body {
   cursor : pointer;
   z-index : 10;
 }
+
+#Rectangle {
+  position : absolute;
+  top : 0px;
+  right : 0px;
+  width : 0px;
+  height : 0px;
+  border : 1px solid #fff;
+  overflow : hidden;
+  display : none;
+  z-index  : 1000000;
+  margin : -1px;
+}
