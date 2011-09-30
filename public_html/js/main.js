@@ -11,9 +11,11 @@
   // GLOBALS
   /////////////////////////////////////////////////////////////////////////////
 
-  var _FPS   = 0;
-  var _Main  = null;
-  var _Sound = null;
+  var _FPS      = 0;
+  var _Main     = null;
+  var _Graphic  = null;
+  var _Sound    = null;
+  var _Player   = 0;
 
   var _DebugMap = null;
   var _DebugFPS = null;
@@ -97,6 +99,61 @@
   /////////////////////////////////////////////////////////////////////////////
   // BASE CLASSES
   /////////////////////////////////////////////////////////////////////////////
+
+  var Graphics = Class.extend({
+
+    _preloaded : {
+      "unit" : null,
+      "tank" : null,
+      "hq"   : null
+    },
+
+    init : function(callback) {
+      console.group("Graphics::init()");
+
+      console.group("Preloading gfx");
+      var index = 1;
+      for ( var i in this._preloaded ) {
+        if ( this._preloaded.hasOwnProperty(i) ) {
+          var src  = "/img/"  + i + ".png";
+
+          console.log(i, src);
+
+          s = new Image();
+          s.onload = function() {
+            if ( index >= 3 ) {
+              callback();
+            }
+            index++;
+          };
+          s.src = src;
+
+          this._preloaded[i] = s;
+        }
+      }
+      console.groupEnd();
+
+      console.groupEnd();
+    },
+
+    destroy : function() {
+      console.group("Graphics::destroy()");
+      for ( var i in this._preloaded ) {
+        if ( this._preloaded.hasOwnProperty(i) ) {
+          if ( this._preloaded[i] ) {
+            delete this._preloaded[i];
+            console.log("Unloaded", i);
+          }
+        }
+      }
+      console.groupEnd();
+    },
+
+    getImage : function(img) {
+      return this._preloaded[img];
+    }
+
+  });
 
   /**
    * Sounds -- Sound Manager
@@ -318,6 +375,7 @@
    */
   var MapObject = CanvasObject.extend({
 
+    _player        : 0,
     _type          : -1,
     _image         : null,
     _selected      : false,
@@ -554,17 +612,16 @@
       ObjectAction([this]);
     },
 
-    setImage : function(src) {
-      var self = this;
-      var img = new Image();
-      img.onload = function() { // FIXME
-        self._image = this;
-      };
-      img.src = src;
+    setImage : function(img) {
+      this._image = img;
     },
 
     getMovable : function() {
       return this._movable;
+    },
+
+    getIsMine : function() {
+      return (this._player == _Player);
     }
 
   });
@@ -922,21 +979,21 @@
   var MapObjectUnit = MapObject.extend({
     init : function(x, y, a) {
       this._super(OBJECT_UNIT, 50, 39, x, y, a);
-      this.setImage("/img/unit.png");
+      this.setImage(_Graphic.getImage("unit"));
     }
   });
 
   var MapObjectTank = MapObject.extend({
     init : function(x, y, a) {
       this._super(OBJECT_TANK, 24, 24, x, y, a);
-      this.setImage("/img/tank.png");
+      this.setImage(_Graphic.getImage("tank"));
     }
   });
 
   var MapObjectBuilding = MapObject.extend({
     init : function(x, y, a) {
       this._super(OBJECT_BUILDING, 72, 48, x, y, a);
-      this.setImage("/img/hq.png");
+      this.setImage(_Graphic.getImage("hq"));
     }
   });
 
@@ -961,8 +1018,12 @@
     _Sound = new Sounds();
 
     if ( SUPPORT.canvas ) {
-      _Main = new Game();
-      _Main.run();
+      _Graphic = new Graphics(function() {
+        setTimeout(function() {
+          _Main = new Game();
+          _Main.run();
+        }, 100);
+      });
     } else {
       alert("Your browser is not supported!");
     }
@@ -976,6 +1037,10 @@
     if ( _Main ) {
       _Main.destroy();
       delete _Main;
+    }
+    if ( _Graphic ) {
+      _Graphic.destroy();
+      delete _Graphic;
     }
     if ( _Sound ) {
       _Sound.destroy();
