@@ -42,6 +42,13 @@ body {
   border : 1px solid #ff0000;
 }
 
+#Debugging {
+  position : absolute;
+  top : 200px;
+  left : 10px;
+  color : #fff;
+}
+
 #Main {
   /*
   position : relative;

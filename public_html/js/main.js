@@ -11,8 +11,13 @@
   // GLOBALS
   /////////////////////////////////////////////////////////////////////////////
 
-  var _Main = null;
+  var _FPS   = 0;
+  var _Main  = null;
   var _Sound = null;
+
+  var _DebugMap = null;
+  var _DebugFPS = null;
+  var _DebugObjects = null;
 
   /////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
@@ -28,6 +33,8 @@
     'openDatabase'   : (('openDatabase'   in window) && (window['openDatabase']   !== null)),
     'WebSocket'      : (('WebSocket'      in window) && (window['WebSocket']      !== null))
   };
+
+  var DEBUG_MODE       = true;
 
   var LOOP_INTERVAL    = (1000 / 30);
   var TILE_SIZE        = 24;
@@ -193,6 +200,8 @@
   var Game = Class.extend({
 
     _interval : null,
+    _started  : null,
+    _last     : null,
     _running  : false,
     _map      : null,
 
@@ -235,8 +244,19 @@
       }
     },
 
-    loop : function() {
+    loop : function(tick) {
+      if ( this._last ) {
+        _FPS = tick - this._last;
+      }
+
       this._map.render();
+
+      this._last = tick;
+
+      if ( DEBUG_MODE ) {
+        _DebugFPS.innerHTML = _FPS;
+        _DebugObjects.innerHTML = this._map._objects.length;
+      }
     },
 
     run : function() {
@@ -246,6 +266,8 @@
         var self = this;
 
         this._map.prepare(function() {
+
+          self._started = new Date();
 
           /*
           var t = (window.requestAnimationFrame       ||
@@ -260,7 +282,8 @@
           if ( t ) {
             //var canvas = self.getCanvas();
             var frame = function() {
-              self.loop();
+              var tick = ((new Date()) - self._started);
+              self.loop(tick);
 
               t(frame/*, canvas*/);
             };
@@ -269,7 +292,8 @@
           } else {
             if ( !self._interval ) {
               self._interval = setInterval(function() {
-                self.loop();
+                var tick = ((new Date()) - self._started);
+                self.loop(tick);
               }, LOOP_INTERVAL);
             }
           }
@@ -562,6 +586,14 @@
       this._root.style.width = w + "px";
       this._root.style.height = h + "px";
 
+      this.__context.fillStyle   = "rgba(255,255,255,0.9)";
+      this.__context.strokeStyle = "rgba(0,0,0,0.9)";
+      this.__context.lineWidth   = 0.1;
+
+      if ( DEBUG_MODE ) {
+        _DebugMap.innerHTML = (this._sizeX + "x" + this._sizeY) + (" (" + (w + "x" + h) + ")");
+      }
+
       console.log("Size X", this._sizeX);
       console.log("Size Y", this._sizeY);
       console.log("Dimension", w, "x", h);
@@ -815,9 +847,26 @@
           py += TILE_SIZE;
         }
 
+        if ( DEBUG_MODE ) {
+          var cc = self.__context;
+          cc.beginPath();
+          for ( y = 0; y < self._sizeY; y++ ) {
+            cc.moveTo(0, y * TILE_SIZE);
+            cc.lineTo(self.__width, y * TILE_SIZE);
+          }
+          for ( x = 0; x < self._sizeX; x++ ) {
+            cc.moveTo(x * TILE_SIZE, 0);
+            cc.lineTo(x * TILE_SIZE, self.__height);
+          }
+          cc.stroke();
+          cc.closePath();
+        }
+
         console.log("Created tiles", self._sizeX, "x", self._sizeY);
 
         self._root.appendChild(self.getCanvas());
+
+
 
         // Load objects
         for ( var i = 0; i < self._objects.length; i++ ) {
@@ -882,6 +931,10 @@
    * @return void
    */
   window.onload = function() {
+    _DebugMap = document.getElementById("GUI_Map");
+    _DebugFPS = document.getElementById("GUI_FPS");
+    _DebugObjects = document.getElementById("GUI_Objects");
+
     console.group("window::onload()");
     console.log("Browser agent", navigator.userAgent);
     console.log("Browser features", SUPPORT);

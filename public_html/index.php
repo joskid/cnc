@@ -45,7 +45,15 @@ require "../main.php";
   <body>
     <!-- Sidebar -->
     <div id="Sidebar">
-      <div id="MiniMap"><!-- Canvas --><div id="MiniMapRect"></div></div>
+      <div id="MiniMap">
+        <!-- Canvas -->
+        <div id="MiniMapRect"></div>
+      </div>
+      <div id="Debugging">
+        <div>Map: <span id="GUI_Map">null</span></div>
+        <div>FPS: <span id="GUI_FPS">0</span></div>
+        <div>Objects: <span id="GUI_Objects">0</span></div>
+      </div>
     </div>
 
     <!-- Main Container -->
