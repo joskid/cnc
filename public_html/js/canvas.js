@@ -69,8 +69,9 @@ var CanvasObject = Class.extend({
 
   /// METHODS
 
-  render : function(callback) {
-    callback = callback || function() {};
+  render : function(d_callback, f_callback) {
+    d_callback = d_callback || function() {};
+    f_callback = f_callback || function() {};
 
     var w   = this.__width;
     var h   = this.__height;
@@ -96,11 +97,13 @@ var CanvasObject = Class.extend({
     cc.translate(-((w + 20) / 2), -((h + 20) / 2));
 
     // Draw
-    callback(c, cc, w, h, x, y);
+    d_callback(c, cc, w, h, x, y);
 
     // Display
     c.restore();
     cc.restore();
+
+    f_callback(c, cc, w, h, x, y);
   },
 
   drawImage : function(img, x, y) {

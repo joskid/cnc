@@ -202,10 +202,13 @@
       // Example data
       this._map = new Map();
 
-      this._map.addObject((new MapObjectTank(10, 10)));
-      this._map.addObject((new MapObjectTank(10, 40)));
-      this._map.addObject((new MapObjectTank(10, 70)));
+      this._map.addObject((new MapObjectTank(50, 30)));
+      this._map.addObject((new MapObjectTank(50, 90)));
+      this._map.addObject((new MapObjectTank(50, 150)));
       this._map.addObject((new MapObjectBuilding(150, 150)));
+      this._map.addObject((new MapObjectUnit(170, 10)));
+      this._map.addObject((new MapObjectUnit(170, 40)));
+      this._map.addObject((new MapObjectUnit(170, 70)));
 
       console.groupEnd();
     },
@@ -312,9 +315,9 @@
         this._movable = false;
       } else if ( this._type == OBJECT_UNIT ) {
         this._speed = 5;
-        this._turning_speed = 10;
       } else {
         this._speed = 10;
+        this._turning_speed = 10;
       }
 
       // Init canvas
@@ -412,13 +415,20 @@
         var tw = w + 20;
         var th = h + 20;
 
+        if ( self._type == OBJECT_UNIT ) {
+          cc.fillStyle   = "rgba(100,255,100,0.9)";
+        } else if ( self._type == OBJECT_TANK ) {
+          cc.fillStyle   = "rgba(100,100,255,0.9)";
+        } else {
+          cc.fillStyle   = "rgba(255,255,255,0.9)";
+        }
         cc.strokeStyle = "rgba(0,0,0,0.9)";
 
         cc.beginPath();
           if ( self._type == OBJECT_BUILDING ) {
             cc.fillRect((tw/2 - w/2), (th/2 - h/2), w, h);
           } else {
-            cc.arc((tw / 2), (th / 2), 12, (Math.PI * 2), false);
+            cc.arc((tw / 2), (th / 2), (w / 2), (Math.PI * 2), false);
             cc.fill();
           }
           if ( self._selected ) {
@@ -431,39 +441,41 @@
           cc.lineTo(tw, (th / 2));
           cc.stroke();
         cc.closePath();
+      }, function(c, cc, w, h, x, y) {
+        var tw = w + 20;
+        var th = h + 20;
 
         if ( self._selected ) {
 
           cc.strokeStyle = "rgba(255,255,255,0.9)";
 
           cc.beginPath();
-            cc.moveTo(5, 5);
-            cc.lineTo(15, 5);
-            cc.moveTo(5, 5);
-            cc.lineTo(5, 15);
+            cc.moveTo(0, 0);
+            cc.lineTo(10, 0);
+            cc.moveTo(0, 0);
+            cc.lineTo(0, 10);
             cc.stroke();
 
-            cc.moveTo(tw - 15,  5);
-            cc.lineTo(tw - 5, 5);
-            cc.moveTo(tw - 5, 5);
-            cc.lineTo(tw - 5, 15);
+            cc.moveTo(tw - 10,  0);
+            cc.lineTo(tw - 0, 0);
+            cc.moveTo(tw - 0, 0);
+            cc.lineTo(tw - 0, 10);
             cc.stroke();
 
-            cc.moveTo(tw - 15,  th - 5);
-            cc.lineTo(tw - 5, th - 5);
-            cc.moveTo(tw - 5, th - 5);
-            cc.lineTo(tw - 5, th - 15);
+            cc.moveTo(tw - 10,  th - 0);
+            cc.lineTo(tw - 0, th - 0);
+            cc.moveTo(tw - 0, th - 0);
+            cc.lineTo(tw - 0, th - 10);
             cc.stroke();
 
-            cc.moveTo(5, th - 5);
-            cc.lineTo(15, th - 5);
-            cc.moveTo(5, th - 5);
-            cc.lineTo(5, th - 15);
+            cc.moveTo(0, th - 0);
+            cc.lineTo(10, th - 0);
+            cc.moveTo(0, th - 0);
+            cc.lineTo(0, th - 10);
             cc.stroke();
 
           cc.closePath();
         }
-
       });
     },
 
@@ -843,9 +855,9 @@
   // OBJECT CLASSES
   /////////////////////////////////////////////////////////////////////////////
 
-  var MapobjectUnit = MapObject.extend({
+  var MapObjectUnit = MapObject.extend({
     init : function(x, y, a) {
-      this._super(OBJECT_UNIT, 20, 20, x, y, a);
+      this._super(OBJECT_UNIT, 10, 10, x, y, a);
     }
   });
 
