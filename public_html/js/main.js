@@ -40,6 +40,7 @@
   var TILE_SIZE        = 24;
   var MINIMAP_WIDTH    = 180;
   var MINIMAP_HEIGHT   = 180;
+  var SELECTION_SENSE  = 10;
 
   var OBJECT_UNIT      = 1;
   var OBJECT_TANK      = 2;
@@ -761,7 +762,9 @@
               'y2' : ry + rh
             };
 
-            if ( re.x1 != re.x2 || re.y1 != re.y2 ) {
+
+            //if ( re.x1 != re.x2 || re.y1 != re.y2 ) {
+            if ( (Math.sqrt((re.x2 - re.x1) * (re.y2 - re.y1))) > (SELECTION_SENSE) ) {
               self.onSelect(ev, re);
             } else {
 
@@ -865,8 +868,6 @@
         console.log("Created tiles", self._sizeX, "x", self._sizeY);
 
         self._root.appendChild(self.getCanvas());
-
-
 
         // Load objects
         for ( var i = 0; i < self._objects.length; i++ ) {
