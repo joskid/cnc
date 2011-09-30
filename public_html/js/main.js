@@ -770,10 +770,10 @@
             var rh = Math.abs((mY - 10) - (startY - 10));
 
             var re = {
-              'x1' : rx,
-              'y1' : ry,
-              'x2' : rx + rw,
-              'y2' : ry + rh
+              'x1' : Math.abs(self._posX - rx),
+              'y1' : Math.abs(self._posY - ry),
+              'x2' : Math.abs(self._posX - rx) + rw,
+              'y2' : Math.abs(self._posY - ry) + rh
             };
 
 
