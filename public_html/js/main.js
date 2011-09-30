@@ -11,20 +11,25 @@
   // GLOBALS
   /////////////////////////////////////////////////////////////////////////////
 
-  var _FPS      = 0;
+  // References
   var _Main     = null;
   var _Graphic  = null;
   var _Sound    = null;
+
+  // Variables
+  var _FPS      = 0;
   var _Player   = 0;
 
-  var _DebugMap = null;
-  var _DebugFPS = null;
+  // Debugging elements
+  var _DebugMap     = null;
+  var _DebugFPS     = null;
   var _DebugObjects = null;
 
   /////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
   /////////////////////////////////////////////////////////////////////////////
 
+  // Supported browser features
   var SUPPORT = {
     'canvas'         : (!!document.createElement('canvas').getContext),
     'audio'          : (!!document.createElement('audio').canPlayType),
@@ -36,22 +41,29 @@
     'WebSocket'      : (('WebSocket'      in window) && (window['WebSocket']      !== null))
   };
 
-  var DEBUG_MODE       = true;
-
+  // Internals
   var LOOP_INTERVAL    = (1000 / 30);
   var TILE_SIZE        = 24;
   var MINIMAP_WIDTH    = 180;
   var MINIMAP_HEIGHT   = 180;
   var SELECTION_SENSE  = 10;
 
+  // Object types
   var OBJECT_UNIT      = 1;
-  var OBJECT_TANK      = 2;
+  var OBJECT_VEHICLE   = 2;
   var OBJECT_BUILDING  = 3;
 
   /////////////////////////////////////////////////////////////////////////////
   // HELPER FUNCTIONS
   /////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * ObjectAction -- Perform a MapObject operation
+   *
+   * Select, Unselect or Move object(s)
+   *
+   * @return void
+   */
   var ObjectAction = (function() {
     var _Selected = [];
 
@@ -100,17 +112,27 @@
   // BASE CLASSES
   /////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Graphics -- Graphics Manager
+   * @class
+   */
   var Graphics = Class.extend({
 
+    // Preloaded items
     _preloaded : {
-      "unit" : null,
-      "tank" : null,
-      "hq"   : null
+      "tile_desert"  : null,
+      "unit"         : null,
+      "tank"         : null,
+      "hq"           : null
     },
 
+    /**
+     * @constructor
+     */
     init : function(callback) {
       console.group("Graphics::init()");
 
+      // Preload all images
       console.group("Preloading gfx");
       var index = 1;
       for ( var i in this._preloaded ) {
@@ -121,7 +143,7 @@
 
           s = new Image();
           s.onload = function() {
-            if ( index >= 3 ) {
+            if ( index >= 4 ) {
               callback();
             }
             index++;
@@ -136,6 +158,9 @@
       console.groupEnd();
     },
 
+    /**
+     * @destructor
+     */
     destroy : function() {
       console.group("Graphics::destroy()");
       for ( var i in this._preloaded ) {
@@ -149,6 +174,10 @@
       console.groupEnd();
     },
 
+    /**
+     * Get a preloaded image
+     * @return Image
+     */
     getImage : function(img) {
       return this._preloaded[img];
     }
@@ -164,11 +193,15 @@
     _codec     : "mp3",
     _ext       : "mp3",
 
+    // Preloaded items
     _preloaded : {
       "await1"   : null,
       "ackno"    : null
     },
 
+    /**
+     * @constructor
+     */
     init : function() {
 
       console.group("Sounds::init()");
@@ -229,6 +262,9 @@
       console.groupEnd();
     },
 
+    /**
+     * @destructor
+     */
     destroy : function() {
       console.group("Sounds::destroy()");
       for ( var i in this._preloaded ) {
@@ -242,6 +278,10 @@
       console.groupEnd();
     },
 
+    /**
+     * Play a preloaded sound
+     * @return void
+     */
     play : function(snd) {
       if ( this._enabled ) {
         if ( this._preloaded[snd] ) {
@@ -263,15 +303,18 @@
     _running  : false,
     _map      : null,
 
+    /**
+     * @constructor
+     */
     init : function() {
       console.group("Game::init()");
 
       // Example data
       this._map = new Map();
 
-      this._map.addObject((new MapObjectTank(50, 30)));
-      this._map.addObject((new MapObjectTank(50, 90)));
-      this._map.addObject((new MapObjectTank(50, 150)));
+      this._map.addObject((new MapObjectVehicle(50, 30)));
+      this._map.addObject((new MapObjectVehicle(50, 90)));
+      this._map.addObject((new MapObjectVehicle(50, 150)));
       this._map.addObject((new MapObjectBuilding(143, 143)));
       this._map.addObject((new MapObjectUnit(170, 10)));
       this._map.addObject((new MapObjectUnit(170, 40)));
@@ -280,6 +323,9 @@
       console.groupEnd();
     },
 
+    /**
+     * @destructor
+     */
     destroy : function() {
       console.group("Game::destroy()");
 
@@ -296,12 +342,20 @@
       console.groupEnd();
     },
 
+    /**
+     * resize -- onresize event
+     * @return void
+     */
     resize : function() {
       if ( this._map ) {
         this._map.onResize();
       }
     },
 
+    /**
+     * loop -- main loop
+     * @return void
+     */
     loop : function(tick) {
       if ( this._last ) {
         _FPS = tick - this._last;
@@ -311,62 +365,65 @@
 
       this._last = tick;
 
-      if ( DEBUG_MODE ) {
+      if ( CnC.DEBUG_MODE ) {
         _DebugFPS.innerHTML = _FPS;
         _DebugObjects.innerHTML = this._map._objects.length;
       }
     },
 
+    /**
+     * Run Game
+     * @return void
+     */
     run : function() {
       console.group("Game::run()");
 
       if ( !this._running ) {
         var self = this;
 
-        this._map.prepare(function() {
+        this._map.prepare();
 
-          self._started = new Date();
+        this._started = new Date();
 
-          /*
-          var t = (window.requestAnimationFrame       ||
-                   window.webkitRequestAnimationFrame ||
-                   window.mozRequestAnimationFrame    ||
-                   window.oRequestAnimationFrame      ||
-                   window.msRequestAnimationFrame     ||
-                   null);
-        */
-          var t = null;
+        /*
+        var t = (window.requestAnimationFrame       ||
+                 window.webkitRequestAnimationFrame ||
+                 window.mozRequestAnimationFrame    ||
+                 window.oRequestAnimationFrame      ||
+                 window.msRequestAnimationFrame     ||
+                 null);
+      */
+        var t = null;
 
-          if ( t ) {
-            //var canvas = self.getCanvas();
-            var frame = function() {
-              var tick = ((new Date()) - self._started);
-              self.loop(tick);
-
-              t(frame/*, canvas*/);
-            };
+        if ( t ) {
+          //var canvas = self.getCanvas();
+          var frame = function() {
+            var tick = ((new Date()) - self._started);
+            self.loop(tick);
 
             t(frame/*, canvas*/);
-          } else {
-            if ( !self._interval ) {
-              self._interval = setInterval(function() {
-                var tick = ((new Date()) - self._started);
-                self.loop(tick);
-              }, LOOP_INTERVAL);
-            }
-          }
+          };
 
-          console.groupEnd();
-        });
+          t(frame/*, canvas*/);
+        } else {
+          if ( !self._interval ) {
+            self._interval = setInterval(function() {
+              var tick = ((new Date()) - self._started);
+              self.loop(tick);
+            }, LOOP_INTERVAL);
+          }
+        }
 
         this._running = true;
       }
+
+      console.groupEnd();
     }
 
   });
 
   /////////////////////////////////////////////////////////////////////////////
-  // ABSTRACT CLASSES
+  // MAP OBJECT
   /////////////////////////////////////////////////////////////////////////////
 
   /**
@@ -388,6 +445,9 @@
     _destination  : null,
     _heading      : null,
 
+    /**
+     * @constructor
+     */
     init : function(t, w, h, x, y, a) {
       a = a || 0;
 
@@ -426,12 +486,19 @@
       console.groupEnd();
     },
 
+    /**
+     * @destructor
+     */
     destroy : function() {
       this.__context.onclick = null;
 
       this._super();
     },
 
+    /**
+     * render -- Render the MapObject (CanvasObject)
+     * @return void
+     */
     render : function() {
       var self = this;
 
@@ -501,7 +568,7 @@
 
         if ( self._type == OBJECT_UNIT ) {
           cc.fillStyle   = "rgba(100,255,100,0.2)";
-        } else if ( self._type == OBJECT_TANK ) {
+        } else if ( self._type == OBJECT_VEHICLE ) {
           cc.fillStyle   = "rgba(100,100,255,0.2)";
         } else {
           cc.fillStyle   = "rgba(255,255,255,0.2)";
@@ -567,18 +634,30 @@
       });
     },
 
+    /**
+     * select -- Select the MapObject
+     * @return void
+     */
     select : function() {
       console.log("MapObject::select()", this);
 
       this._selected = true;
     },
 
+    /**
+     * unselect -- Unselect the MapObject
+     * @return void
+     */
     unselect : function() {
       console.log("MapObject::unselect()", this);
 
       this._selected = false;
     },
 
+    /**
+     * move -- Move the MapObject
+     * @return void
+     */
     move : function(pos) {
       if ( !this._movable ) {
         return;
@@ -605,6 +684,10 @@
       this._heading = parseInt(rotation, 10);
     },
 
+    /**
+     * onClick -- Click event
+     * @return void
+     */
     onClick : function(ev) {
       $.preventDefault(ev);
       $.stopPropagation(ev);
@@ -612,19 +695,35 @@
       ObjectAction([this]);
     },
 
+    /**
+     * setImage -- Set the image file to use
+     * @return void
+     */
     setImage : function(img) {
       this._image = img;
     },
 
+    /**
+     * getMovable -- Get movable state
+     * @return bool
+     */
     getMovable : function() {
       return this._movable;
     },
 
+    /**
+     * getIsMine -- Get if this MapObject is the current player's
+     * @return bool
+     */
     getIsMine : function() {
       return (this._player == _Player);
     }
 
   });
+
+  /////////////////////////////////////////////////////////////////////////////
+  // MAP
+  /////////////////////////////////////////////////////////////////////////////
 
   /**
    * Map -- Main Map Class
@@ -642,6 +741,9 @@
     _minimap  : null,
     _minirect : null,
 
+    /**
+     * @constructor
+     */
     init : function() {
       console.group("Map::init()");
 
@@ -662,7 +764,7 @@
       this.__context.strokeStyle = "rgba(0,0,0,0.9)";
       this.__context.lineWidth   = 0.1;
 
-      if ( DEBUG_MODE ) {
+      if ( CnC.DEBUG_MODE ) {
         _DebugMap.innerHTML = (this._sizeX + "x" + this._sizeY) + (" (" + (w + "x" + h) + ")");
       }
 
@@ -672,6 +774,9 @@
       console.groupEnd();
     },
 
+    /**
+     * @destructor
+     */
     destroy : function() {
       for ( var i = 0; i < this._objects.length; i++ ) {
         this._objects[i].destroy();
@@ -680,17 +785,29 @@
       this._objects = [];
     },
 
+    /**
+     * addObject -- Add a MapObject
+     * @return void
+     */
     addObject : function(o) {
       if ( o instanceof MapObject ) {
         this._objects.push(o);
       }
     },
 
+    /**
+     * onDragStart -- Drag starting event
+     * @return void
+     */
     onDragStart : function(ev, pos) {
       this._root.style.top  = (this._posY) + "px";
       this._root.style.left = (this._posX) + "px";
     },
 
+    /**
+     * onDragStop -- Drag stopping event
+     * @return void
+     */
     onDragStop : function(ev, pos) {
       if ( pos === false ) {
         ObjectAction([]);
@@ -700,18 +817,10 @@
       }
     },
 
-    onResize : function() {
-      // Resize minimap rectangle
-      var scaleX = this._root.offsetWidth / this._main.offsetWidth;
-      var scaleY = this._root.offsetHeight / this._main.offsetHeight;
-
-      var rw = Math.round(MINIMAP_WIDTH / scaleX);
-      var rh = Math.round(MINIMAP_HEIGHT / scaleY);
-
-      this._minirect.style.width  = (rw) + 'px';
-      this._minirect.style.height = (rh) + 'px';
-    },
-
+    /**
+     * onDragMove -- Drag moving event
+     * @return void
+     */
     onDragMove : function(ev, pos) {
       // Move the map container
       var x = this._posX + pos.x;
@@ -730,6 +839,26 @@
       this._minirect.style.top  = (ry - 1) + 'px';
     },
 
+    /**
+     * onResize -- Window onresize event
+     * @return void
+     */
+    onResize : function() {
+      // Resize minimap rectangle
+      var scaleX = this._root.offsetWidth / this._main.offsetWidth;
+      var scaleY = this._root.offsetHeight / this._main.offsetHeight;
+
+      var rw = Math.round(MINIMAP_WIDTH / scaleX);
+      var rh = Math.round(MINIMAP_HEIGHT / scaleY);
+
+      this._minirect.style.width  = (rw) + 'px';
+      this._minirect.style.height = (rh) + 'px';
+    },
+
+    /**
+     * onSelect -- Selection rectangle event
+     * @return void
+     */
     onSelect : function(ev, rect) {
       console.group("Map::onSelect");
       console.log("Rect", rect);
@@ -749,17 +878,24 @@
       console.groupEnd();
     },
 
+    /**
+     * onObjectUpdate -- TODO
+     * @return void
+     */
     onObjectUpdate : function() {
       // Update minimap
     },
 
-    prepare : function(callback) {
+    /**
+     * prepare -- Prepare the map (Load)
+     * @return void
+     */
+    prepare : function() {
       console.group("Map::prepare()");
 
       var self = this;
 
       var rect = document.getElementById("Rectangle");
-      var img = new Image();
       var px = 0;
       var py = 0;
 
@@ -902,65 +1038,61 @@
         }
       };
 
-      $.addEvent(self._root, "mousedown", mousedown);
-      $.disableContext(self._root);
+      $.addEvent(this._root, "mousedown", mousedown);
+      $.disableContext(this._root);
 
-      $.addEvent(self._main, "mousedown", main_mousedown);
-      $.disableContext(self._main);
+      $.addEvent(this._main, "mousedown", main_mousedown);
+      $.disableContext(this._main);
 
       // Load tiles (async)
-      img.onload = function() {
-        console.log("Loaded image", this.src);
 
-        for ( var y = 0; y < self._sizeY; y++ ) {
-          px = 0;
-          for ( var x = 0; x < self._sizeX; x++ ) {
-            self.drawImage(img, px, py);
-            px += TILE_SIZE;
-          }
-          py += TILE_SIZE;
+      var img = _Graphic.getImage("tile_desert");
+      for ( var y = 0; y < this._sizeY; y++ ) {
+        px = 0;
+        for ( var x = 0; x < this._sizeX; x++ ) {
+          this.drawImage(img, px, py);
+          px += TILE_SIZE;
         }
+        py += TILE_SIZE;
+      }
 
-        if ( DEBUG_MODE ) {
-          var cc = self.__context;
-          cc.beginPath();
-          for ( y = 0; y < self._sizeY; y++ ) {
-            cc.moveTo(0, y * TILE_SIZE);
-            cc.lineTo(self.__width, y * TILE_SIZE);
-          }
-          for ( x = 0; x < self._sizeX; x++ ) {
-            cc.moveTo(x * TILE_SIZE, 0);
-            cc.lineTo(x * TILE_SIZE, self.__height);
-          }
-          cc.stroke();
-          cc.closePath();
+      if ( CnC.DEBUG_MODE ) {
+        var cc = this.__context;
+        cc.beginPath();
+        for ( y = 0; y < this._sizeY; y++ ) {
+          cc.moveTo(0, y * TILE_SIZE);
+          cc.lineTo(this.__width, y * TILE_SIZE);
         }
-
-        console.log("Created tiles", self._sizeX, "x", self._sizeY);
-
-        self._root.appendChild(self.getCanvas());
-
-        // Load objects
-        for ( var i = 0; i < self._objects.length; i++ ) {
-          self._root.appendChild(self._objects[i].getRoot());
+        for ( x = 0; x < this._sizeX; x++ ) {
+          cc.moveTo(x * TILE_SIZE, 0);
+          cc.lineTo(x * TILE_SIZE, this.__height);
         }
+        cc.stroke();
+        cc.closePath();
+      }
 
-        console.log("Inserted", i, "object(s)");
+      console.log("Created tiles", this._sizeX, "x", this._sizeY);
 
-        // Re-init map stuff
-        self.onResize();
-        self.onDragMove(null, {x : self._posX, y : self._posY});
+      this._root.appendChild(this.getCanvas());
 
-        // Run callback to continue
-        setTimeout(function() {
-          callback();
-        }, 0);
-      };
-      img.src = "/img/tile_desert.png";
+      // Load objects
+      for ( var i = 0; i < this._objects.length; i++ ) {
+        this._root.appendChild(this._objects[i].getRoot());
+      }
+
+      console.log("Inserted", i, "object(s)");
+
+      // Re-init map stuff
+      this.onResize();
+      this.onDragMove(null, {x : this._posX, y : this._posY});
 
       console.groupEnd();
     },
 
+    /**
+     * render -- Render the Map (CanvasObject)
+     * @return void
+     */
     render : function() {
       for ( var i = 0; i < this._objects.length; i++ ) {
         this._objects[i].render();
@@ -976,6 +1108,11 @@
   // OBJECT CLASSES
   /////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * MapObjectUnit -- Unit type MapObject
+   * @class
+   * @extends MapObject
+   */
   var MapObjectUnit = MapObject.extend({
     init : function(x, y, a) {
       this._super(OBJECT_UNIT, 50, 39, x, y, a);
@@ -983,13 +1120,23 @@
     }
   });
 
-  var MapObjectTank = MapObject.extend({
+  /**
+   * MapObjectVehicle -- Vehicle type MapObject
+   * @class
+   * @extends MapObject
+   */
+  var MapObjectVehicle = MapObject.extend({
     init : function(x, y, a) {
-      this._super(OBJECT_TANK, 24, 24, x, y, a);
+      this._super(OBJECT_VEHICLE, 24, 24, x, y, a);
       this.setImage(_Graphic.getImage("tank"));
     }
   });
 
+  /**
+   * MapObjectBuilding -- Building type MapObject
+   * @class
+   * @extends MapObject
+   */
   var MapObjectBuilding = MapObject.extend({
     init : function(x, y, a) {
       this._super(OBJECT_BUILDING, 72, 48, x, y, a);
@@ -1006,8 +1153,9 @@
    * @return void
    */
   window.onload = function() {
-    _DebugMap = document.getElementById("GUI_Map");
-    _DebugFPS = document.getElementById("GUI_FPS");
+    // Debugging elements
+    _DebugMap     = document.getElementById("GUI_Map");
+    _DebugFPS     = document.getElementById("GUI_FPS");
     _DebugObjects = document.getElementById("GUI_Objects");
 
     console.group("window::onload()");
@@ -1015,11 +1163,14 @@
     console.log("Browser features", SUPPORT);
     console.groupEnd();
 
+    // Initialize sound engine (not required)
     _Sound = new Sounds();
 
+    // Initialize graphics engine (required)
     if ( SUPPORT.canvas ) {
       _Graphic = new Graphics(function() {
         setTimeout(function() {
+          // Initialize the Game
           _Main = new Game();
           _Main.run();
         }, 100);
@@ -1034,6 +1185,7 @@
    * @return void
    */
   window.onunload = function() {
+    // Unset main engine instances
     if ( _Main ) {
       _Main.destroy();
       delete _Main;
@@ -1046,6 +1198,11 @@
       _Sound.destroy();
       delete _Sound;
     }
+
+    // Unset other variables
+    _DebugMap     = null;
+    _DebugFPS     = null;
+    _DebugObjects = null;
 
     window.onload   = undefined;
     window.onunload = undefined;

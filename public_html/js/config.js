@@ -8,7 +8,11 @@
 (function(undefined) {
 
   window.CnC = {
-    CONFIG : {
+    // Debugging options
+    DEBUG_MODE : true,
+
+    // Main configuration
+    CONFIG     : {
       'audio_on'    : true,
       'audio_sfx'   : 90,
       'audio_gui'   : 100,
