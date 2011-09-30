@@ -82,13 +82,6 @@
     };
   })();
 
-  var IsInside = function(rsrc, rtst) {
-    if ( ((rtst.x1 >= rsrc.x1) && (rtst.x2 <= rsrc.x2)) && ((rtst.y1 >= rsrc.y1) && (rtst.y2 <= rsrc.y2)) ) {
-      return true;
-    }
-    return false;
-  };
-
   /////////////////////////////////////////////////////////////////////////////
   // BASE CLASSES
   /////////////////////////////////////////////////////////////////////////////
@@ -292,17 +285,22 @@
    */
   var MapObject = CanvasObject.extend({
 
-    _selected     : false,
-    _angle        : 0,
-    _movable      : true,
-    _speed        : 5,
-    _strength     : 10,
-    _destination  : null,
+    _selected      : false,
+    _angle         : 0,
+    _movable       : true,
+    _speed         : 5,
+    _turning_speed : 10,
+    _strength      : 10,
 
-    init : function(x, y) {
+    _destination  : null,
+    _heading      : null,
+
+    init : function(x, y, a) {
+      a = a || 0;
+
       console.group("MapObject::init()");
 
-      this._super(20, 20, x, y, this._angle);
+      this._super(20, 20, x, y, a);
 
       this.__coverlay.fillStyle   = "rgba(255,255,255,0.9)";
       this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
@@ -335,7 +333,38 @@
     render : function() {
       var self = this;
 
-      if ( this._destination ) {
+      var mag, dif, dir;
+      // First handle rotation
+      if ( this._heading !== null ) {
+        if ( this._turning_speed ) {
+          if ( this._heading !== this._angle ) {
+            dir = $.shortestRotation(this._angle, this._heading);
+
+            if ( dir > 0 ) {
+              mag = this._angle + this._turning_speed;
+              if ( mag >= this._heading ) {
+                mag = this._heading;
+              }
+            } else {
+              mag = this._angle - this._turning_speed;
+              if ( mag <= this._heading ) {
+                mag = this._heading;
+              }
+            }
+
+            this.setDirection(mag);
+            this._angle = mag;
+          } else {
+            this._heading = null;
+          }
+        } else {
+          this._angle   = this._heading;
+          this._heading = null;
+          this.setDirection(this._angle);
+        }
+      }
+      // Then movment
+      else if ( this._destination !== null ) {
         var x = this.__x;
         var y = this.__y;
 
@@ -344,8 +373,8 @@
         var j = this._destination.y - y;
 
         // Get and check closest distance
-        var mag = Math.sqrt(i * i + j * j);
-        var dif = Math.min(mag, this._speed);
+        mag = Math.sqrt(i * i + j * j);
+        dif = Math.min(mag, this._speed);
 
         if ( dif < this._speed ) {
           this._destination = null;
@@ -440,17 +469,17 @@
           y2 = pos.y - (h / 2);
 
       var deg      = Math.atan2((y2-y1), (x2-x1)) * (180 / Math.PI);
-      var rotation = (this._angle + deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
+      var rotation = (/*this._angle + */deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
       var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
 
       console.log("MapObject::move()", pos, x2, y2, rotation, "(" + deg + ")", distance);
-
-      this.setDirection(rotation);
 
       this._destination = {
         x : pos.x - (w  /2),
         y : pos.y - (h / 2)
       };
+
+      this._heading = parseInt(rotation, 10);
     },
 
     onClick : function(ev) {
@@ -565,7 +594,7 @@
       // Select object within rectangle
       var select = [];
       for ( var i = 0; i < this._objects.length; i++ ) {
-        if ( IsInside(rect, this._objects[i].getRect()) ) {
+        if ( $.isInside(rect, this._objects[i].getRect()) ) {
           select.push(this._objects[i]);
         }
       }

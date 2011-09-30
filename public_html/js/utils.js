@@ -12,6 +12,10 @@
 var $ = (function(undefined) {
 
   return {
+    //
+    // EVENTS
+    //
+
     'mousePosX' : function(ev, el) {
       ev = ev || window.event;
 
@@ -100,8 +104,36 @@ var $ = (function(undefined) {
       };
     },
 
+    //
+    // MATH
+    //
+
     'degToRad' : function(degree) {
       return degree*(Math.PI/180);
+    },
+
+    'isInside' : function(rsrc, rtst) {
+      if ( ((rtst.x1 >= rsrc.x1) && (rtst.x2 <= rsrc.x2)) && ((rtst.y1 >= rsrc.y1) && (rtst.y2 <= rsrc.y2)) ) {
+        return true;
+      }
+      return false;
+    },
+
+    'shortestRotation' : function(src, dst, upper, lower) {
+      //return Math.atan2(Math.sin(dst - src), Math.cos(dst - src));
+
+      upper = upper || 180;
+      lower = lower || -180;
+
+      if ( upper <= lower ) {
+        throw("Rotary bounds are of negative or zero size");
+      }
+
+      var value     = dst - src;
+      var distance  = upper - lower;
+      var times     = Math.floor((value - lower) / distance);
+
+      return value - (times * distance);
     }
 
 
