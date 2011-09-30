@@ -34,6 +34,10 @@
   var MINIMAP_WIDTH    = 180;
   var MINIMAP_HEIGHT   = 180;
 
+  var OBJECT_UNIT      = 1;
+  var OBJECT_TANK      = 2;
+  var OBJECT_BUILDING  = 3;
+
   /////////////////////////////////////////////////////////////////////////////
   // HELPER FUNCTIONS
   /////////////////////////////////////////////////////////////////////////////
@@ -198,9 +202,10 @@
       // Example data
       this._map = new Map();
 
-      this._map.addObject((new MapObject(10, 10)));
-      this._map.addObject((new MapObject(10, 40)));
-      this._map.addObject((new MapObject(10, 70)));
+      this._map.addObject((new MapObjectTank(10, 10)));
+      this._map.addObject((new MapObjectTank(10, 40)));
+      this._map.addObject((new MapObjectTank(10, 70)));
+      this._map.addObject((new MapObjectBuilding(150, 150)));
 
       console.groupEnd();
     },
@@ -285,29 +290,41 @@
    */
   var MapObject = CanvasObject.extend({
 
+    _type          : -1,
     _selected      : false,
     _angle         : 0,
     _movable       : true,
-    _speed         : 5,
-    _turning_speed : 10,
+    _speed         : 0,
+    _turning_speed : 0,
     _strength      : 10,
 
     _destination  : null,
     _heading      : null,
 
-    init : function(x, y, a) {
+    init : function(t, w, h, x, y, a) {
       a = a || 0;
 
       console.group("MapObject::init()");
 
-      this._super(20, 20, x, y, a);
+      // Set internals
+      this._type = parseInt(t, 10);
+      if ( this._type == OBJECT_BUILDING ) {
+        this._movable = false;
+      } else if ( this._type == OBJECT_UNIT ) {
+        this._speed = 5;
+        this._turning_speed = 10;
+      } else {
+        this._speed = 10;
+      }
 
+      // Init canvas
+      this._super(w, h, x, y, a);
       this.__coverlay.fillStyle   = "rgba(255,255,255,0.9)";
       this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
       this.__coverlay.lineWidth   = 1;
 
+      // Add events
       var self = this;
-
       $.addEvent(this.__overlay, "mousedown", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
@@ -320,8 +337,6 @@
       console.log("Pos Y", y);
 
       console.groupEnd();
-
-      this.render();
     },
 
     destroy : function() {
@@ -400,8 +415,12 @@
         cc.strokeStyle = "rgba(0,0,0,0.9)";
 
         cc.beginPath();
-          cc.arc((tw / 2), (th / 2), 12, (Math.PI * 2), false);
-          cc.fill();
+          if ( self._type == OBJECT_BUILDING ) {
+            cc.fillRect((tw/2 - w/2), (th/2 - h/2), w, h);
+          } else {
+            cc.arc((tw / 2), (th / 2), 12, (Math.PI * 2), false);
+            cc.fill();
+          }
           if ( self._selected ) {
             cc.stroke();
           }
@@ -461,6 +480,10 @@
     },
 
     move : function(pos) {
+      if ( !this._movable ) {
+        return;
+      }
+
       var w  = this.getDimension()[0],
           h  = this.getDimension()[1],
           x1 = this.getPosition()[0] - (w / 2),
@@ -487,6 +510,10 @@
       $.stopPropagation(ev);
 
       ObjectAction([this]);
+    },
+
+    getMovable : function() {
+      return this._movable;
     }
 
   });
@@ -810,6 +837,28 @@
     }
 
 
+  });
+
+  /////////////////////////////////////////////////////////////////////////////
+  // OBJECT CLASSES
+  /////////////////////////////////////////////////////////////////////////////
+
+  var MapobjectUnit = MapObject.extend({
+    init : function(x, y, a) {
+      this._super(OBJECT_UNIT, 20, 20, x, y, a);
+    }
+  });
+
+  var MapObjectTank = MapObject.extend({
+    init : function(x, y, a) {
+      this._super(OBJECT_TANK, 20, 20, x, y, a);
+    }
+  });
+
+  var MapObjectBuilding = MapObject.extend({
+    init : function(x, y, a) {
+      this._super(OBJECT_BUILDING, 100, 100, x, y, a);
+    }
   });
 
   /////////////////////////////////////////////////////////////////////////////
