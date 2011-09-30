@@ -215,7 +215,7 @@
       this._map.addObject((new MapObjectTank(50, 30)));
       this._map.addObject((new MapObjectTank(50, 90)));
       this._map.addObject((new MapObjectTank(50, 150)));
-      this._map.addObject((new MapObjectBuilding(150, 150)));
+      this._map.addObject((new MapObjectBuilding(143, 143)));
       this._map.addObject((new MapObjectUnit(170, 10)));
       this._map.addObject((new MapObjectUnit(170, 40)));
       this._map.addObject((new MapObjectUnit(170, 70)));
@@ -319,6 +319,7 @@
   var MapObject = CanvasObject.extend({
 
     _type          : -1,
+    _image         : null,
     _selected      : false,
     _angle         : 0,
     _movable       : true,
@@ -441,11 +442,11 @@
         var th = h + 20;
 
         if ( self._type == OBJECT_UNIT ) {
-          cc.fillStyle   = "rgba(100,255,100,0.9)";
+          cc.fillStyle   = "rgba(100,255,100,0.2)";
         } else if ( self._type == OBJECT_TANK ) {
-          cc.fillStyle   = "rgba(100,100,255,0.9)";
+          cc.fillStyle   = "rgba(100,100,255,0.2)";
         } else {
-          cc.fillStyle   = "rgba(255,255,255,0.9)";
+          cc.fillStyle   = "rgba(255,255,255,0.2)";
         }
         cc.strokeStyle = "rgba(0,0,0,0.9)";
 
@@ -466,6 +467,10 @@
           cc.lineTo(tw, (th / 2));
           cc.stroke();
         cc.closePath();
+
+        if ( self._image ) {
+          self.drawImage(self._image, 0, 0);
+        }
       }, function(c, cc, w, h, x, y) {
         var tw = w + 20;
         var th = h + 20;
@@ -547,6 +552,15 @@
       $.stopPropagation(ev);
 
       ObjectAction([this]);
+    },
+
+    setImage : function(src) {
+      var self = this;
+      var img = new Image();
+      img.onload = function() { // FIXME
+        self._image = this;
+      };
+      img.src = src;
     },
 
     getMovable : function() {
@@ -907,19 +921,22 @@
 
   var MapObjectUnit = MapObject.extend({
     init : function(x, y, a) {
-      this._super(OBJECT_UNIT, 10, 10, x, y, a);
+      this._super(OBJECT_UNIT, 50, 39, x, y, a);
+      this.setImage("/img/unit.png");
     }
   });
 
   var MapObjectTank = MapObject.extend({
     init : function(x, y, a) {
-      this._super(OBJECT_TANK, 20, 20, x, y, a);
+      this._super(OBJECT_TANK, 24, 24, x, y, a);
+      this.setImage("/img/tank.png");
     }
   });
 
   var MapObjectBuilding = MapObject.extend({
     init : function(x, y, a) {
-      this._super(OBJECT_BUILDING, 100, 100, x, y, a);
+      this._super(OBJECT_BUILDING, 72, 48, x, y, a);
+      this.setImage("/img/hq.png");
     }
   });
 

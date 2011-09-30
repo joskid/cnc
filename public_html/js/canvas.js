@@ -84,13 +84,13 @@ var CanvasObject = Class.extend({
     cc.clearRect(0, 0, w + 20, h + 20);
     cc.save();
 
-    c.clearRect(0, 0, w, h);
-    c.save();
+    //c.clearRect(0, 0, w, h);
+    //c.save();
 
     // Transform
-    c.translate(w / 2, h / 2);
-    c.rotate(this.__angle);
-    c.translate(-(w / 2), -(h / 2));
+    //c.translate(w / 2, h / 2);
+    //c.rotate(this.__angle);
+    //c.translate(-(w / 2), -(h / 2));
 
     cc.translate((w + 20) / 2, (h + 20) / 2);
     cc.rotate(this.__angle);
@@ -100,7 +100,7 @@ var CanvasObject = Class.extend({
     d_callback(c, cc, w, h, x, y);
 
     // Display
-    c.restore();
+    //c.restore();
     cc.restore();
 
     f_callback(c, cc, w, h, x, y);
