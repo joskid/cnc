@@ -1083,7 +1083,8 @@
         var dx = mX - this._startX;
         var dy = mY - this._startY;
 
-        this.onScrollMove(ev, {x: dx, y: dy});
+        //this.onScrollMove(ev, {x: dx, y: dy});
+        this._onMouseClick(ev);
       }
     },
 
