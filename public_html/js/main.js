@@ -1265,10 +1265,10 @@
         'image'  : _Graphic.getImage("hq"),
         'attrs'  : {
           'player'    : 0,
-          'movable'   : true,
-          'speed'     : 5,
+          'movable'   : false,
+          'speed'     : 0,
           'turning'   : 0,
-          'strength'  : 10
+          'strength'  : 100
         }
       });
     }
