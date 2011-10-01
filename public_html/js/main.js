@@ -765,17 +765,23 @@
     _objects  : [],
 
     // Base attributes
-    _sizeX    : 100,
-    _sizeY    : 100,
-    _posX     : 0,
-    _posY     : 0,
+    _sizeX      : 100,
+    _sizeY      : 100,
+    _posX       : 0,
+    _posY       : 0,
 
     // DOM Elements
-    _main     : null,
-    _root     : null,
-    _minimap  : null,
-    _minirect : null,
-    _rect     : null,
+    _main       : null,
+    _root       : null,
+    _minimap    : null,
+    _minirect   : null,
+    _rect       : null,
+    _mincanvas  : null,
+    _mincontext : null,
+
+    // Minimap variables
+    _scaleX     : -1,
+    _scaleY     : -1,
 
     // Event variables
     _selecting  : false,
@@ -809,6 +815,23 @@
       this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
       this.__coverlay.lineWidth   = 0.1;
 
+      // Init minimap canvas
+      var canvas            = document.createElement('canvas');
+      var context           = canvas.getContext('2d');
+      canvas.className      = "MiniMapCanvas";
+      canvas.width          = (MINIMAP_WIDTH);
+      canvas.height         = (MINIMAP_HEIGHT);
+      context.fillStyle     = "rgba(255,255,255,0.9)";
+      context.strokeStyle   = "rgba(0,0,0,0.9)";
+      context.lineWidth     = 0.1;
+
+      this._mincanvas  = canvas;
+      this._mincontext = context;
+      this._scaleX     = this.__width / MINIMAP_WIDTH;
+      this._scaleY     = this.__height / MINIMAP_HEIGHT;
+
+      this._minimap.appendChild(canvas);
+
       if ( CnC.DEBUG_MODE ) {
         _DebugMap.innerHTML = (this._sizeX + "x" + this._sizeY) + (" (" + (w + "x" + h) + ")");
       }
@@ -839,6 +862,10 @@
         this._objects[i].destroy();
         this._objects[i] = null;
       }
+
+      this._mincanvas.parentNode.removeChild(this._mincanvas);
+      delete this._mincontext;
+      delete this._mincanvas;
 
       $.removeEvent(this._root, "mousedown", function(ev) {
         self._onMouseDown(ev, false);
@@ -1094,14 +1121,6 @@
       console.groupEnd();
     },
 
-    /**
-     * onObjectUpdate -- TODO
-     * @return void
-     */
-    onObjectUpdate : function() {
-      // Update minimap
-    },
-
     // METHODS
 
     /**
@@ -1163,8 +1182,18 @@
      * @return void
      */
     render : function() {
+      // Update objects and minimap
+      this._mincontext.clearRect(0, 0, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+      var o;
       for ( var i = 0; i < this._objects.length; i++ ) {
-        this._objects[i].render();
+        o = this._objects[i];
+        this._mincontext.fillRect(
+          Math.round(o.__x / this._scaleX),
+          Math.round(o.__y / this._scaleY),
+          Math.round(o.__width / this._scaleX),
+          Math.round(o.__height / this._scaleY) );
+
+        o.render();
       }
 
         /*
