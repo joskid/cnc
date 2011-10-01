@@ -922,13 +922,6 @@
     _onMouseDown : function(ev, main, minimap) {
       var self = this;
 
-      $.addEvent(document, "mousemove", function(ev) {
-        self._onMouseMove(ev);
-      });
-      $.addEvent(document, "mouseup", function(ev) {
-        self._onMouseUp(ev);
-      });
-
       if ( main ) {
         // First mouse button triggers rectangle selction
         if ( $.mouseButton(ev) <= 1 ) {
@@ -957,9 +950,6 @@
           $.preventDefault(ev);
           $.stopPropagation(ev);
 
-          this._startX = $.mousePosX(ev);
-          this._startY = $.mousePosY(ev);
-
           this._dragging  = false;
           this._selecting = false;
           this._scrolling = true;
@@ -985,17 +975,16 @@
           }
         }
       }
+
+      $.addEvent(document, "mousemove", function(ev) {
+        self._onMouseMove(ev);
+      });
+      $.addEvent(document, "mouseup", function(ev) {
+        self._onMouseUp(ev);
+      });
     },
 
     _onMouseUp : function(ev) {
-      $.removeEvent(this._root, "mousemove", function(ev) {
-        self._onMouseMove(ev, false);
-      });
-
-      $.removeEvent(this._main, "mouseup", function(ev) {
-        self._onMouseUp(ev, true);
-      });
-
       this._rect.style.display = 'none';
       this._rect.style.top     = '0px';
       this._rect.style.left    = '0px';
@@ -1044,12 +1033,22 @@
 
             ObjectAction({x: mX, y: mY});
           }
-        }
+        }/* else if ( this._scrolling ) {
+          this.onDragMove(ev, {x:this._scollX, y:this._scrollY}, true);
+        }*/
       }
 
       this._dragging  = false;
       this._selecting = false;
       this._scrolling = false;
+
+      $.removeEvent(this._root, "mousemove", function(ev) {
+        self._onMouseMove(ev, false);
+      });
+
+      $.removeEvent(this._main, "mouseup", function(ev) {
+        self._onMouseUp(ev, true);
+      });
     },
 
     _onMouseMove : function(ev) {
@@ -1080,10 +1079,6 @@
       }
       // Scroll map to minimap selection
       else if ( this._scrolling ) {
-        var dx = mX - this._startX;
-        var dy = mY - this._startY;
-
-        //this.onScrollMove(ev, {x: dx, y: dy});
         this._onMouseClick(ev);
       }
     },
@@ -1091,15 +1086,29 @@
     _onMouseClick : function(ev) {
       // Center the click position for the rectangle and update scrolling
       var rel = $.getOffset(this._minimap);
-      var scaleX = this._root.offsetWidth / this._main.offsetWidth;
-      var scaleY = this._root.offsetHeight / this._main.offsetHeight;
-      var rw = Math.round(MINIMAP_WIDTH / scaleX);
-      var rh = Math.round(MINIMAP_HEIGHT / scaleY);
+      var mx  = $.mousePosX(ev) - rel.left;
+      var my  = $.mousePosY(ev) - rel.top;
 
-      var mX = ($.mousePosX(ev) - rel.left) - (rw / 2);
-      var mY = ($.mousePosY(ev) - rel.top) - (rh / 2);
 
-      this.onScrollMove(ev, {x:mX, y:mY});
+      // Rectangle
+      var rectX = parseInt((mx - (this._minirect.offsetWidth / 2)), 10);
+      var rectY = parseInt((my - (this._minirect.offsetHeight / 2)), 10);
+
+      this._minirect.style.left = (rectX - 1) + 'px';
+      this._minirect.style.top  = (rectY - 1) + 'px';
+
+      // Map
+      var scaleX = this.__width / MINIMAP_WIDTH;
+      var scaleY = this.__height / MINIMAP_HEIGHT;
+      var mapX = -parseInt((rectX * scaleX), 10);
+      var mapY = -parseInt((rectY * scaleY), 10);
+
+      this._root.style.left     = (mapX) + "px";
+      this._root.style.top      = (mapY) + "px";
+
+      // Update internals
+      this._posX = mapX;
+      this._posY = mapY;
     },
 
     //
@@ -1130,7 +1139,7 @@
 
     /**
      * onDragMove -- Drag moving event
-     * @return void
+     * @return Position
      */
     onDragMove : function(ev, pos) {
       // Move the map container
@@ -1140,25 +1149,13 @@
       this._root.style.left = (x) + "px";
       this._root.style.top  = (y) + "px";
 
-      // Move minimap rectangle
       var w  = this._root.offsetWidth;
       var h  = this._root.offsetHeight;
-      var rx = -((MINIMAP_WIDTH / w) * x);
-      var ry = -((MINIMAP_HEIGHT / h) * y);
+      x = -((MINIMAP_WIDTH / w) * x);
+      y = -((MINIMAP_HEIGHT / h) * y);
 
-      this._minirect.style.left = (rx - 1) + 'px';
-      this._minirect.style.top  = (ry - 1) + 'px';
-    },
-
-    /**
-     * onScrollMove -- Scroll moving event
-     * @return void
-     */
-    onScrollMove : function(ev, pos) {
-      this.onDragMove(ev, {
-        x : -(pos.x * this._scaleX),
-        y : -(pos.y * this._scaleY)
-      });
+      this._minirect.style.left = (parseInt(x, 10) - 1) + 'px';
+      this._minirect.style.top  = (parseInt(y, 10) - 1) + 'px';
     },
 
     /**
