@@ -69,7 +69,9 @@
 
     function SelectObjects(lst) {
       for ( var i = 0; i < lst.length; i++ ) {
-        lst[i].select();
+        if ( lst[i].getSelectable() ) {
+          lst[i].select();
+        }
       }
     }
 
@@ -432,37 +434,46 @@
    */
   var MapObject = CanvasObject.extend({
 
-    _player        : 0,
+    // Base attributes
     _type          : -1,
     _image         : null,
     _selected      : false,
     _angle         : 0,
+
+    // Instance attributes
+    _player        : 0,
+    _selectable    : true,
     _movable       : true,
     _speed         : 0,
     _turning_speed : 0,
     _strength      : 10,
 
-    _destination  : null,
-    _heading      : null,
+    // Rendering
+    _sprite        : null,
+    _destination   : null,
+    _heading       : null,
 
     /**
      * @constructor
      */
-    init : function(t, w, h, x, y, a) {
-      a = a || 0;
+    //init : function(t, w, h, x, y, a) {
+    init : function(x, y, ang, opts) {
+      var self = this;
 
       console.group("MapObject::init()");
 
+      var a = parseInt(ang, 10) || 0;
+      var w = parseInt(opts.width, 10);
+      var h = parseInt(opts.height, 10);
+
       // Set internals
-      this._type = parseInt(t, 10);
-      if ( this._type == OBJECT_BUILDING ) {
-        this._movable = false;
-      } else if ( this._type == OBJECT_UNIT ) {
-        this._speed = 5;
-      } else {
-        this._speed = 10;
-        this._turning_speed = 10;
-      }
+      this._type          = opts.type;
+      this._movable       = opts.attrs.movable;
+      this._speed         = opts.attrs.speed;
+      this._turning_speed = opts.attrs.turning;
+      this._strength      = opts.attrs.strength;
+      this._player        = opts.attrs.player;
+      this._selectable    = opts.attrs.selectable !== undefined ? opts.attrs.selectable : this._selectable;
 
       // Init canvas
       this._super(w, h, x, y, a, "MapObject");
@@ -470,8 +481,11 @@
       this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
       this.__coverlay.lineWidth   = 1;
 
+      if ( opts.image ) {
+        this.setImage(opts.image);
+      }
+
       // Add events
-      var self = this;
       $.addEvent(this.__overlay, "mousedown", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
@@ -716,6 +730,14 @@
      */
     getMovable : function() {
       return this._movable;
+    },
+
+    /**
+     * getSelectable -- Get selectable state
+     * @return bool
+     */
+    getSelectable : function() {
+      return this._selectable;
     },
 
     /**
@@ -1130,7 +1152,7 @@
       }
 
       if ( CnC.DEBUG_MODE ) {
-        var cc = this.__overlay;
+        var cc = this.__coverlay;
         var rect;
 
         cc.clearRect(0, 0, this.__width, this.__height);
@@ -1172,8 +1194,19 @@
    */
   var MapObjectUnit = MapObject.extend({
     init : function(x, y, a) {
-      this._super(OBJECT_UNIT, 50, 39, x, y, a);
-      this.setImage(_Graphic.getImage("unit"));
+      this._super(x, y, a, {
+        'type'   : OBJECT_UNIT,
+        'width'  : 50,
+        'height' : 50,
+        'image'  : _Graphic.getImage("unit"),
+        'attrs'  : {
+          'player'    : 0,
+          'movable'   : true,
+          'speed'     : 5,
+          'turning'   : 0,
+          'strength'  : 10
+        }
+      });
     }
   });
 
@@ -1184,8 +1217,19 @@
    */
   var MapObjectVehicle = MapObject.extend({
     init : function(x, y, a) {
-      this._super(OBJECT_VEHICLE, 24, 24, x, y, a);
-      this.setImage(_Graphic.getImage("tank"));
+      this._super(x, y, a, {
+        'type'   : OBJECT_VEHICLE,
+        'width'  : 24,
+        'height' : 24,
+        'image'  : _Graphic.getImage("tank"),
+        'attrs'  : {
+          'player'    : 0,
+          'movable'   : true,
+          'speed'     : 10,
+          'turning'   : 10,
+          'strength'  : 10
+        }
+      });
     }
   });
 
@@ -1196,8 +1240,19 @@
    */
   var MapObjectBuilding = MapObject.extend({
     init : function(x, y, a) {
-      this._super(OBJECT_BUILDING, 72, 48, x, y, a);
-      this.setImage(_Graphic.getImage("hq"));
+      this._super(x, y, a, {
+        'type'   : OBJECT_BUILDING,
+        'width'  : 72,
+        'height' : 48,
+        'image'  : _Graphic.getImage("hq"),
+        'attrs'  : {
+          'player'    : 0,
+          'movable'   : true,
+          'speed'     : 5,
+          'turning'   : 0,
+          'strength'  : 10
+        }
+      });
     }
   });
 
