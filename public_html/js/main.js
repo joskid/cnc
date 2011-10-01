@@ -460,20 +460,28 @@
     init : function(x, y, ang, opts) {
       var self = this;
 
-      console.group("MapObject::init()");
-
+      // Validate input data
       var a = parseInt(ang, 10) || 0;
       var w = parseInt(opts.width, 10);
       var h = parseInt(opts.height, 10);
 
-      // Set internals
+      console.group("MapObject::init()");
+        console.log("Pos X", x);
+        console.log("Pos Y", y);
+      console.groupEnd();
+
+      // Set base attributes
       this._type          = opts.type;
+      this._sprite        = opts.sprite !== undefined ? opts.sprite : null;
+      this._image         = opts.image  !== undefined ? opts.image  : null;
+
+      // Set instance attributes
+      this._player        = opts.attrs.player;
+      this._selectable    = opts.attrs.selectable !== undefined ? opts.attrs.selectable : this._selectable;
       this._movable       = opts.attrs.movable;
       this._speed         = opts.attrs.speed;
       this._turning_speed = opts.attrs.turning;
       this._strength      = opts.attrs.strength;
-      this._player        = opts.attrs.player;
-      this._selectable    = opts.attrs.selectable !== undefined ? opts.attrs.selectable : this._selectable;
 
       // Init canvas
       this._super(w, h, x, y, a, "MapObject");
@@ -481,23 +489,15 @@
       this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
       this.__coverlay.lineWidth   = 1;
 
-      if ( opts.image ) {
-        this.setImage(opts.image);
-      }
-
       // Add events
       $.addEvent(this.__overlay, "mousedown", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
       });
+
       $.addEvent(this.__overlay, "click", function(ev) {
         self.onClick(ev);
       }, true);
-
-      console.log("Pos X", x);
-      console.log("Pos Y", y);
-
-      console.groupEnd();
     },
 
     /**
@@ -505,6 +505,7 @@
      */
     destroy : function() {
 
+      // Remove events
       $.removeEvent(this.__overlay, "mousedown", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
@@ -513,6 +514,7 @@
         self.onClick(ev);
       }, true);
 
+      // Destroy canvas
       this._super();
     },
 
@@ -530,6 +532,7 @@
           if ( this._heading !== this._angle ) {
             dir = $.shortestRotation(this._angle, this._heading);
 
+            // Set direction
             if ( dir > 0 ) {
               mag = this._angle + this._turning_speed;
               if ( mag >= this._heading ) {
@@ -584,35 +587,38 @@
 
       this._super(function(c, cc, w, h, x, y)
       {
-        var tw = w + 20;
-        var th = h + 20;
+        if ( CnC.DEBUG_MODE ) {
+          var tw = w + 20;
+          var th = h + 20;
 
-        if ( self._type == OBJECT_UNIT ) {
-          cc.fillStyle   = "rgba(100,255,100,0.2)";
-        } else if ( self._type == OBJECT_VEHICLE ) {
-          cc.fillStyle   = "rgba(100,100,255,0.2)";
-        } else {
-          cc.fillStyle   = "rgba(255,255,255,0.2)";
-        }
-        cc.strokeStyle = "rgba(0,0,0,0.9)";
-
-        cc.beginPath();
-          if ( self._type == OBJECT_BUILDING ) {
-            cc.fillRect((tw/2 - w/2), (th/2 - h/2), w, h);
+          // Select correct debugging color
+          if ( self._type == OBJECT_UNIT ) {
+            cc.fillStyle   = "rgba(100,255,100,0.2)";
+          } else if ( self._type == OBJECT_VEHICLE ) {
+            cc.fillStyle   = "rgba(100,100,255,0.2)";
           } else {
-            cc.arc((tw / 2), (th / 2), (w / 2), (Math.PI * 2), false);
-            cc.fill();
+            cc.fillStyle   = "rgba(255,255,255,0.2)";
           }
-          if ( self._selected ) {
-            cc.stroke();
-          }
-        cc.closePath();
+          cc.strokeStyle = "rgba(0,0,0,0.9)";
 
-        cc.beginPath();
-          cc.moveTo((tw / 2), (th / 2));
-          cc.lineTo(tw, (th / 2));
-          cc.stroke();
-        cc.closePath();
+          cc.beginPath();
+            if ( self._type == OBJECT_BUILDING ) {
+              cc.fillRect((tw/2 - w/2), (th/2 - h/2), w, h);
+            } else {
+              cc.arc((tw / 2), (th / 2), (w / 2), (Math.PI * 2), false);
+              cc.fill();
+            }
+            if ( self._selected ) {
+              cc.stroke();
+            }
+          cc.closePath();
+
+          cc.beginPath();
+            cc.moveTo((tw / 2), (th / 2));
+            cc.lineTo(tw, (th / 2));
+            cc.stroke();
+          cc.closePath();
+        }
 
         if ( self._image ) {
           self.drawImage(self._image, 0, 0);
@@ -621,8 +627,8 @@
         var tw = w + 20;
         var th = h + 20;
 
+        // Selected rectangle indicator
         if ( self._selected ) {
-
           cc.strokeStyle = "rgba(255,255,255,0.9)";
 
           cc.beginPath();
@@ -684,6 +690,7 @@
         return;
       }
 
+      // Calculate positions
       var w  = this.getDimension()[0],
           h  = this.getDimension()[1],
           x1 = this.getPosition()[0] - (w / 2),
@@ -691,12 +698,14 @@
           x2 = pos.x - (w / 2),
           y2 = pos.y - (h / 2);
 
+      // Calculate rotation and distance to target
       var deg      = Math.atan2((y2-y1), (x2-x1)) * (180 / Math.PI);
       var rotation = (/*this._angle + */deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
       var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
 
       console.log("MapObject::move()", pos, x2, y2, rotation, "(" + deg + ")", distance);
 
+      // Set destination and heading
       this._destination = {
         x : pos.x - (w  /2),
         y : pos.y - (h / 2)
@@ -714,14 +723,6 @@
       $.stopPropagation(ev);
 
       ObjectAction([this]);
-    },
-
-    /**
-     * setImage -- Set the image file to use
-     * @return void
-     */
-    setImage : function(img) {
-      this._image = img;
     },
 
     /**
@@ -760,17 +761,23 @@
    */
   var Map = CanvasObject.extend({
 
+    // Objects etc
     _objects  : [],
+
+    // Base attributes
     _sizeX    : 100,
     _sizeY    : 100,
     _posX     : 0,
     _posY     : 0,
+
+    // DOM Elements
     _main     : null,
     _root     : null,
     _minimap  : null,
     _minirect : null,
     _rect     : null,
 
+    // Event variables
     _selecting  : false,
     _dragging   : false,
     _startX     : -1,
@@ -785,8 +792,7 @@
       var w = TILE_SIZE * this._sizeX;
       var h = TILE_SIZE * this._sizeY;
 
-      this._super(w, h, 0, 0, 0, "Map");
-
+      // Do some DOM stuff
       this._main     = document.getElementById("Main");
       this._root     = document.getElementById("MapContainer");
       this._minimap  = document.getElementById("MiniMap");
@@ -796,9 +802,12 @@
       this._root.style.width  = w + "px";
       this._root.style.height = h + "px";
 
-      this.__context.fillStyle   = "rgba(255,255,255,0.9)";
-      this.__context.strokeStyle = "rgba(0,0,0,0.9)";
-      this.__context.lineWidth   = 0.1;
+      // Init canvas
+      this._super(w, h, 0, 0, 0, "Map");
+
+      this.__coverlay.fillStyle   = "rgba(255,255,255,0.9)";
+      this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
+      this.__coverlay.lineWidth   = 0.1;
 
       if ( CnC.DEBUG_MODE ) {
         _DebugMap.innerHTML = (this._sizeX + "x" + this._sizeY) + (" (" + (w + "x" + h) + ")");
@@ -866,6 +875,7 @@
       });
 
       if ( main ) {
+        // First mouse button triggers rectangle selction
         if ( $.mouseButton(ev) <= 1 ) {
           $.preventDefault(ev);
           $.stopPropagation(ev);
@@ -888,6 +898,7 @@
           this._selecting = true;
         }
       } else {
+        // Second mouse button triggers map moving
         if ( $.mouseButton(ev) > 1 ) {
           $.preventDefault(ev);
           $.stopPropagation(ev);
@@ -924,6 +935,7 @@
       this._rect.style.width   = '0px';
       this._rect.style.height  = '0px';
 
+      // Map dragging has ended
       if ( this._dragging ) {
         var curX = $.mousePosX(ev);
         var curY = $.mousePosY(ev);
@@ -937,6 +949,7 @@
           this.onDragStop(ev, false);
         }
       } else {
+        // Selection rectangle has ended
         if ( this._selecting ) {
           var mX = $.mousePosX(ev);
           var mY = $.mousePosY(ev);
@@ -946,6 +959,7 @@
           var rw = Math.abs((mX - 10) - (this._startX - 10));
           var rh = Math.abs((mY - 10) - (this._startY - 10));
 
+          // The rectangle to use as selection mask
           var re = {
             'x1' : Math.abs(this._posX - rx),
             'y1' : Math.abs(this._posY - ry),
@@ -954,11 +968,10 @@
           };
 
 
-          //if ( re.x1 != re.x2 || re.y1 != re.y2 ) {
+          // If the rectangle is too small we want to perform an object action instead
           if ( (Math.sqrt((re.x2 - re.x1) * (re.y2 - re.y1))) > (SELECTION_SENSE) ) {
             this.onSelect(ev, re);
           } else {
-
             mX = Math.abs(this._posX - mX) - 10;
             mY = Math.abs(this._posY - mY) - 10;
 
@@ -972,6 +985,7 @@
     },
 
     _onMouseMove : function(ev) {
+      // Update map position
       if ( this._dragging ) {
         var curX = $.mousePosX(ev);
         var curY = $.mousePosY(ev);
@@ -980,7 +994,9 @@
         var diffY = curY - this._startY;
 
         this.onDragMove(ev, {x: diffX, y: diffY});
-      } else if ( this._selecting ) {
+      }
+      // Update selection rectangle
+      else if ( this._selecting ) {
         var mX = $.mousePosX(ev);
         var mY = $.mousePosY(ev);
 
@@ -1064,7 +1080,6 @@
       console.group("Map::onSelect");
       console.log("Rect", rect);
 
-      // Select object within rectangle
       var select = [];
       for ( var i = 0; i < this._objects.length; i++ ) {
         if ( $.isInside(rect, this._objects[i].getRect()) ) {
@@ -1108,9 +1123,11 @@
         }
         py += TILE_SIZE;
       }
+      console.log("Created tiles", this._sizeX, "x", this._sizeY);
 
+      // Draw grid
       if ( CnC.DEBUG_MODE ) {
-        var cc = this.__context;
+        var cc = this.__coverlay;
         cc.beginPath();
         for ( y = 0; y < this._sizeY; y++ ) {
           cc.moveTo(0, y * TILE_SIZE);
@@ -1124,7 +1141,6 @@
         cc.closePath();
       }
 
-      console.log("Created tiles", this._sizeX, "x", this._sizeY);
 
       this._root.appendChild(this.getRoot());
 
@@ -1151,13 +1167,13 @@
         this._objects[i].render();
       }
 
+        /*
       if ( CnC.DEBUG_MODE ) {
         var cc = this.__coverlay;
         var rect;
-
         cc.clearRect(0, 0, this.__width, this.__height);
         cc.beginPath();
-        for ( y = 0; y < this._sizeY; y++ ) {
+        for ( var y = 0; y < this._sizeY; y++ ) {
           rect = {
             x1 : 0,
             y1 : y * TILE_SIZE,
@@ -1166,7 +1182,7 @@
           };
         }
 
-        for ( x = 0; x < this._sizeX; x++ ) {
+        for ( var x = 0; x < this._sizeX; x++ ) {
           rect = {
             x1 : x * TILE_SIZE,
             y1 : 0,
@@ -1174,8 +1190,10 @@
             y2 : this.__height
           };
         }
+        cc.stroke();
         cc.closePath();
       }
+        */
 
       //this._super(); // Do not call!
     }
