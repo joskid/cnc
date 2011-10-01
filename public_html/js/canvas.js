@@ -20,29 +20,33 @@ var CanvasObject = Class.extend({
 
   /// MAGICS
 
-  init : function(w, h, x, y, a) {
+  init : function(w, h, x, y, a, cn) {
+    cn = cn || "MapObject";
+
+    var m = cn == "MapObject" ? 20 : 0;
+
     this.setDimension(w, h);
     this.setPosition(x, y);
     this.setDirection(a);
 
-    var root                = document.createElement("div");
-    root.className          = "MapObject";
+    var root              = document.createElement("div");
+    root.className        = cn;
     root.width            = (this.__width);
     root.height           = (this.__height);
     root.style.left       = (this.__x) + "px";
     root.style.top        = (this.__y) + "px";
 
-    var canvas              = document.createElement('canvas');
-    var context             = canvas.getContext('2d');
-    canvas.className        = "MapObjectRoot";
-    canvas.width            = (this.__width);
-    canvas.height           = (this.__height);
+    var canvas            = document.createElement('canvas');
+    var context           = canvas.getContext('2d');
+    canvas.className      = cn + "Root";
+    canvas.width          = (this.__width);
+    canvas.height         = (this.__height);
 
-    var ccanvas             = document.createElement('canvas');
-    var ccontext            = ccanvas.getContext('2d');
-    ccanvas.className       = "MapObjectOverlay";
-    ccanvas.width           = (this.__width + 20);
-    ccanvas.height          = (this.__height + 20);
+    var ccanvas           = document.createElement('canvas');
+    var ccontext          = ccanvas.getContext('2d');
+    ccanvas.className     = cn + "Overlay";
+    ccanvas.width         = (this.__width + m);
+    ccanvas.height        = (this.__height + m);
 
     root.appendChild(canvas);
     root.appendChild(ccanvas);

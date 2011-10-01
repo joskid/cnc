@@ -14,6 +14,23 @@ body {
   cursor : default;
 }
 
+/* MAIN LAYOUT */
+
+#Main {
+  position : absolute;
+  top : 10px;
+  right : 220px;
+  bottom : 10px;
+  left : 10px;
+  border : 1px solid #fff;
+  overflow : hidden;
+}
+#MapContainer {
+  position : relative;
+}
+
+/* GUI */
+
 #Sidebar {
   position : absolute;
   top : 10px;
@@ -49,25 +66,34 @@ body {
   color : #fff;
 }
 
-#Main {
-  /*
-  position : relative;
-  width : 640px;
-  height : 480px;
-  margin : 0 auto;
-  */
+/* MISC UI */
 
+#Rectangle {
   position : absolute;
-  top : 10px;
-  right : 220px;
-  bottom : 10px;
-  left : 10px;
+  top : 0px;
+  right : 0px;
+  width : 0px;
+  height : 0px;
   border : 1px solid #fff;
   overflow : hidden;
+  display : none;
+  z-index  : 1000000;
+  margin : -1px;
 }
-#Map {
-  position : relative;
-  cursor : default;
+
+/* CANVAS CLASSES */
+
+.Map {
+  position : absolute;
+  z-index : 5;
+}
+.MapRoot {
+  position : absolute;
+  z-index : 5;
+}
+.MapOverlay {
+  position : absolute;
+  z-index : 6;
 }
 
 .MapObject {
@@ -83,17 +109,4 @@ body {
   z-index : 11;
   margin : -10px;
   cursor : pointer;
-}
-
-#Rectangle {
-  position : absolute;
-  top : 0px;
-  right : 0px;
-  width : 0px;
-  height : 0px;
-  border : 1px solid #fff;
-  overflow : hidden;
-  display : none;
-  z-index  : 1000000;
-  margin : -1px;
 }

@@ -465,7 +465,7 @@
       }
 
       // Init canvas
-      this._super(w, h, x, y, a);
+      this._super(w, h, x, y, a, "MapObject");
       this.__coverlay.fillStyle   = "rgba(255,255,255,0.9)";
       this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
       this.__coverlay.lineWidth   = 1;
@@ -763,15 +763,15 @@
       var w = TILE_SIZE * this._sizeX;
       var h = TILE_SIZE * this._sizeY;
 
-      this._super(w, h, 0, 0, 0);
+      this._super(w, h, 0, 0, 0, "Map");
 
       this._main     = document.getElementById("Main");
-      this._root     = document.getElementById("Map");
+      this._root     = document.getElementById("MapContainer");
       this._minimap  = document.getElementById("MiniMap");
       this._minirect = document.getElementById("MiniMapRect");
       this._rect     = document.getElementById("Rectangle");
 
-      this._root.style.width = w + "px";
+      this._root.style.width  = w + "px";
       this._root.style.height = h + "px";
 
       this.__context.fillStyle   = "rgba(255,255,255,0.9)";
@@ -1104,7 +1104,7 @@
 
       console.log("Created tiles", this._sizeX, "x", this._sizeY);
 
-      this._root.appendChild(this.getCanvas());
+      this._root.appendChild(this.getRoot());
 
       // Load objects
       for ( var i = 0; i < this._objects.length; i++ ) {
@@ -1127,6 +1127,32 @@
     render : function() {
       for ( var i = 0; i < this._objects.length; i++ ) {
         this._objects[i].render();
+      }
+
+      if ( CnC.DEBUG_MODE ) {
+        var cc = this.__overlay;
+        var rect;
+
+        cc.clearRect(0, 0, this.__width, this.__height);
+        cc.beginPath();
+        for ( y = 0; y < this._sizeY; y++ ) {
+          rect = {
+            x1 : 0,
+            y1 : y * TILE_SIZE,
+            x2 : this.__width,
+            y2 : y * TILE_SIZE
+          };
+        }
+
+        for ( x = 0; x < this._sizeX; x++ ) {
+          rect = {
+            x1 : x * TILE_SIZE,
+            y1 : 0,
+            x2 : x * TILE_SIZE,
+            y2 : this.__height
+          };
+        }
+        cc.closePath();
       }
 
       //this._super(); // Do not call!
