@@ -314,13 +314,20 @@
       // Example data
       this._map = new Map();
 
-      this._map.addObject((new MapObjectVehicle(50, 30)));
-      this._map.addObject((new MapObjectVehicle(50, 90)));
-      this._map.addObject((new MapObjectVehicle(50, 150)));
-      this._map.addObject((new MapObjectBuilding(143, 143)));
-      this._map.addObject((new MapObjectUnit(170, 10)));
-      this._map.addObject((new MapObjectUnit(170, 40)));
-      this._map.addObject((new MapObjectUnit(170, 70)));
+      // Player 1
+      this._map.addObject((new MapObjectVehicle(0, 50, 30)));
+      this._map.addObject((new MapObjectVehicle(0, 50, 90)));
+      this._map.addObject((new MapObjectVehicle(0, 50, 150)));
+      this._map.addObject((new MapObjectBuilding(0, 143, 143)));
+      this._map.addObject((new MapObjectUnit(0, 170, 10)));
+      this._map.addObject((new MapObjectUnit(0, 170, 40)));
+      this._map.addObject((new MapObjectUnit(0, 170, 70)));
+
+      // Player 2
+      this._map.addObject((new MapObjectVehicle(1, 2000, 1700)));
+      this._map.addObject((new MapObjectVehicle(1, 2000, 1750)));
+      this._map.addObject((new MapObjectVehicle(1, 2000, 1800)));
+      this._map.addObject((new MapObjectBuilding(1, 2000, 2000)));
 
       console.groupEnd();
     },
@@ -686,7 +693,7 @@
      * @return void
      */
     move : function(pos) {
-      if ( !this._movable ) {
+      if ( !this._movable || (this._player !== _Player) ) {
         return;
       }
 
@@ -739,6 +746,14 @@
      */
     getSelectable : function() {
       return this._selectable;
+    },
+
+    /**
+     * getIsSelected -- Get if this MapObject is selected
+     * @return bool
+     */
+    getIsSelected : function() {
+      return this._selected;
     },
 
     /**
@@ -823,7 +838,7 @@
       canvas.height         = (MINIMAP_HEIGHT);
       context.fillStyle     = "rgba(255,255,255,0.9)";
       context.strokeStyle   = "rgba(0,0,0,0.9)";
-      context.lineWidth     = 0.1;
+      context.lineWidth     = 1.0;
 
       this._mincanvas  = canvas;
       this._mincontext = context;
@@ -1183,16 +1198,31 @@
      */
     render : function() {
       // Update objects and minimap
-      this._mincontext.clearRect(0, 0, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+      var cc = this._mincontext;
       var o;
+
+      cc.clearRect(0, 0, MINIMAP_WIDTH, MINIMAP_HEIGHT);
       for ( var i = 0; i < this._objects.length; i++ ) {
         o = this._objects[i];
-        this._mincontext.fillRect(
+
+        // Render minimap object
+        cc.fillStyle = ( o.getIsSelected() ?
+          "rgba(0,0,255,0.9)" : // Selected
+          (o.getIsMine() ?
+            "rgba(255,255,255,0.9)" : // Current player
+            "rgba(255,0,0,0.9)") );   // Other player
+
+        cc.fillRect(
           Math.round(o.__x / this._scaleX),
           Math.round(o.__y / this._scaleY),
           Math.round(o.__width / this._scaleX),
           Math.round(o.__height / this._scaleY) );
 
+        if ( o.getIsSelected() ) {
+          cc.stroke();
+        }
+
+        // Render object
         o.render();
       }
 
@@ -1240,14 +1270,14 @@
    * @extends MapObject
    */
   var MapObjectUnit = MapObject.extend({
-    init : function(x, y, a) {
+    init : function(p, x, y, a) {
       this._super(x, y, a, {
         'type'   : OBJECT_UNIT,
         'width'  : 50,
         'height' : 50,
         'image'  : _Graphic.getImage("unit"),
         'attrs'  : {
-          'player'    : 0,
+          'player'    : parseInt(p, 10) || 0,
           'movable'   : true,
           'speed'     : 5,
           'turning'   : 0,
@@ -1263,14 +1293,14 @@
    * @extends MapObject
    */
   var MapObjectVehicle = MapObject.extend({
-    init : function(x, y, a) {
+    init : function(p, x, y, a) {
       this._super(x, y, a, {
         'type'   : OBJECT_VEHICLE,
         'width'  : 24,
         'height' : 24,
         'image'  : _Graphic.getImage("tank"),
         'attrs'  : {
-          'player'    : 0,
+          'player'    : parseInt(p, 10) || 0,
           'movable'   : true,
           'speed'     : 10,
           'turning'   : 10,
@@ -1286,14 +1316,14 @@
    * @extends MapObject
    */
   var MapObjectBuilding = MapObject.extend({
-    init : function(x, y, a) {
+    init : function(p, x, y, a) {
       this._super(x, y, a, {
         'type'   : OBJECT_BUILDING,
         'width'  : 72,
         'height' : 48,
         'image'  : _Graphic.getImage("hq"),
         'attrs'  : {
-          'player'    : 0,
+          'player'    : parseInt(p, 10) || 0,
           'movable'   : false,
           'speed'     : 0,
           'turning'   : 0,
