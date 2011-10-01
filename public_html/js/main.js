@@ -490,7 +490,14 @@
      * @destructor
      */
     destroy : function() {
-      this.__context.onclick = null;
+
+      $.removeEvent(this.__overlay, "mousedown", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+      });
+      $.removeEvent(this.__overlay, "click", function(ev) {
+        self.onClick(ev);
+      }, true);
 
       this._super();
     },
@@ -740,6 +747,12 @@
     _root     : null,
     _minimap  : null,
     _minirect : null,
+    _rect     : null,
+
+    _selecting  : false,
+    _dragging   : false,
+    _startX     : -1,
+    _startY     : -1,
 
     /**
      * @constructor
@@ -756,6 +769,7 @@
       this._root     = document.getElementById("Map");
       this._minimap  = document.getElementById("MiniMap");
       this._minirect = document.getElementById("MiniMapRect");
+      this._rect     = document.getElementById("Rectangle");
 
       this._root.style.width = w + "px";
       this._root.style.height = h + "px";
@@ -767,6 +781,18 @@
       if ( CnC.DEBUG_MODE ) {
         _DebugMap.innerHTML = (this._sizeX + "x" + this._sizeY) + (" (" + (w + "x" + h) + ")");
       }
+
+      var self = this;
+
+      // Map dragging and clicking
+      $.addEvent(this._root, "mousedown", function(ev) {
+        self._onMouseDown(ev, false);
+      });
+      $.addEvent(this._main, "mousedown", function(ev) {
+        self._onMouseDown(ev, true);
+      });
+      $.disableContext(this._main);
+      $.disableContext(this._root);
 
       console.log("Size X", this._sizeX);
       console.log("Size Y", this._sizeY);
@@ -782,6 +808,14 @@
         this._objects[i].destroy();
         this._objects[i] = null;
       }
+
+      $.removeEvent(this._root, "mousedown", function(ev) {
+        self._onMouseDown(ev, false);
+      });
+      $.removeEvent(this._main, "mousedown", function(ev) {
+        self._onMouseDown(ev, true);
+      });
+
       this._objects = [];
     },
 
@@ -792,6 +826,151 @@
     addObject : function(o) {
       if ( o instanceof MapObject ) {
         this._objects.push(o);
+      }
+    },
+
+    //
+    // EVENTS
+    //
+
+    _onMouseDown : function(ev, main) {
+      var self = this;
+
+      $.addEvent(document, "mousemove", function(ev) {
+        self._onMouseMove(ev);
+      });
+      $.addEvent(document, "mouseup", function(ev) {
+        self._onMouseUp(ev);
+      });
+
+      if ( main ) {
+        if ( $.mouseButton(ev) <= 1 ) {
+          $.preventDefault(ev);
+          $.stopPropagation(ev);
+
+          var mX = $.mousePosX(ev);
+          var mY = $.mousePosY(ev);
+          var rX = mX - 10;
+          var rY = mY - 10;
+
+          this._startX = mX;
+          this._startY = mY;
+
+          this._rect.style.display = 'block';
+          this._rect.style.left    = rX + 'px';
+          this._rect.style.top     = rY + 'px';
+          this._rect.style.width   = '0px';
+          this._rect.style.height  = '0px';
+
+          this._dragging  = false;
+          this._selecting = true;
+        }
+      } else {
+        if ( $.mouseButton(ev) > 1 ) {
+          $.preventDefault(ev);
+          $.stopPropagation(ev);
+
+          this._startX = $.mousePosX(ev);
+          this._startY = $.mousePosY(ev);
+
+          this.onDragStart(ev, {x: this._startX, y: this._startY});
+
+          this._rect.style.display = 'none';
+          this._rect.style.top     = '0px';
+          this._rect.style.left    = '0px';
+          this._rect.style.width   = '0px';
+          this._rect.style.height  = '0px';
+
+          this._dragging  = true;
+          this._selecting = false;
+        }
+      }
+    },
+
+    _onMouseUp : function(ev) {
+      $.removeEvent(this._root, "mousemove", function(ev) {
+        self._onMouseMove(ev, false);
+      });
+
+      $.removeEvent(this._main, "mouseup", function(ev) {
+        self._onMouseUp(ev, true);
+      });
+
+      this._rect.style.display = 'none';
+      this._rect.style.top     = '0px';
+      this._rect.style.left    = '0px';
+      this._rect.style.width   = '0px';
+      this._rect.style.height  = '0px';
+
+      if ( this._dragging ) {
+        var curX = $.mousePosX(ev);
+        var curY = $.mousePosY(ev);
+
+        var diffX = curX - this._startX;
+        var diffY = curY - this._startY;
+
+        if ( diffX || diffY ) {
+          this.onDragStop(ev, {x: diffX, y: diffY});
+        } else {
+          this.onDragStop(ev, false);
+        }
+      } else {
+        if ( this._selecting ) {
+          var mX = $.mousePosX(ev);
+          var mY = $.mousePosY(ev);
+
+          var rx = Math.min((mX - 10), (this._startX - 10));
+          var ry = Math.min((mY - 10), (this._startY - 10));
+          var rw = Math.abs((mX - 10) - (this._startX - 10));
+          var rh = Math.abs((mY - 10) - (this._startY - 10));
+
+          var re = {
+            'x1' : Math.abs(this._posX - rx),
+            'y1' : Math.abs(this._posY - ry),
+            'x2' : Math.abs(this._posX - rx) + rw,
+            'y2' : Math.abs(this._posY - ry) + rh
+          };
+
+
+          //if ( re.x1 != re.x2 || re.y1 != re.y2 ) {
+          if ( (Math.sqrt((re.x2 - re.x1) * (re.y2 - re.y1))) > (SELECTION_SENSE) ) {
+            this.onSelect(ev, re);
+          } else {
+
+            mX = Math.abs(this._posX - mX) - 10;
+            mY = Math.abs(this._posY - mY) - 10;
+
+            ObjectAction({x: mX, y: mY});
+          }
+        }
+      }
+
+      this._dragging  = false;
+      this._selecting = false;
+    },
+
+    _onMouseMove : function(ev) {
+      if ( this._dragging ) {
+        var curX = $.mousePosX(ev);
+        var curY = $.mousePosY(ev);
+
+        var diffX = curX - this._startX;
+        var diffY = curY - this._startY;
+
+        this.onDragMove(ev, {x: diffX, y: diffY});
+      } else if ( this._selecting ) {
+        var mX = $.mousePosX(ev);
+        var mY = $.mousePosY(ev);
+
+        var rx = Math.min((mX - 10), (this._startX - 10));
+        var ry = Math.min((mY - 10), (this._startY - 10));
+        var rw = Math.abs((mX - 10) - (this._startX - 10));
+        var rh = Math.abs((mY - 10) - (this._startY - 10));
+
+        this._rect.style.left    = (rx) + 'px';
+        this._rect.style.top     = (ry) + 'px';
+        this._rect.style.width   = (rw) + 'px';
+        this._rect.style.height  = (rh) + 'px';
       }
     },
 
@@ -886,6 +1065,8 @@
       // Update minimap
     },
 
+    // METHODS
+
     /**
      * prepare -- Prepare the map (Load)
      * @return void
@@ -893,160 +1074,10 @@
     prepare : function() {
       console.group("Map::prepare()");
 
-      var self = this;
-
-      var rect = document.getElementById("Rectangle");
+      // Load tiles
+      var img = _Graphic.getImage("tile_desert");
       var px = 0;
       var py = 0;
-
-      // Map dragging and clicking
-      var dragging  = false;
-      var selecting = false;
-      var startX    = 0;
-      var startY    = 0;
-
-      var mousemove = function(ev) {
-        if ( dragging ) {
-          var curX = $.mousePosX(ev);
-          var curY = $.mousePosY(ev);
-
-          var diffX = curX - startX;
-          var diffY = curY - startY;
-
-          self.onDragMove(ev, {x: diffX, y: diffY});
-        } else if ( selecting ) {
-          var mX = $.mousePosX(ev);
-          var mY = $.mousePosY(ev);
-
-          var rx = Math.min((mX - 10), (startX - 10));
-          var ry = Math.min((mY - 10), (startY - 10));
-          var rw = Math.abs((mX - 10) - (startX - 10));
-          var rh = Math.abs((mY - 10) - (startY - 10));
-
-          rect.style.left    = (rx) + 'px';
-          rect.style.top     = (ry) + 'px';
-          rect.style.width   = (rw) + 'px';
-          rect.style.height  = (rh) + 'px';
-        }
-      };
-
-      var mouseup = function(ev) {
-        $.removeEvent(document, "mousemove", mousemove);
-        $.removeEvent(document, "mouseup", mouseup);
-
-        rect.style.display = 'none';
-        rect.style.top     = '0px';
-        rect.style.left    = '0px';
-        rect.style.width   = '0px';
-        rect.style.height  = '0px';
-
-        if ( dragging ) {
-          var curX = $.mousePosX(ev);
-          var curY = $.mousePosY(ev);
-
-          var diffX = curX - startX;
-          var diffY = curY - startY;
-
-          if ( diffX || diffY ) {
-            self.onDragStop(ev, {x: diffX, y: diffY});
-          } else {
-            self.onDragStop(ev, false);
-          }
-        } else {
-          if ( selecting ) {
-            var mX = $.mousePosX(ev);
-            var mY = $.mousePosY(ev);
-
-            var rx = Math.min((mX - 10), (startX - 10));
-            var ry = Math.min((mY - 10), (startY - 10));
-            var rw = Math.abs((mX - 10) - (startX - 10));
-            var rh = Math.abs((mY - 10) - (startY - 10));
-
-            var re = {
-              'x1' : Math.abs(self._posX - rx),
-              'y1' : Math.abs(self._posY - ry),
-              'x2' : Math.abs(self._posX - rx) + rw,
-              'y2' : Math.abs(self._posY - ry) + rh
-            };
-
-
-            //if ( re.x1 != re.x2 || re.y1 != re.y2 ) {
-            if ( (Math.sqrt((re.x2 - re.x1) * (re.y2 - re.y1))) > (SELECTION_SENSE) ) {
-              self.onSelect(ev, re);
-            } else {
-
-              mX = Math.abs(self._posX - mX) - 10;
-              mY = Math.abs(self._posY - mY) - 10;
-
-              ObjectAction({x: mX, y: mY});
-            }
-          }
-        }
-
-        dragging = false;
-        selecting = false;
-      };
-
-      var mousedown = function(ev) {
-        if ( $.mouseButton(ev) > 1 ) {
-          $.preventDefault(ev);
-          $.stopPropagation(ev);
-
-          $.addEvent(document, "mousemove", mousemove);
-          $.addEvent(document, "mouseup", mouseup);
-
-          startX = $.mousePosX(ev);
-          startY = $.mousePosY(ev);
-
-          self.onDragStart(ev, {x: startX, y: startY});
-
-          rect.style.display = 'none';
-          rect.style.top     = '0px';
-          rect.style.left    = '0px';
-          rect.style.width   = '0px';
-          rect.style.height  = '0px';
-
-          dragging  = true;
-          selecting = false;
-        }
-      };
-
-      var main_mousedown = function(ev) {
-        $.preventDefault(ev);
-        $.stopPropagation(ev);
-
-        $.addEvent(document, "mousemove", mousemove);
-        $.addEvent(document, "mouseup", mouseup);
-
-        if ( $.mouseButton(ev) <= 1 ) {
-          var mX = $.mousePosX(ev);
-          var mY = $.mousePosY(ev);
-          var rX = mX - 10;
-          var rY = mY - 10;
-
-          startX = mX;
-          startY = mY;
-
-          rect.style.display = 'block';
-          rect.style.left    = rX + 'px';
-          rect.style.top     = rY + 'px';
-          rect.style.width   = '0px';
-          rect.style.height  = '0px';
-
-          dragging  = false;
-          selecting = true;
-        }
-      };
-
-      $.addEvent(this._root, "mousedown", mousedown);
-      $.disableContext(this._root);
-
-      $.addEvent(this._main, "mousedown", main_mousedown);
-      $.disableContext(this._main);
-
-      // Load tiles (async)
-
-      var img = _Graphic.getImage("tile_desert");
       for ( var y = 0; y < this._sizeY; y++ ) {
         px = 0;
         for ( var x = 0; x < this._sizeX; x++ ) {
