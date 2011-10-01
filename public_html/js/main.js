@@ -801,6 +801,7 @@
     // Event variables
     _selecting  : false,
     _dragging   : false,
+    _scrolling  : false,
     _startX     : -1,
     _startY     : -1,
 
@@ -860,6 +861,12 @@
       $.addEvent(this._main, "mousedown", function(ev) {
         self._onMouseDown(ev, true);
       });
+      $.addEvent(this._minimap, "mousedown", function(ev) {
+        self._onMouseDown(ev, undefined, true);
+      });
+      $.addEvent(this._minimap, "click", function(ev) {
+        self._onMouseClick(ev);
+      });
       $.disableContext(this._main);
       $.disableContext(this._root);
 
@@ -888,6 +895,12 @@
       $.removeEvent(this._main, "mousedown", function(ev) {
         self._onMouseDown(ev, true);
       });
+      $.removeEvent(this._minimap, "mousedown", function(ev) {
+        self._onMouseDown(ev, undefined, true);
+      });
+      $.removeEvent(this._minimap, "click", function(ev) {
+        self._onMouseClick(ev);
+      });
 
       this._objects = [];
     },
@@ -903,10 +916,10 @@
     },
 
     //
-    // EVENTS
+    // DOM EVENTS
     //
 
-    _onMouseDown : function(ev, main) {
+    _onMouseDown : function(ev, main, minimap) {
       var self = this;
 
       $.addEvent(document, "mousemove", function(ev) {
@@ -940,24 +953,36 @@
           this._selecting = true;
         }
       } else {
-        // Second mouse button triggers map moving
-        if ( $.mouseButton(ev) > 1 ) {
+        if ( minimap ) {
           $.preventDefault(ev);
           $.stopPropagation(ev);
 
           this._startX = $.mousePosX(ev);
           this._startY = $.mousePosY(ev);
 
-          this.onDragStart(ev, {x: this._startX, y: this._startY});
-
-          this._rect.style.display = 'none';
-          this._rect.style.top     = '0px';
-          this._rect.style.left    = '0px';
-          this._rect.style.width   = '0px';
-          this._rect.style.height  = '0px';
-
-          this._dragging  = true;
+          this._dragging  = false;
           this._selecting = false;
+          this._scrolling = true;
+        } else {
+          // Second mouse button triggers map moving
+          if ( $.mouseButton(ev) > 1 ) {
+            $.preventDefault(ev);
+            $.stopPropagation(ev);
+
+            this._startX = $.mousePosX(ev);
+            this._startY = $.mousePosY(ev);
+
+            this.onDragStart(ev, {x: this._startX, y: this._startY});
+
+            this._rect.style.display = 'none';
+            this._rect.style.top     = '0px';
+            this._rect.style.left    = '0px';
+            this._rect.style.width   = '0px';
+            this._rect.style.height  = '0px';
+
+            this._dragging  = true;
+            this._selecting = false;
+          }
         }
       }
     },
@@ -1024,9 +1049,13 @@
 
       this._dragging  = false;
       this._selecting = false;
+      this._scrolling = false;
     },
 
     _onMouseMove : function(ev) {
+      var mX = $.mousePosX(ev);
+      var mY = $.mousePosY(ev);
+
       // Update map position
       if ( this._dragging ) {
         var curX = $.mousePosX(ev);
@@ -1039,9 +1068,6 @@
       }
       // Update selection rectangle
       else if ( this._selecting ) {
-        var mX = $.mousePosX(ev);
-        var mY = $.mousePosY(ev);
-
         var rx = Math.min((mX - 10), (this._startX - 10));
         var ry = Math.min((mY - 10), (this._startY - 10));
         var rw = Math.abs((mX - 10) - (this._startX - 10));
@@ -1052,7 +1078,32 @@
         this._rect.style.width   = (rw) + 'px';
         this._rect.style.height  = (rh) + 'px';
       }
+      // Scroll map to minimap selection
+      else if ( this._scrolling ) {
+        var dx = mX - this._startX;
+        var dy = mY - this._startY;
+
+        this.onScrollMove(ev, {x: dx, y: dy});
+      }
     },
+
+    _onMouseClick : function(ev) {
+      // Center the click position for the rectangle and update scrolling
+      var rel = $.getOffset(this._minimap);
+      var scaleX = this._root.offsetWidth / this._main.offsetWidth;
+      var scaleY = this._root.offsetHeight / this._main.offsetHeight;
+      var rw = Math.round(MINIMAP_WIDTH / scaleX);
+      var rh = Math.round(MINIMAP_HEIGHT / scaleY);
+
+      var mX = ($.mousePosX(ev) - rel.left) - (rw / 2);
+      var mY = ($.mousePosY(ev) - rel.top) - (rh / 2);
+
+      this.onScrollMove(ev, {x:mX, y:mY});
+    },
+
+    //
+    // INTERNAL EVENTS
+    //
 
     /**
      * onDragStart -- Drag starting event
@@ -1096,6 +1147,17 @@
 
       this._minirect.style.left = (rx - 1) + 'px';
       this._minirect.style.top  = (ry - 1) + 'px';
+    },
+
+    /**
+     * onScrollMove -- Scroll moving event
+     * @return void
+     */
+    onScrollMove : function(ev, pos) {
+      this.onDragMove(ev, {
+        x : -(pos.x * this._scaleX),
+        y : -(pos.y * this._scaleY)
+      });
     },
 
     /**
@@ -1145,7 +1207,9 @@
     prepare : function() {
       console.group("Map::prepare()");
 
+      //
       // Load tiles
+      //
       var img = _Graphic.getImage("tile_desert");
       var px = 0;
       var py = 0;
@@ -1159,7 +1223,9 @@
       }
       console.log("Created tiles", this._sizeX, "x", this._sizeY);
 
+      //
       // Draw grid
+      //
       if ( CnC.DEBUG_MODE ) {
         var cc = this.__coverlay;
         cc.beginPath();
@@ -1178,14 +1244,17 @@
 
       this._root.appendChild(this.getRoot());
 
+      //
       // Load objects
+      //
       for ( var i = 0; i < this._objects.length; i++ ) {
         this._root.appendChild(this._objects[i].getRoot());
       }
-
       console.log("Inserted", i, "object(s)");
 
-      // Re-init map stuff
+      //
+      // Initialize minimap
+      //
       this.onResize();
       this.onDragMove(null, {x : this._posX, y : this._posY});
 
