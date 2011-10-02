@@ -3,6 +3,7 @@
  *
  * @author  Anders Evenrud <andersevenrud@gmail.com>
  * @package CnC
+ * @repo    https://github.com/andersevenrud/cnc
  */
 
 var CanvasObject = Class.extend({
