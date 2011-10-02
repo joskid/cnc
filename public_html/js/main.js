@@ -844,6 +844,8 @@
       };
 
       this._heading = parseInt(rotation, 10);
+
+      console.log(Math.abs($.roundedAngle(this._angle, 45)));
     },
 
     /**
@@ -868,7 +870,8 @@
         var srcY = 0;
         var srcW = this._sprite.cw;
         var srcH = this._sprite.ch;
-        var rndA = Math.abs($.roundedAngle(this._angle, 90));
+        var rndA = Math.abs($.roundedAngle(this._angle, 45));
+
         if ( this._sprite.rotation[rndA] ) {
           srcX = this._sprite.rotation[rndA];
         }
