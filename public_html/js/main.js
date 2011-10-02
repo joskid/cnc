@@ -39,7 +39,11 @@
     'sessionStorage' : (('sessionStorage' in window) && (window['sessionStorage'] !== null)),
     'globalStorage'  : (('globalStorage'  in window) && (window['globalStorage']  !== null)),
     'openDatabase'   : (('openDatabase'   in window) && (window['openDatabase']   !== null)),
-    'WebSocket'      : (('WebSocket'      in window) && (window['WebSocket']      !== null))
+    'WebSocket'      : (('WebSocket'      in window) && (window['WebSocket']      !== null)),
+    'Worker'         : (('Worker'         in window) && (window['Worker']         !== null)),
+    'geolocation'    : (!!navigator.geolocation),
+    'microdata'      : (!!document.getItems),
+    'history'        : (!!(window.history && history.pushState))
   };
 
   // Internals
@@ -835,7 +839,7 @@
       var rotation = (/*this._angle + */deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
       var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
 
-      console.log("MapObject::move()", pos, x2, y2, rotation, "(" + deg + ")", distance);
+      console.log("MapObject::move()", "x:" + x2, "y:" + y2, "d:" + distance, "a:" + deg);
 
       // Set destination and heading
       this._destination = {
@@ -844,8 +848,6 @@
       };
 
       this._heading = parseInt(rotation, 10);
-
-      console.log(Math.abs($.roundedAngle(this._angle, 45)));
     },
 
     /**
@@ -870,11 +872,13 @@
         var srcY = 0;
         var srcW = this._sprite.cw;
         var srcH = this._sprite.ch;
-        var rndA = Math.abs($.roundedAngle(this._angle, 45));
+        var rndA = Math.abs($.roundedAngle(Math.round(this._angle), 45));
 
-        if ( this._sprite.rotation[rndA] ) {
+        if ( this._sprite.rotation[rndA] !== undefined ) {
           srcX = this._sprite.rotation[rndA];
-        }
+        }/* else {
+          console.info("No position found for", rndA, this._angle);
+        }*/
         this.drawClipImage(this._image, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
       }
 
