@@ -1,5 +1,26 @@
 Command & Conquer (Tiberian Dawn) Clone in HTML5
+-------------------------------------------------------------------------------
+Just a hobby project. Trying to recreate the orignal CnC game in HTML5 and 
+Canvas.
 
+Currently working:
+* Map creation
+  * Themes
+  * Movable by dragging
+  * Can handle huge maps
+* Map Objects (Units, Vehicles, Buildings)
+  * Movment and rotation
+  * With player mapping
+  * Basic sprites (animations) - Under development
+* Minimap
+  * Can scroll the map via clicking or dragging
+* Selection by dragging a rectangle
+
+LIVE TEST:
+-------------------------------------------------------------------------------
 Running example: http://cnc.0o.no/ (May not be up to date)
 
-Contains graphics and sound effects from the Game (Copyright (c) EA Games, Westwood Studios, Victory Games)
+NOTES:
+-------------------------------------------------------------------------------
+Contains graphics and sound effects from the Game
+(Copyright (c) EA Games, Westwood Studios, Victory Games)

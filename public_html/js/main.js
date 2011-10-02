@@ -15,6 +15,7 @@
   var _Main     = null;
   var _Graphic  = null;
   var _Sound    = null;
+  var _Net      = null;
 
   // Variables
   var _FPS      = 0;
@@ -43,10 +44,12 @@
 
   // Internals
   var LOOP_INTERVAL    = (1000 / 30);
+  var SLEEP_INTERVAL   = 500;
   var TILE_SIZE        = 24;
   var MINIMAP_WIDTH    = 180;
   var MINIMAP_HEIGHT   = 180;
   var SELECTION_SENSE  = 10;
+  var SERVER_URI       = "ws://localhost:8888/CnC";
 
   /////////////////////////////////////////////////////////////////////////////
   // HELPER FUNCTIONS
@@ -116,6 +119,129 @@
   /////////////////////////////////////////////////////////////////////////////
   // BASE CLASSES
   /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Networking -- Networking Manager
+   * @class
+   */
+  var Networking = Class.extend({
+
+    _supported  : SUPPORT.WebSocket,
+    _socket     : null,
+    _started    : null,
+    _ended      : null,
+    _connected  : false,
+
+    /**
+     * @constructor
+     */
+    init : function() {
+      console.group("Networking::init()");
+
+      console.log("Supported", this._supported);
+      console.groupEnd();
+    },
+
+    /**
+     * @destructor
+     */
+    destroy : function() {
+      delete this._socket;
+    },
+
+    //
+    // METHODS
+    //
+
+    /**
+     * connect -- Connect to socket
+     * @return bool
+     */
+    connect : function(uri) {
+      uri = uri || SERVER_URI;
+
+      var self = this;
+      if ( this._supported ) {
+        if ( !this._connected ) {
+          console.group("Networking::connect()");
+
+          var websocket       = new WebSocket(uri);
+          websocket.onopen    = function (evt) { self.onConnect(evt);    };
+          websocket.onclose   = function (evt) { self.onDisconnect(evt); };
+          websocket.onmessage = function (evt) { self.onRecieve(evt);    };
+          websocket.onerror   = function (evt) { self.onError(evt);      };
+
+          this._socket = websocket;
+
+          console.log("URI", uri);
+          console.groupEnd();
+
+          return true;
+        }
+      }
+
+      return false;
+    },
+
+    /**
+     * disconnect -- Disconnect from socket
+     * @return bool
+     */
+    disconnect : function() {
+      if ( this._connected ) {
+        console.log("Networking::disconnect()");
+
+        this._socket.close();
+
+        return true;
+      }
+
+      return false;
+    },
+
+    /**
+     * send -- Send data over socket
+     * @return bool
+     */
+    send : function(data) {
+      if ( this._connected ) {
+        console.log("Networking::send()", data);
+
+        this._socket.send(data);
+
+        return true;
+      }
+
+      return false;
+    },
+
+    //
+    // EVENTS
+    //
+
+    onConnect : function(ev) {
+      this._connected = true;
+      this._started   = new Date();
+
+      console.log("Networking::onConnect()", ev);
+    },
+
+    onDisconnect : function(ev) {
+      this._connected = false;
+      this._ended     = new Date();
+
+      console.log("Networking::onDisconnect()", ev);
+    },
+
+    onRecieve : function(ev) {
+      console.log("Networking::onRecieve()", ev.data);
+    },
+
+    onError : function(ev) {
+      console.log("Networking::onError()", ev.data);
+    }
+
+  });
 
   /**
    * Graphics -- Graphics Manager
@@ -1374,10 +1500,10 @@
     console.group("window::onload()");
     console.log("Browser agent", navigator.userAgent);
     console.log("Browser features", SUPPORT);
-    console.groupEnd();
 
     // Initialize sound engine (not required)
     _Sound = new Sounds();
+    _Net   = new Networking();
 
     // Initialize graphics engine (required)
     if ( SUPPORT.canvas ) {
@@ -1386,11 +1512,13 @@
           // Initialize the Game
           _Main = new Game();
           _Main.run();
-        }, 100);
+        }, SLEEP_INTERVAL);
       });
     } else {
       alert("Your browser is not supported!");
     }
+
+    console.groupEnd();
   };
 
   /**
@@ -1410,6 +1538,10 @@
     if ( _Sound ) {
       _Sound.destroy();
       delete _Sound;
+    }
+    if ( _Net ) {
+      _Net.destroy();
+      delete _Net;
     }
 
     // Unset other variables
