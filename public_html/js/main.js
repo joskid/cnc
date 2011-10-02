@@ -742,14 +742,10 @@
         var srcY = 0;
         var srcW = this._sprite.cw;
         var srcH = this._sprite.ch;
-        /*
-        var rndA = Math.abs($.roundedAngle(this._angle, 45));
-        if ( rndA ) {
-          if ( this._sprite.rotation[rndA] != -1 ) {
-            srcX = this._sprite.rotation[rndA];
-          }
+        var rndA = Math.abs($.roundedAngle(this._angle, 90));
+        if ( this._sprite.rotation[rndA] ) {
+          srcX = this._sprite.rotation[rndA];
         }
-        */
         this.drawClipImage(this._image, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
       }
 

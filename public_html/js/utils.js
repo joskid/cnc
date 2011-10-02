@@ -152,11 +152,9 @@ var $ = (function(undefined) {
     },
 
     'roundedAngle' : function(angle, nearest) {
-      /*
       nearest = nearest || 90;
       return Math.round(angle/nearest)*nearest+(360*(angle<0));
-      */
-      return Math.floor((angle/nearest))*nearest;
+      //return Math.floor((angle/nearest))*nearest;
     }
 
 
