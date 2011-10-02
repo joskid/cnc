@@ -29,6 +29,7 @@ var CanvasObject = Class.extend({
     this.setPosition(x, y);
     this.setDirection(a);
 
+    // Root DOM element
     var root              = document.createElement("div");
     root.className        = cn;
     root.width            = (this.__width);
@@ -36,12 +37,14 @@ var CanvasObject = Class.extend({
     root.style.left       = (this.__x) + "px";
     root.style.top        = (this.__y) + "px";
 
+    // Main Canvas element
     var canvas            = document.createElement('canvas');
     var context           = canvas.getContext('2d');
     canvas.className      = cn + "Root";
     canvas.width          = (this.__width);
     canvas.height         = (this.__height);
 
+    // Canvas overlay element
     var ccanvas           = document.createElement('canvas');
     var ccontext          = ccanvas.getContext('2d');
     ccanvas.className     = cn + "Overlay";
@@ -84,6 +87,8 @@ var CanvasObject = Class.extend({
     var c   = this.__context;
     var cc  = this.__coverlay;
 
+    /* This handles the rotation and transformation of the overlay */
+
     // Clear
     cc.clearRect(0, 0, w + 20, h + 20);
     cc.save();
@@ -115,6 +120,7 @@ var CanvasObject = Class.extend({
   },
 
   drawClipImage : function(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
+    this.__context.clearRect(0, 0, this.__width, this.__height);
     this.__context.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
   },
 

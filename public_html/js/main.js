@@ -431,6 +431,8 @@
 
   /**
    * MapObject -- Map Object Base Class
+   * FIXME: Cleanup events (redundacy)
+   * TODO: Move minimap to separate class ?!
    * @class
    */
   var MapObject = CanvasObject.extend({
@@ -438,6 +440,7 @@
     // Base attributes
     _type          : -1,
     _image         : null,
+    _image_loaded  : false,
     _selected      : false,
     _angle         : 0,
 
@@ -624,16 +627,24 @@
           cc.closePath();
         }
 
+        // If we have a sprite (animation) -- do it
         if ( self._sprite ) {
           var srcX = 0;
           var srcY = 0;
-          var srcW = 24;//self._sprite.cw;
-          var srcH = 24;//self._sprite.ch;
-
+          var srcW = self._sprite.cw;
+          var srcH = self._sprite.ch;
+          var rndA = $.roundedAngle(self._angle);
+          if ( self._sprite.rotation[rndA] ) {
+            srcX = self._sprite.rotation[rndA];
+          }
           self.drawClipImage(self._image, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
-        } else {
-          if ( self._image ) {
+        }
+
+        // Or else just display the image
+        else {
+          if ( self._image && !self._image_loaded ) {
             self.drawImage(self._image, 0, 0);
+            self._image_loaded = true;
           }
         }
       }, function(c, cc, w, h, x, y) {

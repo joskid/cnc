@@ -75,7 +75,13 @@
         'sprite' : {
           'src' : "jeep_sprite",
           'cw'  : 24,
-          'ch'  : 24
+          'ch'  : 24,
+          'rotation' : {
+            0   : 575,
+            90  : 384,
+            180 : 191,
+            270 : 0
+          }
         },
         'attrs'  : {
           'movable'   : true,

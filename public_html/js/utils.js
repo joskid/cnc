@@ -149,6 +149,10 @@ var $ = (function(undefined) {
       var times     = Math.floor((value - lower) / distance);
 
       return value - (times * distance);
+    },
+
+    'roundedAngle' : function(angle) {
+      return Math.round(angle/90)*90+(360*(angle<0));
     }
 
 
