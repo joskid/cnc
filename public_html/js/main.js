@@ -457,7 +457,6 @@
     /**
      * @constructor
      */
-    //init : function(t, w, h, x, y, a) {
     init : function(player, x, y, ang, opts) {
       var self = this;
 
@@ -474,7 +473,11 @@
       // Set base attributes
       this._type          = opts.type;
       this._sprite        = opts.sprite !== undefined ? opts.sprite : null;
-      this._image         = opts.image  !== undefined ? _Graphic.getImage(opts.image)  : null;
+      if ( this._sprite ) {
+        this._image       = _Graphic.getImage(opts.sprite.src);
+      } else {
+        this._image       = opts.image  !== undefined ? _Graphic.getImage(opts.image)  : null;
+      }
 
       // Set instance attributes
       this._player        = parseInt(player, 10);
@@ -621,8 +624,17 @@
           cc.closePath();
         }
 
-        if ( self._image ) {
-          self.drawImage(self._image, 0, 0);
+        if ( self._sprite ) {
+          var srcX = 0;
+          var srcY = 0;
+          var srcW = 24;//self._sprite.cw;
+          var srcH = 24;//self._sprite.ch;
+
+          self.drawClipImage(self._image, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+        } else {
+          if ( self._image ) {
+            self.drawImage(self._image, 0, 0);
+          }
         }
       }, function(c, cc, w, h, x, y) {
         var tw = w + 20;

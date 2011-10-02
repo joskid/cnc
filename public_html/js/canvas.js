@@ -114,8 +114,8 @@ var CanvasObject = Class.extend({
     this.__context.drawImage(img, x, y);
   },
 
-  drawClipImage : function(img, x, y, px, py, w, h) {
-
+  drawClipImage : function(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
+    this.__context.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
   },
 
   /// SETTERS

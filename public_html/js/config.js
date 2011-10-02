@@ -35,9 +35,10 @@
     // Preloading
     PRELOAD : {
       'gfx' : {
-        'count' : 4,
+        'count' : 5,
         'items' : {
           "tile_desert"  : null,
+          "jeep_sprite"  : null,
           "unit"         : null,
           "tank"         : null,
           "hq"           : null

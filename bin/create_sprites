@@ -1,0 +1,3 @@
+#!/bin/sh
+montage -size 24x792 -geometry +0+0 -gravity east -tile x1 jeep\ 0* out/jeep_sprite.png
+#montage -geometry +0+0 -gravity east -tile x1 -size $FILES $OUT
