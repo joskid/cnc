@@ -627,26 +627,8 @@
           cc.closePath();
         }
 
-        // If we have a sprite (animation) -- do it
-        if ( self._sprite ) {
-          var srcX = 0;
-          var srcY = 0;
-          var srcW = self._sprite.cw;
-          var srcH = self._sprite.ch;
-          var rndA = $.roundedAngle(self._angle);
-          if ( self._sprite.rotation[rndA] ) {
-            srcX = self._sprite.rotation[rndA];
-          }
-          self.drawClipImage(self._image, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
-        }
+        self.onRenderSprite();
 
-        // Or else just display the image
-        else {
-          if ( self._image && !self._image_loaded ) {
-            self.drawImage(self._image, 0, 0);
-            self._image_loaded = true;
-          }
-        }
       }, function(c, cc, w, h, x, y) {
         var tw = w + 20;
         var th = h + 20;
@@ -750,6 +732,37 @@
     },
 
     /**
+     * onRender -- Handle sprite rendering
+     * @return void
+     */
+    onRenderSprite : function() {
+      // If we have a sprite (animation) -- do it
+      if ( this._sprite ) {
+        var srcX = 0;
+        var srcY = 0;
+        var srcW = this._sprite.cw;
+        var srcH = this._sprite.ch;
+        /*
+        var rndA = Math.abs($.roundedAngle(this._angle, 45));
+        if ( rndA ) {
+          if ( this._sprite.rotation[rndA] != -1 ) {
+            srcX = this._sprite.rotation[rndA];
+          }
+        }
+        */
+        this.drawClipImage(this._image, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+      }
+
+      // Or else just display the image
+      else {
+        if ( this._image && !this._image_loaded ) {
+          this.drawImage(this._image, 0, 0);
+          this._image_loaded = true;
+        }
+      }
+    },
+
+    /**
      * getMovable -- Get movable state
      * @return bool
      */
@@ -797,6 +810,8 @@
     _objects  : [],
 
     // Base attributes
+    _marginX    : -1,
+    _marginY    : -1,
     _sizeX      : 100,
     _sizeY      : 100,
     _posX       : 0,
@@ -862,6 +877,10 @@
       this._mincontext = context;
       this._scaleX     = this.__width / MINIMAP_WIDTH;
       this._scaleY     = this.__height / MINIMAP_HEIGHT;
+
+      var t = $.getOffset(this._main);
+      this._marginX = t.left;
+      this._marginY = t.top;
 
       this._minimap.appendChild(canvas);
 
@@ -947,8 +966,8 @@
 
           var mX = $.mousePosX(ev);
           var mY = $.mousePosY(ev);
-          var rX = mX - 10;
-          var rY = mY - 10;
+          var rX = mX - self._marginX;
+          var rY = mY - self._marginY;
 
           this._startX = mX;
           this._startY = mY;
@@ -1027,10 +1046,10 @@
           var mX = $.mousePosX(ev);
           var mY = $.mousePosY(ev);
 
-          var rx = Math.min((mX - 10), (this._startX - 10));
-          var ry = Math.min((mY - 10), (this._startY - 10));
-          var rw = Math.abs((mX - 10) - (this._startX - 10));
-          var rh = Math.abs((mY - 10) - (this._startY - 10));
+          var rx = Math.min((mX - this._marginX), (this._startX - this._marginX));
+          var ry = Math.min((mY - this._marginY), (this._startY - this._marginY));
+          var rw = Math.abs((mX - this._marginX) - (this._startX - this._marginX));
+          var rh = Math.abs((mY - this._marginY) - (this._startY - this._marginY));
 
           // The rectangle to use as selection mask
           var re = {
@@ -1045,14 +1064,12 @@
           if ( (Math.sqrt((re.x2 - re.x1) * (re.y2 - re.y1))) > (SELECTION_SENSE) ) {
             this.onSelect(ev, re);
           } else {
-            mX = Math.abs(this._posX - mX) - 10;
-            mY = Math.abs(this._posY - mY) - 10;
+            mX = Math.abs(this._posX - mX) - this._marginX;
+            mY = Math.abs(this._posY - mY) - this._marginY;
 
             ObjectAction({x: mX, y: mY});
           }
-        }/* else if ( this._scrolling ) {
-          this.onDragMove(ev, {x:this._scollX, y:this._scrollY}, true);
-        }*/
+        }
       }
 
       this._dragging  = false;
@@ -1084,10 +1101,10 @@
       }
       // Update selection rectangle
       else if ( this._selecting ) {
-        var rx = Math.min((mX - 10), (this._startX - 10));
-        var ry = Math.min((mY - 10), (this._startY - 10));
-        var rw = Math.abs((mX - 10) - (this._startX - 10));
-        var rh = Math.abs((mY - 10) - (this._startY - 10));
+        var rx = Math.min((mX - this._marginX), (this._startX - this._marginX));
+        var ry = Math.min((mY - this._marginY), (this._startY - this._marginY));
+        var rw = Math.abs((mX - this._marginX) - (this._startX - this._marginX));
+        var rh = Math.abs((mY - this._marginY) - (this._startY - this._marginY));
 
         this._rect.style.left    = (rx) + 'px';
         this._rect.style.top     = (ry) + 'px';

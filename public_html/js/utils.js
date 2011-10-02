@@ -151,8 +151,12 @@ var $ = (function(undefined) {
       return value - (times * distance);
     },
 
-    'roundedAngle' : function(angle) {
-      return Math.round(angle/90)*90+(360*(angle<0));
+    'roundedAngle' : function(angle, nearest) {
+      /*
+      nearest = nearest || 90;
+      return Math.round(angle/nearest)*nearest+(360*(angle<0));
+      */
+      return Math.floor((angle/nearest))*nearest;
     }
 
 
