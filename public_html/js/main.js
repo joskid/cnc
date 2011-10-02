@@ -44,7 +44,8 @@
     'Worker'         : (('Worker'         in window) && (window['Worker']         !== null)),
     'geolocation'    : (!!navigator.geolocation),
     'microdata'      : (!!document.getItems),
-    'history'        : (!!(window.history && history.pushState))
+    'history'        : (!!(window.history && history.pushState)),
+    'offline'        : (!!window.applicationCache)
   };
 
   // Internals
