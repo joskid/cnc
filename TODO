@@ -1,2 +1,14 @@
+High:
+* Re-implement path finding
+* Add non_movable mask for map
+* Fix rotation beyond 90deg increments
+* Refactor map example data loading
+* Add all other object types
 
+Medium:
+* ---
 
+Low:
+* Network connection and communication (multiplayer)
+
+* IE Browser support ?!
