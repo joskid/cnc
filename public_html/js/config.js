@@ -22,10 +22,34 @@
 
     // Main configuration
     CONFIG     : {
-      'audio_on'    : true,
-      'audio_sfx'   : 90,
-      'audio_gui'   : 100,
-      'audio_music' : 80
+      'audio_on'     : true,
+      'audio_sfx'    : 90,
+      'audio_gui'    : 100,
+      'audio_music'  : 80,
+      'audio_codecs' : {
+        "ogg" : 'audio/ogg; codecs="vorbis"', // OGG
+        "mp3" : 'audio/mpeg'                  // MP3
+      }
+    },
+
+    // Preloading
+    PRELOAD : {
+      'gfx' : {
+        'count' : 4,
+        'items' : {
+          "tile_desert"  : null,
+          "unit"         : null,
+          "tank"         : null,
+          "hq"           : null
+        }
+      },
+      'snd' : {
+        'count' : 2,
+        'items' : {
+          "await1"   : null,
+          "ackno"    : null
+        }
+      }
     },
 
     // Objects
@@ -47,6 +71,11 @@
         'width'  : 24,
         'height' : 24,
         'image'  : "tank",
+        'sprite' : {
+          'src' : "jeep_sprite",
+          'cw'  : 24,
+          'ch'  : 24
+        },
         'attrs'  : {
           'movable'   : true,
           'speed'     : 10,

@@ -124,12 +124,8 @@
   var Graphics = Class.extend({
 
     // Preloaded items
-    _preloaded : {
-      "tile_desert"  : null,
-      "unit"         : null,
-      "tank"         : null,
-      "hq"           : null
-    },
+    _preloaded     : CnC.PRELOAD.gfx.items,
+    _preload_count : CnC.PRELOAD.gfx.count,
 
     /**
      * @constructor
@@ -140,6 +136,7 @@
       // Preload all images
       console.group("Preloading gfx");
       var index = 1;
+      var self = this;
       for ( var i in this._preloaded ) {
         if ( this._preloaded.hasOwnProperty(i) ) {
           var src  = "/img/"  + i + ".png";
@@ -148,7 +145,7 @@
 
           s = new Image();
           s.onload = function() {
-            if ( index >= 4 ) {
+            if ( index >= self._preload_count ) {
               callback();
             }
             index++;
@@ -199,10 +196,8 @@
     _ext       : "mp3",
 
     // Preloaded items
-    _preloaded : {
-      "await1"   : null,
-      "ackno"    : null
-    },
+    _preloaded     : CnC.PRELOAD.snd.items,
+    _preload_count : CnC.PRELOAD.snd.count,
 
     /**
      * @constructor
@@ -214,11 +209,7 @@
         var s, t, codec;
 
         // Check for supported audio codec
-        var types = {
-          "ogg" : 'audio/ogg; codecs="vorbis"', // OGG
-          "mp3" : 'audio/mpeg'                  // MP3
-        };
-
+        var types = CnC.CONFIG.audio_codecs;
         for ( s in types ) {
           if ( types.hasOwnProperty(s) ) {
             t = types[s];
