@@ -48,14 +48,17 @@
   var MINIMAP_HEIGHT   = 180;
   var SELECTION_SENSE  = 10;
 
-  // Object types
-  var OBJECT_UNIT      = 1;
-  var OBJECT_VEHICLE   = 2;
-  var OBJECT_BUILDING  = 3;
-
   /////////////////////////////////////////////////////////////////////////////
   // HELPER FUNCTIONS
   /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * CreateObject -- Create an object
+   * @return void
+   */
+  var CreateObject = function(opts, player, x, y, a) {
+    return new MapObject(player, x, y, a, opts);
+  };
 
   /**
    * ObjectAction -- Perform a MapObject operation
@@ -315,19 +318,19 @@
       this._map = new Map();
 
       // Player 1
-      this._map.addObject((new MapObjectVehicle(0, 50, 30)));
-      this._map.addObject((new MapObjectVehicle(0, 50, 90)));
-      this._map.addObject((new MapObjectVehicle(0, 50, 150)));
-      this._map.addObject((new MapObjectBuilding(0, 143, 143)));
-      this._map.addObject((new MapObjectUnit(0, 170, 10)));
-      this._map.addObject((new MapObjectUnit(0, 170, 40)));
-      this._map.addObject((new MapObjectUnit(0, 170, 70)));
+      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  0, 50,  30));
+      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  0, 50,  90));
+      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  0, 50,  150));
+      this._map.addObject(CreateObject(CnC.MapObjects.Building, 0, 143, 143));
+      this._map.addObject(CreateObject(CnC.MapObjects.Unit,     0, 170, 10));
+      this._map.addObject(CreateObject(CnC.MapObjects.Unit,     0, 170, 40));
+      this._map.addObject(CreateObject(CnC.MapObjects.Unit,     0, 170, 70));
 
       // Player 2
-      this._map.addObject((new MapObjectVehicle(1, 2000, 1700)));
-      this._map.addObject((new MapObjectVehicle(1, 2000, 1750)));
-      this._map.addObject((new MapObjectVehicle(1, 2000, 1800)));
-      this._map.addObject((new MapObjectBuilding(1, 2000, 2000)));
+      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  1, 2000, 1700));
+      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  1, 2000, 1750));
+      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  1, 2000, 1800));
+      this._map.addObject(CreateObject(CnC.MapObjects.Building, 1, 2000, 2000));
 
       console.groupEnd();
     },
@@ -464,7 +467,7 @@
      * @constructor
      */
     //init : function(t, w, h, x, y, a) {
-    init : function(x, y, ang, opts) {
+    init : function(player, x, y, ang, opts) {
       var self = this;
 
       // Validate input data
@@ -480,10 +483,10 @@
       // Set base attributes
       this._type          = opts.type;
       this._sprite        = opts.sprite !== undefined ? opts.sprite : null;
-      this._image         = opts.image  !== undefined ? opts.image  : null;
+      this._image         = opts.image  !== undefined ? _Graphic.getImage(opts.image)  : null;
 
       // Set instance attributes
-      this._player        = opts.attrs.player;
+      this._player        = parseInt(player, 10);
       this._selectable    = opts.attrs.selectable !== undefined ? opts.attrs.selectable : this._selectable;
       this._movable       = opts.attrs.movable;
       this._speed         = opts.attrs.speed;
@@ -599,9 +602,9 @@
           var th = h + 20;
 
           // Select correct debugging color
-          if ( self._type == OBJECT_UNIT ) {
+          if ( self._type == CnC.OBJECT_UNIT ) {
             cc.fillStyle   = "rgba(100,255,100,0.2)";
-          } else if ( self._type == OBJECT_VEHICLE ) {
+          } else if ( self._type == CnC.OBJECT_VEHICLE ) {
             cc.fillStyle   = "rgba(100,100,255,0.2)";
           } else {
             cc.fillStyle   = "rgba(255,255,255,0.2)";
@@ -609,7 +612,7 @@
           cc.strokeStyle = "rgba(0,0,0,0.9)";
 
           cc.beginPath();
-            if ( self._type == OBJECT_BUILDING ) {
+            if ( self._type == CnC.OBJECT_BUILDING ) {
               cc.fillRect((tw/2 - w/2), (th/2 - h/2), w, h);
             } else {
               cc.arc((tw / 2), (th / 2), (w / 2), (Math.PI * 2), false);
@@ -1325,79 +1328,6 @@
     }
 
 
-  });
-
-  /////////////////////////////////////////////////////////////////////////////
-  // OBJECT CLASSES
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * MapObjectUnit -- Unit type MapObject
-   * @class
-   * @extends MapObject
-   */
-  var MapObjectUnit = MapObject.extend({
-    init : function(p, x, y, a) {
-      this._super(x, y, a, {
-        'type'   : OBJECT_UNIT,
-        'width'  : 50,
-        'height' : 50,
-        'image'  : _Graphic.getImage("unit"),
-        'attrs'  : {
-          'player'    : parseInt(p, 10) || 0,
-          'movable'   : true,
-          'speed'     : 5,
-          'turning'   : 0,
-          'strength'  : 10
-        }
-      });
-    }
-  });
-
-  /**
-   * MapObjectVehicle -- Vehicle type MapObject
-   * @class
-   * @extends MapObject
-   */
-  var MapObjectVehicle = MapObject.extend({
-    init : function(p, x, y, a) {
-      this._super(x, y, a, {
-        'type'   : OBJECT_VEHICLE,
-        'width'  : 24,
-        'height' : 24,
-        'image'  : _Graphic.getImage("tank"),
-        'attrs'  : {
-          'player'    : parseInt(p, 10) || 0,
-          'movable'   : true,
-          'speed'     : 10,
-          'turning'   : 10,
-          'strength'  : 10
-        }
-      });
-    }
-  });
-
-  /**
-   * MapObjectBuilding -- Building type MapObject
-   * @class
-   * @extends MapObject
-   */
-  var MapObjectBuilding = MapObject.extend({
-    init : function(p, x, y, a) {
-      this._super(x, y, a, {
-        'type'   : OBJECT_BUILDING,
-        'width'  : 72,
-        'height' : 48,
-        'image'  : _Graphic.getImage("hq"),
-        'attrs'  : {
-          'player'    : parseInt(p, 10) || 0,
-          'movable'   : false,
-          'speed'     : 0,
-          'turning'   : 0,
-          'strength'  : 100
-        }
-      });
-    }
   });
 
   /////////////////////////////////////////////////////////////////////////////
