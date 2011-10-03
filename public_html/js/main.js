@@ -530,6 +530,18 @@
       console.log("Using game data", game);
       console.groupEnd();
 
+
+      // GUI Stuff
+      var btn_sidebar = document.getElementById("TopBarButtonSideBar");
+      var btn_menu    = document.getElementById("TopBarButtonMenu");
+      var elm_sidebar = document.getElementById("Sidebar");
+
+      var vis = true;
+      btn_sidebar.onclick = function() {
+        vis = !vis;
+        elm_sidebar.style.display = vis ? "block" : "none";
+      };
+
       this._game = game;
     },
 

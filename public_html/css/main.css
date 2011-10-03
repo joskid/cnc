@@ -12,13 +12,14 @@ body {
   overflow : hidden;
   background-color : #000;
   cursor : default;
+  font-family : Arial;
 }
 
 /* MAIN LAYOUT */
 
 #Main {
   position : absolute;
-  top : 0px;
+  top : 30px;
   right : 0px;
   bottom : 0px;
   left : 0px;
@@ -30,14 +31,59 @@ body {
 
 /* GUI */
 
-#Sidebar {
+#TopBar {
   position : absolute;
   top : 0px;
+  left : 0px;
+  right : 0px;
+  height : 30px;
+  z-index : 2000000;
+  border-bottom : 1px solid #000;
+}
+
+  #TopBar .Button {
+    position : absolute;
+    width : 200px;
+    height : 30px;
+    background : url('/img/sidebar/background.png');
+    text-align : center;
+    color : #fff;
+    font-size : 12px;
+    font-weight : bold;
+    line-height : 30px;
+
+    -webkit-border-top-left-radius: 15px;
+    -khtml-border-radius-topleft: 15px;
+    -moz-border-radius-topleft: 15px;
+    border-top-left-radius: 15px;
+    -webkit-border-top-right-radius: 15px;
+    -khtml-border-radius-topright: 15px;
+    -moz-border-radius-topright: 15px;
+    border-top-right-radius: 15px;
+  }
+  #TopBar .Button.Clickable:hover {
+    color : #eee;
+  }
+    #TopBar .Button span {
+      cursor : pointer;
+    }
+
+  #TopBarButtonMenu {
+  }
+  #TopBarButtonMoney {
+    right : 200px;
+  }
+  #TopBarButtonSideBar {
+    right : 0px;
+  }
+
+#Sidebar {
+  position : absolute;
+  top : 30px;
   bottom : 0px;
   right : 0px;
   width : 200px;
-  margin : 1px;
-  z-index : 2000000;
+  z-index : 2000001;
   background : url('/img/sidebar/background.png');
   border-left : 1px solid #000;
 }
