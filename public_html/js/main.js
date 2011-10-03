@@ -820,9 +820,12 @@
       var self = this;
       if ( !this._running ) {
         // Create map
+        var mt = this._game.map.type;
+        var dt = this._game.map.data;
         var sx = parseInt(this._game.map.sx, 10);
         var sy = parseInt(this._game.map.sy, 10);
-        this._map = new Map(sx, sy);
+
+        this._map = new Map(mt, sx, sy, dt);
 
         // Create objects
         var os = this._game.objects;
@@ -1280,7 +1283,9 @@
   var Map = CanvasObject.extend({
 
     // Objects etc
+    _type     : null,
     _objects  : [],
+    _data     : [],
 
     // Base attributes
     _marginX    : -1,
@@ -1314,17 +1319,23 @@
     /**
      * @constructor
      */
-    init : function(sx, sy) {
+    init : function(type, sx, sy, data) {
+      var self = this;
+
       console.group("Map::init()");
 
       this._sizeX   = parseInt(sx, 10) || this._sizeX;
       this._sizeY   = parseInt(sy, 10) || this._sizeY;
       this._objects = [];
+      this._data    = data || [];
+      this._type    = type || "desert";
 
       var w = TILE_SIZE * this._sizeX;
       var h = TILE_SIZE * this._sizeY;
 
+      //
       // Do some DOM stuff
+      //
       this._main     = document.getElementById("Main");
       this._root     = document.getElementById("MapContainer");
       this._minimap  = document.getElementById("MiniMap");
@@ -1333,6 +1344,14 @@
 
       this._root.style.width  = w + "px";
       this._root.style.height = h + "px";
+
+      var t = $.getOffset(this._main);
+      this._marginX = t.left;
+      this._marginY = t.top;
+
+      //
+      // Do some Canvas stuff
+      //
 
       // Init canvas
       this._super(w, h, 0, 0, 0, "Map");
@@ -1356,17 +1375,15 @@
       this._scaleX     = this.__width / MINIMAP_WIDTH;
       this._scaleY     = this.__height / MINIMAP_HEIGHT;
 
-      var t = $.getOffset(this._main);
-      this._marginX = t.left;
-      this._marginY = t.top;
-
       this._minimap.appendChild(canvas);
+
+      //
+      // EVENTS
+      //
 
       if ( CnC.DEBUG_MODE ) {
         _DebugMap.innerHTML = (this._sizeX + "x" + this._sizeY) + (" (" + (w + "x" + h) + ")");
       }
-
-      var self = this;
 
       // Map dragging and clicking
       $.addEvent(document, "mousemove", function(ev) {
@@ -1888,8 +1905,12 @@
     // Example data
     var game_data = {
       'map' : {
-        'sx' : 100,
-        'sy' : 100
+        'type' : "desert",
+        'sx'   : 100,
+        'sy'   : 100,
+        'data' : [
+
+        ]
       },
       'objects' : [
         // Player 1
