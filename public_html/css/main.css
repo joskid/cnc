@@ -61,10 +61,10 @@ body {
     -moz-border-radius-topright: 15px;
     border-top-right-radius: 15px;
   }
-  #TopBar .Button.Clickable:hover {
-    color : #eee;
-  }
-    #TopBar .Button span {
+    #TopBar .Button.Clickable:hover {
+      color : #eee;
+    }
+    #TopBar .Button.Clickable span {
       cursor : pointer;
     }
 
