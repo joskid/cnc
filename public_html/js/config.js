@@ -46,10 +46,19 @@
         }
       },
       'snd' : {
-        'count' : 2,
+        'count' : 10,
         'items' : {
-          "await1"   : null,
-          "ackno"    : null
+          "await1" : null,
+          "ackno" : null,
+          "affirm1" : null,
+          "yessir1" : null,
+          "roger" : null,
+          "movout1" : null,
+          "ritaway" : null,
+          "ritaway" : null,
+          "ugotit" : null,
+          "unit1" : null,
+          "vehic1" : null
         }
       }
     },

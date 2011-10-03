@@ -9,25 +9,6 @@
 (function(undefined) {
 
   /////////////////////////////////////////////////////////////////////////////
-  // GLOBALS
-  /////////////////////////////////////////////////////////////////////////////
-
-  // References
-  var _Main     = null;
-  var _Graphic  = null;
-  var _Sound    = null;
-  var _Net      = null;
-
-  // Variables
-  var _FPS      = 0;
-  var _Player   = 0;
-
-  // Debugging elements
-  var _DebugMap     = null;
-  var _DebugFPS     = null;
-  var _DebugObjects = null;
-
-  /////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
   /////////////////////////////////////////////////////////////////////////////
 
@@ -45,7 +26,8 @@
     'geolocation'    : (!!navigator.geolocation),
     'microdata'      : (!!document.getItems),
     'history'        : (!!(window.history && history.pushState)),
-    'offline'        : (!!window.applicationCache)
+    'offline'        : (!!window.applicationCache),
+    'webaudio'       : (!!window.AudioContext || !!window.webkitAudioContext)
   };
 
   // Internals
@@ -56,6 +38,50 @@
   var MINIMAP_HEIGHT   = 180;
   var SELECTION_SENSE  = 10;
   var SERVER_URI       = "ws://localhost:8888/CnC";
+
+  var SOUND_SELECT     = 0;
+  var SOUND_MOVE       = 1;
+  var SOUND_ATTACK     = 2;
+  var SOUND_DIE        = 3;
+
+  /////////////////////////////////////////////////////////////////////////////
+  // GLOBALS
+  /////////////////////////////////////////////////////////////////////////////
+
+  // References
+  var _Main     = null;
+  var _Graphic  = null;
+  var _Sound    = null;
+  var _Net      = null;
+
+  // Variables
+  var _FPS      = 0;
+  var _Player   = 0;
+
+  // MapObject "statics"
+  var _MapObjectCount = 0;
+  var _MapObjectTypes = {};
+      _MapObjectTypes[CnC.OBJECT_UNIT]      =  "MapObjectUnit";
+      _MapObjectTypes[CnC.OBJECT_VEHICLE]   =  "MapObjectVehicle";
+      _MapObjectTypes[CnC.OBJECT_BUILDING]  =  "MapObjectBuilding";
+
+  var _MapObjectSounds = {};
+      _MapObjectSounds[CnC.OBJECT_UNIT]     =  {
+        /*SOUND_SELECT*/ 0 : ["await1", "yessir1"],
+        /*SOUND_MOVE*/   1 : ["roger", "movout1", "ritaway", "ritaway", "ugotit", "affirm1", "ackno"]
+      };
+      _MapObjectSounds[CnC.OBJECT_VEHICLE]  =  {
+        /*SOUND_SELECT*/ 0 : ["unit1", "vehic1"],
+        /*SOUND_MOVE*/   1 : ["roger", "movout1", "ritaway", "ritaway", "ugotit", "affirm1", "ackno"]
+      };
+      _MapObjectSounds[CnC.OBJECT_BUILDING] =  {
+      };
+
+
+  // Debugging elements
+  var _DebugMap     = null;
+  var _DebugFPS     = null;
+  var _DebugObjects = null;
 
   /////////////////////////////////////////////////////////////////////////////
   // HELPER FUNCTIONS
@@ -73,6 +99,7 @@
    * ObjectAction -- Perform a MapObject operation
    *
    * Select, Unselect or Move object(s)
+   * This function also takes care of sound events for handling
    *
    * @return void
    */
@@ -80,10 +107,21 @@
     var _Selected = [];
 
     function SelectObjects(lst) {
+      var snd = null;
+      var o;
       for ( var i = 0; i < lst.length; i++ ) {
-        if ( lst[i].getSelectable() ) {
-          lst[i].select();
+        o = lst[i];
+        if ( o.getSelectable() ) {
+          o.select();
+
+          if ( (!snd) && o.getSound(SOUND_SELECT) ) {
+            snd = o.getSound(SOUND_SELECT);
+          }
         }
+      }
+
+      if ( snd !== null ) {
+        _Sound.play(snd);
       }
     }
 
@@ -94,8 +132,21 @@
     }
 
     function MoveObjects(lst, pos) {
+      var snd = null;
+      var o;
       for ( var i = 0; i < lst.length; i++ ) {
-        lst[i].move(pos);
+        o = lst[i];
+        if ( o.getMovable() ) {
+          o.move(pos);
+
+          if ( !snd && o.getSound(SOUND_MOVE) ) {
+            snd = o.getSound(SOUND_MOVE);
+          }
+        }
+      }
+
+      if ( snd !== null ) {
+        _Sound.play(snd);
       }
     }
 
@@ -109,14 +160,10 @@
 
         if ( _Selected.length ) {
           SelectObjects(_Selected);
-
-          _Sound.play("await1");
         }
       } else if ( act instanceof Object ) {
         if ( _Selected.length ) {
           MoveObjects(_Selected, act);
-
-          _Sound.play("ackno");
         }
       }
     };
@@ -323,9 +370,18 @@
    * @class
    */
   var Sounds = Class.extend({
-    _enabled   : (CnC.CONFIG.audio_on && SUPPORT.audio),
-    _codec     : "mp3",
-    _ext       : "mp3",
+    _enabled     : (CnC.CONFIG.audio_on),
+
+    // <audio>
+    _codec       : "mp3",
+    _ext         : "mp3",
+
+    // Webaudio
+    _webaudio    : false,
+    _context     : null,
+    _csource     : null,
+    _cfilters    : {},
+    _cpanners    : null,
 
     // Preloaded items
     _preloaded     : CnC.PRELOAD.snd.items,
@@ -334,14 +390,16 @@
     /**
      * @constructor
      */
-    init : function() {
+    init : function(callback) {
+      var self = this;
 
       console.group("Sounds::init()");
-      if ( this._enabled ) {
-        var s, t, codec;
 
-        // Check for supported audio codec
-        var types = CnC.CONFIG.audio_codecs;
+      if ( this._enabled ) {
+        var i, s, t, codec, types;
+
+        // First check if we have audio support, and find codec
+        types = CnC.CONFIG.audio_codecs;
         for ( s in types ) {
           if ( types.hasOwnProperty(s) ) {
             t = types[s];
@@ -352,36 +410,67 @@
           }
         }
 
-        if ( codec ) {
-          this._codec = codec;
-          this._ext   = codec;
-        } else {
-          this._enabled = false;
+        this._codec   = codec;
+        this._ext     = codec;
+        this._enabled = codec ? true : false;
+
+        // Check for supported audio context
+        if ( SUPPORT.webaudio ) {
+          types = [window.AudioContext, window.webkitAudioContext];
+          for ( i = 0; i < types.length; i++ ) {
+            if ( types[i] ) {
+              this._context = new types[i](); //construct(types[i], []);
+              break;
+            }
+          }
+
+          if ( this._context ) {
+            this._webaudio = true;
+            try {
+              this._cpanner  = this._context.createPanner();
+            } catch ( exc ) {
+              this._cpanner  = null;
+            }
+          }
         }
       }
 
       console.log("Supported", this._enabled);
       console.log("Enabled", CnC.CONFIG.audio_on);
       console.log("Codec", this._codec, this._ext);
+      console.log("WebAudio", !!this._context, this._context);
 
       // Preload audio files
       if ( this._enabled ) {
         console.group("Preloading audio");
-        for ( var i in this._preloaded ) {
+
+        var src;
+        var index = 1;
+        for ( i in this._preloaded ) {
           if ( this._preloaded.hasOwnProperty(i) ) {
-            var src  = "/snd/" + this._codec + "/" + i + "." + this._ext;
+            src  = "/snd/" + this._codec + "/" + i + "." + this._ext;
 
             console.log(i, src);
 
-            s = new Audio(src);
-            s.type = this._codec;
-            s.preload = "auto";
-            s.controls = false;
+            s            = new Audio(src);
+            s.type       = this._codec;
+            s.preload    = "auto";
+            s.controls   = false;
             s.autobuffer = true;
-            s.loop = false;
+            s.loop       = false;
             s.load();
 
+            if ( this._cpanner ) {
+              (this._context.createMediaElementSource(s)).connect(this._cpanner);
+            }
+
             this._preloaded[i] = s;
+
+            if ( index >= this._preload_count ) {
+              callback();
+            }
+
+            index++;
           }
         }
         console.groupEnd();
@@ -412,8 +501,9 @@
      */
     play : function(snd) {
       if ( this._enabled ) {
-        if ( this._preloaded[snd] ) {
-          this._preloaded[snd].play();
+        var s = this._preloaded[snd];
+        if ( s ) {
+          s.play();
         }
       }
     }
@@ -570,6 +660,7 @@
   var MapObject = CanvasObject.extend({
 
     // Base attributes
+    _iid           : -1,
     _type          : -1,
     _image         : null,
     _image_loaded  : false,
@@ -600,12 +691,8 @@
       var w = parseInt(opts.width, 10);
       var h = parseInt(opts.height, 10);
 
-      console.group("MapObject::init()");
-        console.log("Pos X", x);
-        console.log("Pos Y", y);
-      console.groupEnd();
-
       // Set base attributes
+      this._iid           = _MapObjectCount;
       this._type          = opts.type;
       this._sprite        = opts.sprite !== undefined ? opts.sprite : null;
       if ( this._sprite ) {
@@ -637,6 +724,12 @@
       $.addEvent(this.__overlay, "click", function(ev) {
         self.onClick(ev);
       }, true);
+
+      console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::init()", "x:" + x, "y:" + y, "a:" + a);
+      console.log(opts, this);
+      console.groupEnd();
+
+      _MapObjectCount++;
     },
 
     /**
@@ -800,13 +893,23 @@
     },
 
     /**
+     * _toggle -- Toggle selection state of MapObject
+     * @return void
+     */
+    _toggle : function(t) {
+      this._selected = t;
+
+      console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::toggle()");
+      console.log("Selected", this._selected);
+      console.groupEnd();
+    },
+
+    /**
      * select -- Select the MapObject
      * @return void
      */
     select : function() {
-      console.log("MapObject::select()", this);
-
-      this._selected = true;
+      this._toggle(true);
     },
 
     /**
@@ -814,9 +917,7 @@
      * @return void
      */
     unselect : function() {
-      console.log("MapObject::unselect()", this);
-
-      this._selected = false;
+      this._toggle(false);
     },
 
     /**
@@ -841,8 +942,6 @@
       var rotation = (/*this._angle + */deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
       var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
 
-      console.log("MapObject::move()", "x:" + x2, "y:" + y2, "d:" + distance, "a:" + deg);
-
       // Set destination and heading
       this._destination = {
         x : pos.x - (w  /2),
@@ -850,6 +949,12 @@
       };
 
       this._heading = parseInt(rotation, 10);
+
+      console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::move()");
+      console.log("Destination", this._destination.x, "x", this._destination.y);
+      console.log("Heading", this._heading, "degrees");
+      console.log("Distance", distance, "px");
+      console.groupEnd();
     },
 
     /**
@@ -923,6 +1028,25 @@
      */
     getIsMine : function() {
       return (this._player == _Player);
+    },
+
+    /**
+     * getSound -- Get the sound of the MapObject
+     * @return String
+     */
+    getSound : function(snd) {
+      var s = null;
+
+      if ( snd  !== null ) {
+        if ( _MapObjectSounds[this._type] !== undefined ) {
+          var snds = _MapObjectSounds[this._type][snd];
+          if ( snds !== undefined && snds.length ) {
+            s = snds[ Math.floor(Math.random()* (snds.length)) ];
+          }
+        }
+      }
+
+      return s;
     }
 
   });
@@ -1510,19 +1634,27 @@
     console.log("Browser agent", navigator.userAgent);
     console.log("Browser features", SUPPORT);
 
-    // Initialize sound engine (not required)
-    _Sound = new Sounds();
-    _Net   = new Networking();
-
     // Initialize graphics engine (required)
     if ( SUPPORT.canvas ) {
-      _Graphic = new Graphics(function() {
-        setTimeout(function() {
-          // Initialize the Game
-          _Main = new Game();
-          _Main.run();
-        }, SLEEP_INTERVAL);
+
+      // Initialize networking engine
+      _Net   = new Networking();
+
+      // Initialize sound engine
+      _Sound = new Sounds(function() {
+
+        // Initialize graphics engine
+        _Graphic = new Graphics(function() {
+          setTimeout(function()
+          {
+            // Initialize the Game
+            _Main = new Game();
+            _Main.run();
+          },
+            SLEEP_INTERVAL);
+        });
       });
+
     } else {
       alert("Your browser is not supported!");
     }
