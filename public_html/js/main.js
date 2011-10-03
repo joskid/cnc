@@ -14,6 +14,7 @@
 
   // Supported browser features
   var SUPPORT = {
+    'json'           : (!!window.JSON),
     'canvas'         : (!!document.createElement('canvas').getContext),
     'audio'          : (!!document.createElement('audio').canPlayType),
     'video'          : (!!document.createElement('video').canPlayType),
@@ -1909,7 +1910,7 @@
     };
 
     // Initialize graphics engine (required)
-    if ( SUPPORT.canvas ) {
+    if ( SUPPORT.json && SUPPORT.canvas && SUPPORT.xhr ) {
       _GUI        = new GUI();                // Initialize GUI
       _Net        = new Networking();         // Initialize Networking
       _Sound      = new Sounds(function() {   // Initialize Sounds

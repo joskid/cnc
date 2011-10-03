@@ -17,6 +17,11 @@ body {
   cursor : default;
   font-family : Arial;
 }
+body, a, table, td {
+  color : #eee;
+  text-decoration : none;
+  font-weight : normal;
+}
 
 /* MAIN LAYOUT */
 

@@ -10,6 +10,8 @@ Code:
 * Strict coding style (jslint)
 * Object-Oriented, with class inheritance, constructors and destructors
 * Basic utility library
+* XHR and Networking via XMLHttpRequest and WebSocket
+* JSON via Native browser JSON api
 * Canvas helper/wrapper class via HTML Canvas API
 * Audio support via the HTML5 Audio API
   * Also supports WebAudio API (experimental)
