@@ -98,6 +98,34 @@
     return new MapObject(player, x, y, a, opts);
   };
 
+  var CreateOverlay = function(opts) {
+    var type = opts[0];
+    var x    = opts[1];
+    var y    = opts[2];
+    var obj  = CnC.MapOverlays[type];
+    var img  = _Graphic.getImage(obj.image);
+
+    // Root DOM element
+    var root              = document.createElement("div");
+    root.className        = "MapOverlayObject";
+    root.width            = (obj.width);
+    root.height           = (obj.height);
+    root.style.left       = parseInt(x - obj.x, 10) + "px";
+    root.style.top        = parseInt(y - obj.y, 10) + "px";
+
+    // Main Canvas element
+    var canvas            = document.createElement('canvas');
+    var context           = canvas.getContext('2d');
+    canvas.className      = "MapOverlayObjectRoot";
+    canvas.width          = (obj.width);
+    canvas.height         = (obj.height);
+
+    context.drawImage(img, 0, 0);
+    root.appendChild(canvas);
+
+    return root;
+  };
+
   /**
    * ObjectAction -- Perform a MapObject operation
    *
@@ -1761,10 +1789,13 @@
     prepare : function() {
       console.group("Map::prepare()");
 
+      var img, obj;
+      var cc = this.__coverlay;
+
       //
       // Load tiles
       //
-      var img = _Graphic.getImage("tile_desert");
+      img = _Graphic.getImage("desert/tile");
       var px = 0;
       var py = 0;
       for ( var y = 0; y < this._sizeY; y++ ) {
@@ -1775,13 +1806,21 @@
         }
         py += TILE_SIZE;
       }
+      this._root.appendChild(this.getRoot());
       console.log("Created tiles", this._sizeX, "x", this._sizeY);
+
+      //
+      // Draw map data
+      //
+      for ( var o = 0; o < this._data.length; o++ ) {
+        this._root.appendChild(CreateOverlay(this._data[o]));
+      }
+      console.log("Created", o, "overlay objects");
 
       //
       // Draw grid
       //
       if ( CnC.DEBUG_MODE ) {
-        var cc = this.__coverlay;
         cc.beginPath();
         for ( y = 0; y < this._sizeY; y++ ) {
           cc.moveTo(0, y * TILE_SIZE);
@@ -1794,9 +1833,6 @@
         cc.stroke();
         cc.closePath();
       }
-
-
-      this._root.appendChild(this.getRoot());
 
       //
       // Load objects
@@ -1909,7 +1945,19 @@
         'sx'   : 100,
         'sy'   : 100,
         'data' : [
+          ["rock1", (TILE_SIZE * 10), (TILE_SIZE * 10)],
+          ["rock2", (TILE_SIZE * 19), (TILE_SIZE * 10)],
+          ["rock3", (TILE_SIZE * 30), (TILE_SIZE * 30)],
+          ["rock4", (TILE_SIZE * 22), (TILE_SIZE * 22)],
+          ["rock5", (TILE_SIZE * 3), (TILE_SIZE * 15)],
+          ["rock6", (TILE_SIZE * 8), (TILE_SIZE * 13)],
 
+          ["tree4", (TILE_SIZE * 5), (TILE_SIZE * 5)],
+          ["tree8", (TILE_SIZE * 23), (TILE_SIZE * 23)],
+          ["tree8", (TILE_SIZE * 12), (TILE_SIZE * 12)],
+          ["tree18", (TILE_SIZE * 29), (TILE_SIZE * 32)],
+          ["tree8", (TILE_SIZE * 40), (TILE_SIZE * 3)],
+          ["tree8", (TILE_SIZE * 38), (TILE_SIZE * 10)]
         ]
       },
       'objects' : [

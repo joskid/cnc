@@ -40,9 +40,20 @@
     // Preloading
     PRELOAD : {
       'gfx' : {
-        'count' : 5,
+        'count' : 16,
         'items' : {
-          "tile_desert"  : null,
+          "desert/tile"  : null,
+          "desert/rock1" : null,
+          "desert/rock2" : null,
+          "desert/rock3" : null,
+          "desert/rock4" : null,
+          "desert/rock5" : null,
+          "desert/rock6" : null,
+          "desert/rock7" : null,
+          "desert/t04"   : null,
+          "desert/t08"   : null,
+          "desert/t09"   : null,
+          "desert/t18"   : null,
           "jeep_sprite"  : null,
           "unit"         : null,
           "tank"         : null,
@@ -64,6 +75,88 @@
           "unit1" : null,
           "vehic1" : null
         }
+      }
+    },
+
+    // Overlays
+    MapOverlays : {
+      'rock1' : {
+        'image'  : "desert/rock1",
+        'width'  : 71,
+        'height' : 47,
+        'x'      : 71 / 2,
+        'y'      : 42 / 2
+      },
+      'rock2' : {
+        'image'  : "desert/rock2",
+        'width'  : 71,
+        'height' : 23,
+        'x'      : 71 / 2,
+        'y'      : 23 / 2
+      },
+      'rock3' : {
+        'image'  : "desert/rock3",
+        'width'  : 71,
+        'height' : 47,
+        'x'      : 71 / 2,
+        'y'      : 47 / 2
+      },
+      'rock4' : {
+        'image'  : "desert/rock4",
+        'width'  : 42,
+        'height' : 21,
+        'x'      : 42 / 2,
+        'y'      : 21 / 2
+      },
+      'rock5' : {
+        'image'  : "desert/rock5",
+        'width'  : 39,
+        'height' : 18,
+        'x'      : 39 / 2,
+        'y'      : 18 / 2
+      },
+      'rock6' : {
+        'image'  : "desert/rock6",
+        'width'  : 71,
+        'height' : 47,
+        'x'      : 71 / 2,
+        'y'      : 42 / 2
+      },
+      'rock7' : {
+        'image'  : "desert/rock7",
+        'width'  : 109,
+        'height' : 22,
+        'x'      : 109 / 2,
+        'y'      : 22 / 2
+      },
+
+      'tree4' : {
+        'image'  : "desert/t04",
+        'width'  : 23,
+        'height' : 23,
+        'x'      : 23 / 2,
+        'y'      : 23 / 2
+      },
+      'tree8' : {
+        'image'  : "desert/t08",
+        'width'  : 48,
+        'height' : 25,
+        'x'      : 48 / 2,
+        'y'      : 25 / 2
+      },
+      'tree9' : {
+        'image'  : "desert/t09",
+        'width'  : 47,
+        'height' : 23,
+        'x'      : 47 / 2,
+        'y'      : 23 / 2
+      },
+      'tree18' : {
+        'image'  : "desert/t18",
+        'width'  : 71,
+        'height' : 47,
+        'x'      : 71 / 2,
+        'y'      : 47 / 2
       }
     },
 

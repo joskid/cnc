@@ -120,6 +120,10 @@ var CanvasObject = Class.extend({
     this.__context.drawImage(img, x, y);
   },
 
+  drawOverlayImage : function(img, x, y) {
+    this.__coverlay.drawImage(img, x, y);
+  },
+
   drawClipImage : function(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
     this.__context.clearRect(0, 0, this.__width, this.__height);
     this.__context.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);

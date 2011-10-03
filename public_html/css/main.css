@@ -227,7 +227,11 @@ body, a, table, td {
   }
   .MapOverlay {
     position : absolute;
-    z-index : 6;
+    z-index : 1000;
+  }
+  .MapOverlayObject {
+    position : absolute;
+    z-index : 1001;
   }
 
 .MapObject {
