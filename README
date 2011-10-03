@@ -1,9 +1,26 @@
 Command & Conquer (Tiberian Dawn) Clone in HTML5
 -------------------------------------------------------------------------------
-Just a hobby project. Trying to recreate the orignal CnC game in HTML5 and 
-Canvas.
+Just a hobby project. Trying to recreate the orignal CnC game with the new
+HTML5 API.
 
-Currently working:
+Running example: http://cnc.0o.no/ (May not be up to date)
+
+Code:
+-------------------------------------------------------------------------------
+* Strict coding style (jslint)
+* Object-Oriented, with class inheritance, constructors and destructors
+* Basic utility library
+* Canvas helper/wrapper class via HTML Canvas API
+* Audio support via the HTML5 Audio API
+  * Also supports WebAudio API (experimental)
+
+Browser Support:
+-------------------------------------------------------------------------------
+* Developed in Chrome 14 and 15 (WebAudio and OGG support)
+* Tested in 4, 5, 6 (Working, does not support WebAudio, Only MP3 support)
+
+Features:
+-------------------------------------------------------------------------------
 * Map creation
   * Themes
   * Movable by dragging
@@ -12,13 +29,10 @@ Currently working:
   * Movment and rotation
   * With player mapping
   * Basic sprites (animations) - Under development
+  * Selection by dragging a rectangle
 * Minimap
+  * Displays objects
   * Can scroll the map via clicking or dragging
-* Selection by dragging a rectangle
-
-LIVE TEST:
--------------------------------------------------------------------------------
-Running example: http://cnc.0o.no/ (May not be up to date)
 
 NOTES:
 -------------------------------------------------------------------------------
