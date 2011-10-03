@@ -123,6 +123,29 @@ body, a, table, td {
     right : 10px;
     height : 435px;
   }
+    #ConstructionLeftScroll,
+    #ConstructionRightScroll {
+      position : absolute;
+      top : 0px;
+      left : 0px;
+      right : 0px;
+      bottom : 0px;
+      overflow : hidden;
+    }
+
+    #ConstructionLeftUp img,
+    #ConstructionLeftDown img,
+    #ConstructionRightUp img,
+    #ConstructionRightDown img {
+      vertical-align : middle;
+    }
+
+    #ConstructionLeftScroll div,
+    #ConstructionRightScroll div {
+      cursor : pointer;
+      border : 1px outset #555;
+      margin : 9px;
+    }
 
     #ConstructionLeftUp,
     #ConstructionRightUp {
@@ -133,6 +156,9 @@ body, a, table, td {
       height : 20px;
       border : 1px outset #555;
       margin : -1px;
+      cursor : pointer;
+      text-align : center;
+      overflow : hidden;
     }
 
     #ConstructionLeftDown,
@@ -144,6 +170,9 @@ body, a, table, td {
       height : 20px;
       border : 1px outset #555;
       margin : -1px;
+      cursor : pointer;
+      text-align : center;
+      overflow : hidden;
     }
 
     #ConstructionLeft {
@@ -165,12 +194,6 @@ body, a, table, td {
         overflow : hidden;
       }
 
-        #ConstructionLeftInner div {
-          cursor : pointer;
-          border : 1px outset #555;
-          margin : 9px;
-        }
-
     #ConstructionRight {
       position : absolute;
       top : 0px;
@@ -189,12 +212,6 @@ body, a, table, td {
         bottom : 30px;
         overflow : hidden;
       }
-
-        #ConstructionRightInner div {
-          cursor : pointer;
-          border : 1px outset #555;
-          margin : 9px;
-        }
 
 #WindowBackground {
   position : absolute;

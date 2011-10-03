@@ -33,12 +33,14 @@
   };
 
   // Internals
-  var LOOP_INTERVAL    = (1000 / 30);
-  var SLEEP_INTERVAL   = 500;
-  var TILE_SIZE        = 24;
-  var MINIMAP_WIDTH    = 180;
-  var MINIMAP_HEIGHT   = 180;
-  var SELECTION_SENSE  = 10;
+  var LOOP_INTERVAL      = (1000 / 30);
+  var SLEEP_INTERVAL     = 500;
+  var TILE_SIZE          = 24;
+  var MINIMAP_WIDTH      = 180;
+  var MINIMAP_HEIGHT     = 180;
+  var OBJECT_ICON_WIDTH  = 62;
+  var OBJECT_ICON_HEIGHT = 46;
+  var SELECTION_SENSE    = 10;
 
   var SOUND_SELECT     = 0;
   var SOUND_MOVE       = 1;
@@ -224,20 +226,64 @@
    */
   var GUI = Class.extend({
 
+    _structure_top : 0,
+    _unit_top      : 0,
+
     /**
      * @constructor
      */
     init : function() {
+      var self = this;
+
       console.group("GUI::init()");
 
+      // Sidebar
+      $.addEvent(document.getElementById("Sidebar"), "mousedown", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+        return false;
+      });
+      $.addEvent(document.getElementById("Sidebar"), "mouseup", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+        return false;
+      });
+      $.addEvent(document.getElementById("Sidebar"), "click", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+        return false;
+      });
+      $.addEvent(document.getElementById("Sidebar"), "dblclick", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+        return false;
+      });
+
+      // Sidebar buttons
+      $.addEvent(document.getElementById("ConstructionLeftUp"), "mousedown", $.preventDefault);
+      $.addEvent(document.getElementById("ConstructionLeftDown"), "mousedown", $.preventDefault );
+      $.addEvent(document.getElementById("ConstructionRightUp"), "mousedown", $.preventDefault);
+      $.addEvent(document.getElementById("ConstructionRightDown"), "mousedown", $.preventDefault);
+
+      $.addEvent(document.getElementById("ConstructionLeftUp"), "click", function() {
+        self.scrollContainer(0, 0);
+      });
+      $.addEvent(document.getElementById("ConstructionLeftDown"), "click", function() {
+        self.scrollContainer(0, 1);
+      });
+      $.addEvent(document.getElementById("ConstructionRightUp"), "click", function() {
+        self.scrollContainer(1, 0);
+      });
+      $.addEvent(document.getElementById("ConstructionRightDown"), "click", function() {
+        self.scrollContainer(1, 1);
+      });
+
+      // Top buttons
       $.addEvent(document.getElementById("TopBarButtonSideBar"), "click", function(ev) {
-        self._sidebar = !self._sidebar;
-        document.getElementById("Sidebar").style.display = self._sidebar ? "block" : "none";
+        self.toggleSidebar();
       });
       $.addEvent(document.getElementById("TopBarButtonMenu"), "click", function(ev) {
-        self._menu = !self._menu;
-        document.getElementById("WindowBackground").style.display = self._menu ? "block" : "none";
-        document.getElementById("Window").style.display = self._menu ? "block" : "none";
+        self.toggleMenu();
       });
 
       console.groupEnd();
@@ -247,19 +293,91 @@
      * @destructor
      */
     destroy : function() {
+      var self = this;
       console.group("GUI::destroy()");
 
+      // Sidebar
+      $.removeEvent(document.getElementById("Sidebar"), "mousedown", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+        return false;
+      });
+      $.removeEvent(document.getElementById("Sidebar"), "mouseup", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+        return false;
+      });
+      $.removeEvent(document.getElementById("Sidebar"), "click", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+        return false;
+      });
+      $.removeEvent(document.getElementById("Sidebar"), "dblclick", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+        return false;
+      });
+
+      // Sidebar buttons
+      $.removeEvent(document.getElementById("ConstructionLeftUp"), "mousedown", $.preventDefault);
+      $.removeEvent(document.getElementById("ConstructionLeftDown"), "mousedown", $.preventDefault );
+      $.removeEvent(document.getElementById("ConstructionRightUp"), "mousedown", $.preventDefault);
+      $.removeEvent(document.getElementById("ConstructionRightDown"), "mousedown", $.preventDefault);
+
+      $.removeEvent(document.getElementById("ConstructionLeftUp"), "click", function() {
+        self.scrollContainer(0, 0);
+      });
+      $.removeEvent(document.getElementById("ConstructionLeftDown"), "click", function() {
+        self.scrollContainer(0, 1);
+      });
+      $.removeEvent(document.getElementById("ConstructionRightUp"), "click", function() {
+        self.scrollContainer(1, 0);
+      });
+      $.removeEvent(document.getElementById("ConstructionRightDown"), "click", function() {
+        self.scrollContainer(1, 1);
+      });
+
+      // Top buttons
       $.removeEvent(document.getElementById("TopBarButtonSideBar"), "click", function(ev) {
-        self._sidebar = !self._sidebar;
-        document.getElementById("Sidebar").style.display = self._sidebar ? "block" : "none";
+        self.toggleSidebar();
       });
       $.removeEvent(document.getElementById("TopBarButtonMenu"), "click", function(ev) {
-        self._menu = !self._menu;
-        document.getElementById("WindowBackground").style.display = self._menu ? "block" : "none";
-        document.getElementById("Window").style.display = self._menu ? "block" : "none";
+        self.toggleMenu();
       });
 
       console.groupEnd();
+    },
+
+    toggleSidebar : function() {
+      this._sidebar = !this._sidebar;
+      document.getElementById("Sidebar").style.display = this._sidebar ? "block" : "none";
+    },
+
+    toggleMenu : function() {
+        this._menu = !this._menu;
+        document.getElementById("WindowBackground").style.display = this._menu ? "block" : "none";
+        document.getElementById("Window").style.display = this._menu ? "block" : "none";
+    },
+
+    scrollContainer : function(c, dir) {
+      var el = document.getElementById((c ? "ConstructionRightScroll" : "ConstructionLeftScroll"));
+      var th = el.offsetHeight;
+      var tmp;
+
+      if ( c ) { // Right
+        tmp = this._unit_top - (dir ? -(OBJECT_ICON_HEIGHT + 15) : (OBJECT_ICON_HEIGHT + 15));
+        if ( tmp >= 0 && tmp <= th ) {
+          el.scrollTop = tmp;
+          this._unit_top = tmp;
+        }
+      } else { // Left
+        tmp = this._structure_top - (dir ? -(OBJECT_ICON_HEIGHT + 15) : (OBJECT_ICON_HEIGHT + 15));
+        if ( tmp >= 0 && tmp <= th ) {
+          el.scrollTop = tmp;
+          this._structure_top = tmp;
+        }
+      }
+
     }
 
   });
