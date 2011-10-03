@@ -91,13 +91,17 @@
 
   /**
    * CreateObject -- Create an object
-   * @return void
+   * @return MapObject
    */
   var CreateObject = function(opts, player, x, y, a) {
     opts = CnC.MapObjects[opts];
     return new MapObject(player, x, y, a, opts);
   };
 
+  /**
+   * CreateOverlay -- Create an overlay for map
+   * @return DOMElement
+   */
   var CreateOverlay = function(opts) {
     var type = opts[0];
     var x    = opts[1];
@@ -108,17 +112,17 @@
     // Root DOM element
     var root              = document.createElement("div");
     root.className        = "MapOverlayObject";
-    root.width            = (obj.width);
-    root.height           = (obj.height);
-    root.style.left       = parseInt(x - obj.x, 10) + "px";
-    root.style.top        = parseInt(y - obj.y, 10) + "px";
+    root.width            = parseInt(obj.width, 10);
+    root.height           = parseInt(obj.height, 10);
+    root.style.left       = parseInt(x - obj.x + (TILE_SIZE / 2), 10) + "px";
+    root.style.top        = parseInt(y - obj.y + (TILE_SIZE / 2), 10) + "px";
 
     // Main Canvas element
     var canvas            = document.createElement('canvas');
     var context           = canvas.getContext('2d');
     canvas.className      = "MapOverlayObjectRoot";
-    canvas.width          = (obj.width);
-    canvas.height         = (obj.height);
+    canvas.width          = parseInt(obj.width, 10);
+    canvas.height         = parseInt(obj.height, 10);
 
     context.drawImage(img, 0, 0);
     root.appendChild(canvas);
