@@ -603,7 +603,8 @@
         if ( os && os.length ) {
           for ( var i = 0; i < os.length; i++ ) {
             o = os[i];
-            this._map.addObject(CreateObject(CnC.MapObjects[o[0]],  o[1], o[2],  o[3]));
+            o[0] = CnC.MapObjects[o[0]];
+            this._map.addObject(CreateObject.apply(this, o));
           }
         }
         this._map.prepare();
