@@ -361,17 +361,23 @@
 
     scrollContainer : function(c, dir) {
       var el = document.getElementById((c ? "ConstructionRightScroll" : "ConstructionLeftScroll"));
-      var th = el.offsetHeight;
+      var th = (el.scrollHeight) - (el.offsetHeight);
       var tmp;
 
       if ( c ) { // Right
         tmp = this._unit_top - (dir ? -(OBJECT_ICON_HEIGHT + 15) : (OBJECT_ICON_HEIGHT + 15));
+        if ( Math.abs(tmp - el.scrollTop) == 1 ) {
+          return;
+        }
         if ( tmp >= 0 && tmp <= th ) {
           el.scrollTop = tmp;
           this._unit_top = tmp;
         }
       } else { // Left
         tmp = this._structure_top - (dir ? -(OBJECT_ICON_HEIGHT + 15) : (OBJECT_ICON_HEIGHT + 15));
+        if ( Math.abs(tmp - el.scrollTop) == 1 ) {
+          return;
+        }
         if ( tmp >= 0 && tmp <= th ) {
           el.scrollTop = tmp;
           this._structure_top = tmp;
