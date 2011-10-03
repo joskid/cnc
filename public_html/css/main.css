@@ -53,7 +53,7 @@ body, a, table, td {
     position : absolute;
     width : 200px;
     height : 30px;
-    background : url('/img/sidebar/background.png');
+    background : url('/img/gui/gui_background.png');
     text-align : center;
     color : #fff;
     font-size : 12px;
@@ -92,7 +92,7 @@ body, a, table, td {
   right : 0px;
   width : 200px;
   z-index : 2000001;
-  background : url('/img/sidebar/background.png');
+  background : url('/img/gui/gui_background.png');
   border-left : 1px solid #000;
 }
   #MiniMap {

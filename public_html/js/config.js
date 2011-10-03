@@ -54,10 +54,10 @@
           "desert/t08"   : null,
           "desert/t09"   : null,
           "desert/t18"   : null,
-          "jeep_sprite"  : null,
-          "unit"         : null,
-          "tank"         : null,
-          "hq"           : null
+          "gdi/units/jeep_sprite"  : null,
+          "gdi/units/unit"         : null,
+          "gdi/units/tank"         : null,
+          "gdi/structures/hq"      : null
         }
       },
       'snd' : {
@@ -166,7 +166,7 @@
         'type'   : _ou,
         'width'  : 50,
         'height' : 50,
-        'image'  : "unit",
+        'image'  : "gdi/units/unit",
         'attrs'  : {
           'movable'   : true,
           'speed'     : 5,
@@ -180,9 +180,9 @@
         'type'   : _ov,
         'width'  : 24,
         'height' : 24,
-        'image'  : "tank",
+        'image'  : "gdi/units/tank",
         'sprite' : {
-          'src' : "jeep_sprite",
+          'src' : "gdi/units/jeep_sprite",
           'cw'  : 24,
           'ch'  : 24,
           'rotation' : {
@@ -204,7 +204,7 @@
         'type'   : _ob,
         'width'  : 72,
         'height' : 48,
-        'image'  : "hq",
+        'image'  : "gdi/structures/hq",
         'attrs'  : {
           'movable'   : false,
           'speed'     : 0,
