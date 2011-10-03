@@ -34,6 +34,9 @@
       }
     },
 
+    SERVER_URI   : "ws://localhost:8888/CnC",
+    SERVICE_URI  : "/service.php",
+
     // Preloading
     PRELOAD : {
       'gfx' : {

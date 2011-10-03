@@ -27,7 +27,8 @@
     'microdata'      : (!!document.getItems),
     'history'        : (!!(window.history && history.pushState)),
     'offline'        : (!!window.applicationCache),
-    'webaudio'       : (!!window.AudioContext || !!window.webkitAudioContext)
+    'webaudio'       : (!!window.AudioContext || !!window.webkitAudioContext),
+    'xhr'            : (!!window.XMLHttpRequest)
   };
 
   // Internals
@@ -37,7 +38,6 @@
   var MINIMAP_WIDTH    = 180;
   var MINIMAP_HEIGHT   = 180;
   var SELECTION_SENSE  = 10;
-  var SERVER_URI       = "ws://localhost:8888/CnC";
 
   var SOUND_SELECT     = 0;
   var SOUND_MOVE       = 1;
@@ -53,6 +53,7 @@
   var _Graphic  = null;
   var _Sound    = null;
   var _Net      = null;
+  var _GUI      = null;
 
   // Variables
   var _FPS      = 0;
@@ -92,6 +93,7 @@
    * @return void
    */
   var CreateObject = function(opts, player, x, y, a) {
+    opts = CnC.MapObjects[opts];
     return new MapObject(player, x, y, a, opts);
   };
 
@@ -106,6 +108,9 @@
   var ObjectAction = (function() {
     var _Selected = [];
 
+    /**
+     * Select Objects
+     */
     function SelectObjects(lst) {
       var snd = null;
       var o;
@@ -125,12 +130,18 @@
       }
     }
 
+    /**
+     * Un-Select Objects
+     */
     function UnSelectObjects(lst) {
       for ( var i = 0; i < lst.length; i++ ) {
         lst[i].unselect();
       }
     }
 
+    /**
+     * Move Objects
+     */
     function MoveObjects(lst, pos) {
       var snd = null;
       var o;
@@ -150,8 +161,9 @@
       }
     }
 
+    // Main function
     return function (act) {
-      if ( act instanceof Array ) {
+      if ( act instanceof Array ) { // Select/Unselect
         if ( _Selected.length ) {
           UnSelectObjects(_Selected);
         }
@@ -161,13 +173,63 @@
         if ( _Selected.length ) {
           SelectObjects(_Selected);
         }
-      } else if ( act instanceof Object ) {
+      } else if ( act instanceof Object ) { // Move
         if ( _Selected.length ) {
           MoveObjects(_Selected, act);
         }
       }
     };
   })();
+
+  /////////////////////////////////////////////////////////////////////////////
+  // GUI CLASSES
+  /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * GUI -- GUI Manager
+   * @class
+   */
+  var GUI = Class.extend({
+
+    /**
+     * @constructor
+     */
+    init : function() {
+      console.group("GUI::init()");
+
+      $.addEvent(document.getElementById("TopBarButtonSideBar"), "click", function(ev) {
+        self._sidebar = !self._sidebar;
+        document.getElementById("Sidebar").style.display = self._sidebar ? "block" : "none";
+      });
+      $.addEvent(document.getElementById("TopBarButtonMenu"), "click", function(ev) {
+        self._menu = !self._menu;
+        document.getElementById("WindowBackground").style.display = self._menu ? "block" : "none";
+        document.getElementById("Window").style.display = self._menu ? "block" : "none";
+      });
+
+      console.groupEnd();
+    },
+
+    /**
+     * @destructor
+     */
+    destroy : function() {
+      console.group("GUI::destroy()");
+
+      $.removeEvent(document.getElementById("TopBarButtonSideBar"), "click", function(ev) {
+        self._sidebar = !self._sidebar;
+        document.getElementById("Sidebar").style.display = self._sidebar ? "block" : "none";
+      });
+      $.removeEvent(document.getElementById("TopBarButtonMenu"), "click", function(ev) {
+        self._menu = !self._menu;
+        document.getElementById("WindowBackground").style.display = self._menu ? "block" : "none";
+        document.getElementById("Window").style.display = self._menu ? "block" : "none";
+      });
+
+      console.groupEnd();
+    }
+
+  });
 
   /////////////////////////////////////////////////////////////////////////////
   // BASE CLASSES
@@ -180,6 +242,7 @@
   var Networking = Class.extend({
 
     _supported  : SUPPORT.WebSocket,
+    _xsupported : SUPPORT.xhr,
     _socket     : null,
     _started    : null,
     _ended      : null,
@@ -203,7 +266,67 @@
     },
 
     //
-    // METHODS
+    // Service METHODS
+    //
+
+    /**
+     * service -- Do a service request
+     * @return bool
+     */
+    service : function(action, data, callback_success, callback_error) {
+      if ( this._xsupported && action ) {
+        action           = action           || null;
+        data             = data             || {};
+        callback_success = callback_success || function() {};
+        callback_error   = callback_error   || function() {};
+
+        var uri = CnC.SERVICE_URI;
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function() {
+          if (req.readyState == 4) {
+            var in_data = {};
+            var success = false;
+
+            if ( req.status == 200 ) {
+              try {
+                in_data = JSON.parse(req.responseText);
+                success = true;
+              } catch ( exc ) {
+                in_data = {"error" : "Internal parsing error", "result" : null, "exception" : exc};
+              }
+
+              callback_success(req, in_data);
+            } else {
+              callback_error(req, req.statusText);
+            }
+
+            console.group("Networking::service() => Response");
+            console.log("URI", uri);
+            console.log("Action", action);
+            console.log("Success", success);
+            console.log("Response data", in_data);
+            console.groupEnd();
+          }
+        };
+
+        console.group("Networking::service() => Request");
+        console.log("URI", uri);
+        console.log("Action", action);
+        console.log("Request data", data);
+        console.groupEnd();
+
+        req.open("POST", uri, true);
+        req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        req.send("action=" + action + "&data=" + JSON.stringify(data));
+
+        return true;
+      }
+
+      return false;
+    },
+
+    //
+    // WebSocket METHODS
     //
 
     /**
@@ -211,7 +334,7 @@
      * @return bool
      */
     connect : function(uri) {
-      uri = uri || SERVER_URI;
+      uri = uri || CnC.SERVER_URI;
 
       var self = this;
       if ( this._supported ) {
@@ -521,48 +644,58 @@
     _running  : false,
     _map      : null,
     _game     : null,
+    _sidebar  : true,
+    _menu     : false,
 
     /**
      * @constructor
      */
     init : function(game) {
+      var self = this;
+
       console.group("Game::init()");
       console.log("Using game data", game);
       console.groupEnd();
 
-
-      // GUI Stuff
-      var btn_sidebar = document.getElementById("TopBarButtonSideBar");
-      var btn_menu    = document.getElementById("TopBarButtonMenu");
-      var elm_sidebar = document.getElementById("Sidebar");
-
-      var vis = true;
-      btn_sidebar.onclick = function() {
-        vis = !vis;
-        elm_sidebar.style.display = vis ? "block" : "none";
-      };
-
       this._game = game;
+
+      // Create events
+      $.addEvent(document.getElementById("Window"), "mousedown", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+      });
+      $.addEvent(document.getElementById("Window"), "click", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+      });
     },
 
     /**
      * @destructor
      */
     destroy : function() {
+      var self = this;
       console.group("Game::destroy()");
 
-      if ( this._interval ) {
-        clearInterval(this._interval);
-        this._interval = null;
-      }
+      // Stop the game
+      this.stop();
 
-      if ( this._map ) {
-        this._map.destroy();
-        this._map = null;
-      }
+      // Remove events
+      $.removeEvent(document.getElementById("Window"), "mousedown", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+      });
+      $.removeEvent(document.getElementById("Window"), "click", function(ev) {
+        $.preventDefault(ev);
+        $.stopPropagation(ev);
+      });
 
       console.groupEnd();
     },
+
+    //
+    // EVENTS
+    //
 
     /**
      * resize -- onresize event
@@ -593,8 +726,37 @@
       }
     },
 
+    //
+    // METHODS
+    //
+
+
     /**
-     * Run Game
+     * stop -- Stop Game
+     * @return void
+     */
+    stop : function() {
+      console.group("Game::stop()");
+      if ( this._running ) {
+        // Stop timer
+        if ( this._interval ) {
+          clearInterval(this._interval);
+          this._interval = null;
+        }
+
+        // Destroy map
+        if ( this._map ) {
+          this._map.destroy();
+          this._map = null;
+        }
+
+        this._running = false;
+      }
+      console.groupEnd();
+    },
+
+    /**
+     * run -- Run Game
      * @return void
      */
     run : function() {
@@ -606,25 +768,13 @@
         //
         // INSERT INIT DATA
         //
-        var sx = parseInt(this._game.map.sx, 10);
-        var sy = parseInt(this._game.map.sy, 10);
-        this._map = new Map(sx, sy);
-
-        var o;
-        var os = this._game.objects;
-        if ( os && os.length ) {
-          for ( var i = 0; i < os.length; i++ ) {
-            o = os[i];
-            o[0] = CnC.MapObjects[o[0]];
-            this._map.addObject(CreateObject.apply(this, o));
-          }
-        }
-        this._map.prepare();
+        this.prepare();
 
         //
         // START
         //
         this._started = new Date();
+        this._running = true;
 
         var t = null;
         if ( CnC.ENABLE_RAF ) {
@@ -639,10 +789,12 @@
         if ( t ) {
           //var canvas = self.getCanvas();
           var frame = function() {
-            var tick = ((new Date()) - self._started);
-            self.loop(tick);
+            if ( self._running ) {
+              var tick = ((new Date()) - self._started);
+              self.loop(tick);
 
-            t(frame/*, canvas*/);
+              t(frame/*, canvas*/);
+            }
           };
 
           t(frame/*, canvas*/);
@@ -654,11 +806,60 @@
             }, LOOP_INTERVAL);
           }
         }
-
-        this._running = true;
       }
 
       console.groupEnd();
+    },
+
+    /**
+     * prepare -- Prepare the game for running
+     * @return void
+     */
+    prepare : function() {
+      var self = this;
+      if ( !this._running ) {
+        // Create map
+        var sx = parseInt(this._game.map.sx, 10);
+        var sy = parseInt(this._game.map.sy, 10);
+        this._map = new Map(sx, sy);
+
+        // Create objects
+        var os = this._game.objects;
+        if ( os && os.length ) {
+          for ( var i = 0; i < os.length; i++ ) {
+            this._map.addObject(CreateObject.apply(this, os[i]));
+          }
+        }
+
+        // Init map
+        this._map.prepare();
+      }
+    },
+
+    /**
+     * reset -- Reset the Game
+     * @return void
+     */
+    reset : function() {
+      var self = this;
+      if ( this._running ) {
+        this.stop();
+        setTimeout(function() {
+          self.run();
+        }, SLEEP_INTERVAL);
+      }
+    },
+
+    //
+    // GETTERS/SETTERS
+    //
+
+    /**
+     * getMap -- Get the current Map instance
+     * @return Map
+     */
+    getMap : function() {
+      return this._map;
     }
 
   });
@@ -1115,8 +1316,9 @@
     init : function(sx, sy) {
       console.group("Map::init()");
 
-      this._sizeX = parseInt(sx, 10) || this._sizeX;
-      this._sizeY = parseInt(sy, 10) || this._sizeY;
+      this._sizeX   = parseInt(sx, 10) || this._sizeX;
+      this._sizeY   = parseInt(sy, 10) || this._sizeY;
+      this._objects = [];
 
       var w = TILE_SIZE * this._sizeX;
       var h = TILE_SIZE * this._sizeY;
@@ -1194,10 +1396,7 @@
      * @destructor
      */
     destroy : function() {
-      for ( var i = 0; i < this._objects.length; i++ ) {
-        this._objects[i].destroy();
-        this._objects[i] = null;
-      }
+      this.clearObjects();
 
       this._mincanvas.parentNode.removeChild(this._mincanvas);
       delete this._mincontext;
@@ -1219,8 +1418,12 @@
         self._onMouseClick(ev);
       });
 
-      this._objects = [];
+      this._super();
     },
+
+    //
+    // OBJECT EVENTS
+    //
 
     /**
      * addObject -- Add a MapObject
@@ -1230,6 +1433,29 @@
       if ( o instanceof MapObject ) {
         this._objects.push(o);
       }
+    },
+
+    /**
+     * removeObject -- Remove a MapObject
+     * TODO
+     * @return bool
+     */
+    removeObject : function(o) {
+      return false;
+    },
+
+    /**
+     * clearObjects -- Remove all MapObjects
+     * @return void
+     */
+    clearObjects : function() {
+      for ( var i = 0; i < this._objects.length; i++ ) {
+        this._objects[i].destroy();
+        this._objects[i] = null;
+      }
+      this._objects = [];
+
+      _MapObjectCount = 0;
     },
 
     //
@@ -1558,7 +1784,9 @@
       // Load objects
       //
       for ( var i = 0; i < this._objects.length; i++ ) {
+        //if ( this._objects[i] ) {
         this._root.appendChild(this._objects[i].getRoot());
+        //}
       }
       console.log("Inserted", i, "object(s)");
 
@@ -1636,7 +1864,6 @@
       //this._super(); // Do not call!
     }
 
-
   });
 
   /////////////////////////////////////////////////////////////////////////////
@@ -1683,22 +1910,14 @@
 
     // Initialize graphics engine (required)
     if ( SUPPORT.canvas ) {
-
-      // Initialize networking engine
-      _Net   = new Networking();
-
-      // Initialize sound engine
-      _Sound = new Sounds(function() {
-
-        // Initialize graphics engine
-        _Graphic = new Graphics(function() {
-          setTimeout(function()
-          {
-            // Initialize the Game
-            _Main = new Game(game_data);
-            _Main.run();
-          },
-            SLEEP_INTERVAL);
+      _GUI        = new GUI();                // Initialize GUI
+      _Net        = new Networking();         // Initialize Networking
+      _Sound      = new Sounds(function() {   // Initialize Sounds
+        _Graphic  = new Graphics(function() { // Initialize Graphics
+            _Main = new Game(game_data);      // Initialize Game
+              setTimeout(function() {
+                _Main.run();
+              }, SLEEP_INTERVAL);
         });
       });
 
@@ -1730,6 +1949,10 @@
     if ( _Net ) {
       _Net.destroy();
       delete _Net;
+    }
+    if ( _GUI ) {
+      _GUI.destroy();
+      delete _GUI;
     }
 
     // Unset other variables
