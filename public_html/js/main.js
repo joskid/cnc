@@ -1062,9 +1062,9 @@
       var self = this;
 
       // Validate input data
-      var a = parseInt(ang, 10) || 0;
-      var w = parseInt(opts.width, 10);
-      var h = parseInt(opts.height, 10);
+      var a  = parseInt(ang, 10) || 0;
+      var w  = parseInt(opts.width, 10);
+      var h  = parseInt(opts.height, 10);
 
       // Set base attributes
       this._iid           = _MapObjectCount;
@@ -1099,6 +1099,10 @@
       $.addEvent(this.__overlay, "click", function(ev) {
         self.onClick(ev);
       }, true);
+
+
+      // Misc
+      this.getRoot().className = "MapObject MapObjectBuilding";
 
       console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::init()", "x:" + x, "y:" + y, "a:" + a);
       console.log(opts, this);
@@ -1199,32 +1203,34 @@
           var th = h + 20;
 
           // Select correct debugging color
-          if ( self._type == CnC.OBJECT_UNIT ) {
-            cc.fillStyle   = "rgba(100,255,100,0.2)";
-          } else if ( self._type == CnC.OBJECT_VEHICLE ) {
-            cc.fillStyle   = "rgba(100,100,255,0.2)";
-          } else {
-            cc.fillStyle   = "rgba(255,255,255,0.2)";
-          }
-          cc.strokeStyle = "rgba(0,0,0,0.9)";
-
-          cc.beginPath();
-            if ( self._type == CnC.OBJECT_BUILDING ) {
-              cc.fillRect((tw/2 - w/2), (th/2 - h/2), w, h);
+          if ( self._type != CnC.OBJECT_BUILDING ) {
+            if ( self._type == CnC.OBJECT_UNIT ) {
+              cc.fillStyle   = "rgba(100,255,100,0.2)";
+            } else if ( self._type == CnC.OBJECT_VEHICLE ) {
+              cc.fillStyle   = "rgba(100,100,255,0.2)";
             } else {
-              cc.arc((tw / 2), (th / 2), (w / 2), (Math.PI * 2), false);
-              cc.fill();
+              cc.fillStyle   = "rgba(255,255,255,0.2)";
             }
-            if ( self._selected ) {
-              cc.stroke();
-            }
-          cc.closePath();
+            cc.strokeStyle = "rgba(0,0,0,0.9)";
 
-          cc.beginPath();
-            cc.moveTo((tw / 2), (th / 2));
-            cc.lineTo(tw, (th / 2));
-            cc.stroke();
-          cc.closePath();
+            cc.beginPath();
+              if ( self._type == CnC.OBJECT_BUILDING ) {
+                cc.fillRect((tw/2 - w/2), (th/2 - h/2), w, h);
+              } else {
+                cc.arc((tw / 2), (th / 2), (w / 2), (Math.PI * 2), false);
+                cc.fill();
+              }
+              if ( self._selected ) {
+                cc.stroke();
+              }
+            cc.closePath();
+
+            cc.beginPath();
+              cc.moveTo((tw / 2), (th / 2));
+              cc.lineTo(tw, (th / 2));
+              cc.stroke();
+            cc.closePath();
+          }
         }
 
         self.onRenderSprite();
@@ -2090,19 +2096,20 @@
       },
       'objects' : [
         // Player 1
-        ["Vehicle",  0, 50,  30],
-        ["Vehicle",  0, 50,  90],
-        ["Vehicle",  0, 50,  150],
-        ["Building", 0, 143, 143],
-        ["Unit",     0, 170, 10],
-        ["Unit",     0, 170, 40],
-        ["Unit",     0, 170, 70],
+        ["GDI_Jeep",  0, 50,  30],
+        ["GDI_Jeep",  0, 50,  90],
+        ["GDI_Jeep",  0, 50,  150],
+        ["GDI_Headquarter", 0, 143, 143],
+        ["GDI_Barracs", 0, 240, 143],
+        ["GDI_Minigunner",  0, 170, 10],
+        ["GDI_Minigunner",  0, 170, 40],
+        ["GDI_Minigunner",  0, 170, 70],
 
         // Player 2
-        ["Vehicle",  1, 2000, 1700],
-        ["Vehicle",  1, 2000, 1750],
-        ["Vehicle",  1, 2000, 1800],
-        ["Building", 1, 2000, 2000]
+        ["GDI_Jeep",  1, 2000, 1700],
+        ["GDI_Jeep",  1, 2000, 1750],
+        ["GDI_Jeep",  1, 2000, 1800],
+        ["GDI_Headquarter", 1, 2000, 2000]
       ]
     };
 

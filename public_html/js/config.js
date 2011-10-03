@@ -40,24 +40,28 @@
     // Preloading
     PRELOAD : {
       'gfx' : {
-        'count' : 16,
+        'count' : 17,
         'items' : {
-          "desert/tile"  : null,
-          "desert/rock1" : null,
-          "desert/rock2" : null,
-          "desert/rock3" : null,
-          "desert/rock4" : null,
-          "desert/rock5" : null,
-          "desert/rock6" : null,
-          "desert/rock7" : null,
-          "desert/t04"   : null,
-          "desert/t08"   : null,
-          "desert/t09"   : null,
-          "desert/t18"   : null,
+          // Desert theme stuff
+          "desert/tile"            : null,
+          "desert/rock1"           : null,
+          "desert/rock2"           : null,
+          "desert/rock3"           : null,
+          "desert/rock4"           : null,
+          "desert/rock5"           : null,
+          "desert/rock6"           : null,
+          "desert/rock7"           : null,
+          "desert/t04"             : null,
+          "desert/t08"             : null,
+          "desert/t09"             : null,
+          "desert/t18"             : null,
+
+          // GDI Stuff
           "gdi/units/jeep_sprite"  : null,
           "gdi/units/unit"         : null,
           "gdi/units/tank"         : null,
-          "gdi/structures/hq"      : null
+          "gdi/structures/hq"      : null,
+          "gdi/structures/barracs" : null
         }
       },
       'snd' : {
@@ -162,7 +166,7 @@
 
     // Objects
     MapObjects : {
-      'Unit'     : {
+      'GDI_Minigunner'     : {
         'type'   : _ou,
         'width'  : 50,
         'height' : 50,
@@ -176,7 +180,7 @@
       },
 
 
-      'Vehicle'  : {
+      'GDI_Jeep'  : {
         'type'   : _ov,
         'width'  : 24,
         'height' : 24,
@@ -200,7 +204,8 @@
           'strength'  : 10
         }
       },
-      'Building' : {
+
+      'GDI_Headquarter' : {
         'type'   : _ob,
         'width'  : 72,
         'height' : 48,
@@ -210,6 +215,19 @@
           'speed'     : 0,
           'turning'   : 0,
           'strength'  : 100
+        }
+      },
+
+      'GDI_Barracs' : {
+        'type'   : _ob,
+        'width'  : 48,
+        'height' : 48,
+        'image'  : "gdi/structures/barracs",
+        'attrs'  : {
+          'movable'   : false,
+          'speed'     : 0,
+          'turning'   : 0,
+          'strength'  : 50
         }
       }
     }
