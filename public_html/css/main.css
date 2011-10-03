@@ -121,41 +121,80 @@ body, a, table, td {
     top : 200px;
     left : 10px;
     right : 10px;
-    bottom : 10px;
+    height : 435px;
   }
+
+    #ConstructionLeftUp,
+    #ConstructionRightUp {
+      position : absolute;
+      top : 10px;
+      left : 10px;
+      right : 10px;
+      height : 20px;
+      border : 1px outset #555;
+      margin : -1px;
+    }
+
+    #ConstructionLeftDown,
+    #ConstructionRightDown {
+      position : absolute;
+      bottom : 10px;
+      left : 10px;
+      right : 10px;
+      height : 20px;
+      border : 1px outset #555;
+      margin : -1px;
+    }
+
     #ConstructionLeft {
       position : absolute;
       top : 0px;
-      left : 00px;
-      width : 62px;
+      left : 0px;
+      width : 82px;
       bottom : 0px;
       border : 1px outset #555;
       margin : -1px;
-      padding : 10px;
     }
 
-      #ConstructionLeft div {
-        cursor : pointer;
-        border : 1px outset #555;
-        margin  : -1px;
+      #ConstructionLeftInner {
+        position : absolute;
+        top : 30px;
+        left : 0px;
+        right : 0px;
+        bottom : 30px;
+        overflow : hidden;
       }
+
+        #ConstructionLeftInner div {
+          cursor : pointer;
+          border : 1px outset #555;
+          margin : 9px;
+        }
 
     #ConstructionRight {
       position : absolute;
       top : 0px;
       right : 0px;
-      width : 62px;
+      width : 82px;
       bottom : 0px;
       border : 1px outset #555;
       margin : -1px;
-      padding : 10px;
     }
 
-      #ConstructionRight div {
-        cursor : pointer;
-        border : 1px outset #555;
-        margin  : -1px;
+      #ConstructionRightInner {
+        position : absolute;
+        top : 30px;
+        left : 0px;
+        right : 0px;
+        bottom : 30px;
+        overflow : hidden;
       }
+
+        #ConstructionRightInner div {
+          cursor : pointer;
+          border : 1px outset #555;
+          margin : 9px;
+        }
 
 #WindowBackground {
   position : absolute;
