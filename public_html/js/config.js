@@ -20,6 +20,7 @@
 
     // Debugging options
     DEBUG_MODE : true,
+    ENABLE_RAF : false, // DO NOT ENABLE (Decreases performance)
 
     // Main configuration
     CONFIG     : {

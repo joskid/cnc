@@ -520,32 +520,17 @@
     _last     : null,
     _running  : false,
     _map      : null,
+    _game     : null,
 
     /**
      * @constructor
      */
-    init : function() {
+    init : function(game) {
       console.group("Game::init()");
-
-      // Example data
-      this._map = new Map();
-
-      // Player 1
-      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  0, 50,  30));
-      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  0, 50,  90));
-      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  0, 50,  150));
-      this._map.addObject(CreateObject(CnC.MapObjects.Building, 0, 143, 143));
-      this._map.addObject(CreateObject(CnC.MapObjects.Unit,     0, 170, 10));
-      this._map.addObject(CreateObject(CnC.MapObjects.Unit,     0, 170, 40));
-      this._map.addObject(CreateObject(CnC.MapObjects.Unit,     0, 170, 70));
-
-      // Player 2
-      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  1, 2000, 1700));
-      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  1, 2000, 1750));
-      this._map.addObject(CreateObject(CnC.MapObjects.Vehicle,  1, 2000, 1800));
-      this._map.addObject(CreateObject(CnC.MapObjects.Building, 1, 2000, 2000));
-
+      console.log("Using game data", game);
       console.groupEnd();
+
+      this._game = game;
     },
 
     /**
@@ -606,19 +591,37 @@
       if ( !this._running ) {
         var self = this;
 
+        //
+        // INSERT INIT DATA
+        //
+        var sx = parseInt(this._game.map.sx, 10);
+        var sy = parseInt(this._game.map.sy, 10);
+        this._map = new Map(sx, sy);
+
+        var o;
+        var os = this._game.objects;
+        if ( os && os.length ) {
+          for ( var i = 0; i < os.length; i++ ) {
+            o = os[i];
+            this._map.addObject(CreateObject(CnC.MapObjects[o[0]],  o[1], o[2],  o[3]));
+          }
+        }
         this._map.prepare();
 
+        //
+        // START
+        //
         this._started = new Date();
 
-        /*
-        var t = (window.requestAnimationFrame       ||
-                 window.webkitRequestAnimationFrame ||
-                 window.mozRequestAnimationFrame    ||
-                 window.oRequestAnimationFrame      ||
-                 window.msRequestAnimationFrame     ||
-                 null);
-      */
         var t = null;
+        if ( CnC.ENABLE_RAF ) {
+          t = (window.requestAnimationFrame       ||
+               window.webkitRequestAnimationFrame ||
+               window.mozRequestAnimationFrame    ||
+               window.oRequestAnimationFrame      ||
+               window.msRequestAnimationFrame     ||
+               null);
+        }
 
         if ( t ) {
           //var canvas = self.getCanvas();
@@ -653,8 +656,6 @@
 
   /**
    * MapObject -- Map Object Base Class
-   * FIXME: Cleanup events (redundacy)
-   * TODO: Move minimap to separate class ?!
    * @class
    */
   var MapObject = CanvasObject.extend({
@@ -1057,6 +1058,8 @@
 
   /**
    * Map -- Main Map Class
+   * FIXME: Cleanup events (redundacy)
+   * TODO: Move minimap to separate class ?!
    * @class
    */
   var Map = CanvasObject.extend({
@@ -1086,17 +1089,21 @@
     _scaleY     : -1,
 
     // Event variables
-    _selecting  : false,
-    _dragging   : false,
-    _scrolling  : false,
-    _startX     : -1,
-    _startY     : -1,
+    _constructing : false,
+    _selecting    : false,
+    _dragging     : false,
+    _scrolling    : false,
+    _startX       : -1,
+    _startY       : -1,
 
     /**
      * @constructor
      */
-    init : function() {
+    init : function(sx, sy) {
       console.group("Map::init()");
+
+      this._sizeX = parseInt(sx, 10) || this._sizeX;
+      this._sizeY = parseInt(sy, 10) || this._sizeY;
 
       var w = TILE_SIZE * this._sizeX;
       var h = TILE_SIZE * this._sizeY;
@@ -1146,6 +1153,9 @@
       var self = this;
 
       // Map dragging and clicking
+      $.addEvent(document, "mousemove", function(ev) {
+        self._onMouseMove(ev);
+      });
       $.addEvent(this._root, "mousedown", function(ev) {
         self._onMouseDown(ev, false);
       });
@@ -1180,6 +1190,9 @@
       delete this._mincontext;
       delete this._mincanvas;
 
+      $.removeEvent(document, "mousemove", function(ev) {
+        self._onMouseMove(ev, false);
+      });
       $.removeEvent(this._root, "mousedown", function(ev) {
         self._onMouseDown(ev, false);
       });
@@ -1267,9 +1280,6 @@
         }
       }
 
-      $.addEvent(document, "mousemove", function(ev) {
-        self._onMouseMove(ev);
-      });
       $.addEvent(document, "mouseup", function(ev) {
         self._onMouseUp(ev);
       });
@@ -1331,10 +1341,6 @@
       this._selecting = false;
       this._scrolling = false;
 
-      $.removeEvent(this._root, "mousemove", function(ev) {
-        self._onMouseMove(ev, false);
-      });
-
       $.removeEvent(this._main, "mouseup", function(ev) {
         self._onMouseUp(ev, true);
       });
@@ -1369,6 +1375,10 @@
       // Scroll map to minimap selection
       else if ( this._scrolling ) {
         this._onMouseClick(ev);
+      }
+      // Update construction indicator
+      else if ( this._constructing ) {
+        (function(){})(); // TODO
       }
     },
 
@@ -1634,6 +1644,30 @@
     console.log("Browser agent", navigator.userAgent);
     console.log("Browser features", SUPPORT);
 
+    // Example data
+    var game_data = {
+      'map' : {
+        'sx' : 100,
+        'sy' : 100
+      },
+      'objects' : [
+        // Player 1
+        ["Vehicle",  0, 50,  30],
+        ["Vehicle",  0, 50,  90],
+        ["Vehicle",  0, 50,  150],
+        ["Building", 0, 143, 143],
+        ["Unit",     0, 170, 10],
+        ["Unit",     0, 170, 40],
+        ["Unit",     0, 170, 70],
+
+        // Player 2
+        ["Vehicle",  1, 2000, 1700],
+        ["Vehicle",  1, 2000, 1750],
+        ["Vehicle",  1, 2000, 1800],
+        ["Building", 1, 2000, 2000]
+      ]
+    };
+
     // Initialize graphics engine (required)
     if ( SUPPORT.canvas ) {
 
@@ -1648,7 +1682,7 @@
           setTimeout(function()
           {
             // Initialize the Game
-            _Main = new Game();
+            _Main = new Game(game_data);
             _Main.run();
           },
             SLEEP_INTERVAL);
