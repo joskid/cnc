@@ -374,54 +374,63 @@
     // METHODS
     //
 
-    prepare : function(team) {
-      var el, img, price, time;
-      var left  = document.getElementById("ConstructionLeftScroll");
-      var right = document.getElementById("ConstructionRightScroll");
+    prepare : (function() {
 
-      while ( left.hasChildNodes() )
-        left.removeChild(left.firstChild);
-      while ( right.hasChildNodes() )
-        right.removeChild(right.firstChild);
+      function _createItem(cname, root, src, key, title, price, time) {
+        var el        = document.createElement("div");
+        el.className  = cname;
 
-      var structures = CnC.MapObjectsMeta[team].structures;
-      for ( var s in structures ) {
-        if ( structures.hasOwnProperty(s) ) {
-          price         = structures[s].price === undefined ? 0 : structures[s].price;
-          time          = structures[s].time === undefined ? 0 : structures[s].time;
+        var img       = document.createElement("img");
+        img.alt       = key;
+        img.src       = src;
+        img.title     = title + (" ($" + price  + ", " + time + "s)");
 
-          el            = document.createElement("div");
-          el.className  = "ConstructMapObjectBuilding";
-
-          img           = document.createElement("img");
-          img.alt       = s;
-          img.src       = "/img/" + team.toLowerCase() + "/sidebar/structures/" + structures[s].image + ".jpg";
-          img.title     = (structures[s].title === undefined ? s : structures[s].title) + (" ($" + price  + ", " + time + "s)");
-
-          el.appendChild(img);
-          left.appendChild(el);
-        }
+        el.appendChild(img);
+        root.appendChild(el);
       }
 
-      var units      = CnC.MapObjectsMeta[team].units;
-      for ( var u in units ) {
-        if ( units.hasOwnProperty(u) ) {
-          price         = units[u].price === undefined ? 0 : units[u].price;
-          time          = units[u].time === undefined ? 0 : units[u].time;
+      return function(team) {
+        var price, time, title, src;
 
-          el            = document.createElement("div");
-          el.className  = "ConstructMapObjectBuilding";
+        // Structures
+        var structures = CnC.MapObjectsMeta[team].structures;
+        var left       = document.getElementById("ConstructionLeftScroll");
+        while ( left.hasChildNodes() )
+          left.removeChild(left.firstChild);
 
-          img           = document.createElement("img");
-          img.alt       = u;
-          img.src       = "/img/" + team.toLowerCase() + "/sidebar/units/" + units[u].image + ".jpg";
-          img.title     = (units[u].title === undefined ? u : units[u].title) + (" ($" + price  + ", " + time + "s)");
-
-          el.appendChild(img);
-          right.appendChild(el);
+        for ( var s in structures ) {
+          if ( structures.hasOwnProperty(s) ) {
+            price         = structures[s].price === undefined ? 0 : structures[s].price;
+            time          = structures[s].time  === undefined ? 0 : structures[s].time;
+            title         = structures[s].title === undefined ? s : structures[s].title;
+            src           = "/img/" + team.toLowerCase() + "/sidebar/structures/" + structures[s].image + ".jpg";
+            _createItem("ConstructMapObjectBuilding", left, src, s, title, price, time);
+          }
         }
-      }
-    },
+
+        // Units / Vehicles
+        var units = CnC.MapObjectsMeta[team].units;
+        var right = document.getElementById("ConstructionRightScroll");
+        while ( right.hasChildNodes() )
+          right.removeChild(right.firstChild);
+
+        for ( var u in units ) {
+          if ( units.hasOwnProperty(u) ) {
+            price         = units[u].price === undefined ? 0 : units[u].price;
+            time          = units[u].time  === undefined ? 0 : units[u].time;
+            title         = units[u].title === undefined ? u : units[u].title;
+            src           = "/img/" + team.toLowerCase() + "/sidebar/units/" + units[u].image + ".jpg";
+            _createItem("ConstructMapObjectBuilding", right, src, u, title, price, time);
+          }
+        }
+
+
+        this._structure_top = 0;
+        this._unit_top      = 0;
+        document.getElementById("ConstructionRightScroll").scrollTop = 0;
+        document.getElementById("ConstructionLeftScroll").scrollTop  = 0;
+      };
+    })(),
 
     //
     // EVENTS
