@@ -1811,15 +1811,13 @@
 
           var mX = $.mousePosX(ev);
           var mY = $.mousePosY(ev);
-          var rX = mX - self._marginX;
-          var rY = mY - self._marginY;
 
           this._startX = mX;
           this._startY = mY;
 
-          this._rect.style.display = 'block';
-          this._rect.style.left    = rX + 'px';
-          this._rect.style.top     = rY + 'px';
+          this._rect.style.display = 'none';
+          this._rect.style.top     = '0px';
+          this._rect.style.left    = '0px';
           this._rect.style.width   = '0px';
           this._rect.style.height  = '0px';
 
@@ -1944,6 +1942,7 @@
         var rw = Math.abs((mX - this._marginX) - (this._startX - this._marginX));
         var rh = Math.abs((mY - this._marginY) - (this._startY - this._marginY));
 
+        this._rect.style.display = 'block';
         this._rect.style.left    = (rx) + 'px';
         this._rect.style.top     = (ry) + 'px';
         this._rect.style.width   = (rw) + 'px';
