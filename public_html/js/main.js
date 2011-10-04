@@ -1051,6 +1051,8 @@
     _strength      : 10,
 
     // Rendering
+    _blank         : null,
+    _mask          : null,
     _sprite        : null,
     _destination   : null,
     _heading       : null,
@@ -1090,13 +1092,36 @@
       this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
       this.__coverlay.lineWidth   = 1;
 
+      // Init mask
+      var img        = document.createElement("img");
+      img.src        = "/img/blank.gif";
+      img.className  = "MapObjectMask";
+      img.width      = w;
+      img.height     = h;
+      img.useMap     = "#MapObjectMask" + this._iid;
+
+      var map        = document.createElement("map");
+      map.name       = "MapObjectMask" + this._iid;
+
+      var area       = document.createElement("area");
+      area.shape     = (opts.mask.length == 4) ? "rect" : "plygon";
+      area.coords    = (opts.mask).join(",");
+      area.href      = "javascript:void();";
+
+      this._blank  = img;
+      this._mask   = area;
+
+      map.appendChild(this._mask);
+      this.getRoot().appendChild(this._blank);
+      this.getRoot().appendChild(map);
+
       // Add events
-      $.addEvent(this.__overlay, "mousedown", function(ev) {
+      $.addEvent(this._mask, "mousedown", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
       });
 
-      $.addEvent(this.__overlay, "click", function(ev) {
+      $.addEvent(this._mask, "click", function(ev) {
         self.onClick(ev);
       }, true);
 
@@ -1115,13 +1140,18 @@
      * @destructor
      */
     destroy : function() {
+      if ( this._blank ) {
+        this._blank.parentNode.removeChild(this._blank);
+        this._blank = null;
+        this._mask = null;
+      }
 
       // Remove events
-      $.removeEvent(this.__overlay, "mousedown", function(ev) {
+      $.removeEvent(this._blank, "mousedown", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
       });
-      $.removeEvent(this.__overlay, "click", function(ev) {
+      $.removeEvent(this._mask, "click", function(ev) {
         self.onClick(ev);
       }, true);
 

@@ -302,6 +302,14 @@ body, a, table, td {
     position : absolute;
     z-index : 21;
     margin : -10px;
+  }
+  .MapObjectMask {
+    position : absolute;
+    z-index : 22;
+    top : 0px;
+    left : 0px;
+  }
+  .MapObjectMaskArea {
     cursor : pointer;
   }
 

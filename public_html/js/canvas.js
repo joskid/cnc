@@ -33,8 +33,8 @@ var CanvasObject = Class.extend({
     // Root DOM element
     var root              = document.createElement("div");
     root.className        = cn;
-    root.width            = (this.__width);
-    root.height           = (this.__height);
+    root.style.width      = (this.__width) + "px";
+    root.style.height     = (this.__height) + "px";
     root.style.left       = (this.__x) + "px";
     root.style.top        = (this.__y) + "px";
 

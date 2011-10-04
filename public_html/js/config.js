@@ -176,7 +176,8 @@
           'speed'     : 5,
           'turning'   : 0,
           'strength'  : 10
-        }
+        },
+        'mask' : [0, 0, 50, 50]
       },
 
 
@@ -202,7 +203,8 @@
           'speed'     : 10,
           'turning'   : 10,
           'strength'  : 10
-        }
+        },
+        'mask' : [0, 0, 24, 24]
       },
 
       'GDI_Headquarter' : {
@@ -215,7 +217,8 @@
           'speed'     : 0,
           'turning'   : 0,
           'strength'  : 100
-        }
+        },
+        'mask' : [0, 0, 72, 48]
       },
 
       'GDI_Barracs' : {
@@ -228,7 +231,8 @@
           'speed'     : 0,
           'turning'   : 0,
           'strength'  : 50
-        }
+        },
+        'mask' : [0, 0, 48, 48]
       }
     }
 
