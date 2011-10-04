@@ -1106,7 +1106,15 @@
       var area       = document.createElement("area");
       area.shape     = (opts.mask.length == 4) ? "rect" : "plygon";
       area.coords    = (opts.mask).join(",");
-      area.href      = "javascript:void();";
+      //area.href      = "javascript:;";
+      //area.href      = "void(0)";
+      area.className = "MapObjectArea";
+      area.onmouseover = function() {
+        document.body.className = "CursorSelect";
+      };
+      area.onmouseout = function() {
+        document.body.className = "CursorDefault";
+      };
 
       this._blank  = img;
       this._mask   = area;
@@ -1870,6 +1878,8 @@
     onDragStart : function(ev, pos) {
       this._root.style.top  = (this._posY) + "px";
       this._root.style.left = (this._posX) + "px";
+
+      document.body.className = "CursorMove";
     },
 
     /**
@@ -1883,6 +1893,8 @@
         this._posX = this._posX + pos.x;
         this._posY = this._posY + pos.y;
       }
+
+      document.body.className = "CursorDefault";
     },
 
     /**

@@ -14,7 +14,6 @@ html, body {
 }
 body {
   background-color : #000;
-  cursor : default;
   font-family : Arial;
 }
 body, a, table, td {
@@ -22,6 +21,16 @@ body, a, table, td {
   text-decoration : none;
   font-weight : normal;
 }
+
+body, body.CursorDefault {
+  cursor : url('/img/cursor/default.gif'), default;
+}
+body.CursorMove {
+  cursor : url('/img/cursor/scroll.gif'), scroll;
+}
+/*body.CursorSelect {
+  cursor : url('/img/cursor/select.gif'), pointer;
+}*/
 
 /* MAIN LAYOUT */
 
@@ -71,9 +80,6 @@ body, a, table, td {
   }
     #TopBar .Button.Clickable:hover {
       color : #eee;
-    }
-    #TopBar .Button.Clickable span {
-      cursor : pointer;
     }
 
   #TopBarButtonMenu {
@@ -142,7 +148,6 @@ body, a, table, td {
 
     #ConstructionLeftScroll div,
     #ConstructionRightScroll div {
-      cursor : pointer;
       border : 1px outset #555;
       margin : 9px;
     }
@@ -156,7 +161,6 @@ body, a, table, td {
       height : 20px;
       border : 1px outset #555;
       margin : -1px;
-      cursor : pointer;
       text-align : center;
       overflow : hidden;
     }
@@ -170,7 +174,6 @@ body, a, table, td {
       height : 20px;
       border : 1px outset #555;
       margin : -1px;
-      cursor : pointer;
       text-align : center;
       overflow : hidden;
     }
@@ -309,9 +312,11 @@ body, a, table, td {
     top : 0px;
     left : 0px;
   }
-  .MapObjectMaskArea {
-    cursor : pointer;
+  /*
+  .MapObjectArea {
+    cursor : url('/img/cursor/select.gif'), pointer;
   }
+  */
 
 .MapObjectBuilding {
   z-index : 10;
