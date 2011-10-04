@@ -243,11 +243,13 @@
         $.stopPropagation(ev);
         return false;
       });
+      /*
       $.addEvent(document.getElementById("Sidebar"), "mouseup", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
         return false;
       });
+      */
       $.addEvent(document.getElementById("Sidebar"), "click", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
@@ -302,11 +304,13 @@
         $.stopPropagation(ev);
         return false;
       });
+      /*
       $.removeEvent(document.getElementById("Sidebar"), "mouseup", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
         return false;
       });
+      */
       $.removeEvent(document.getElementById("Sidebar"), "click", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
