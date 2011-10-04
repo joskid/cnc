@@ -168,196 +168,395 @@
     MapObjectsMeta : {
       "GDI" : {
         "structures" : {
+          "ConstructionYard" : {
+            "image"  : null,
+            "title"  : "Construction Yard",
+            "desc"   : "The Construction Yard is the foundation of a base and allows the construction of other buildings.",
+            "object" : {
+              'type'   : _ob,
+              'width'  : 72,
+              'height' : 48,
+              'image'  : "gdi/structures/hq",
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 72, 48]
+            }
+          },
           "PowerPlan" : {
             "image" : "power_plant",
-            "title" : "Power Plan"
+            "title" : "Power Plan",
+            "desc"  : "This unit provides power to adjoining structures. Power output is directly related to the Power Plant's condition, so protect them during battles."
           },
           "AdvancedPowerPlan" : {
             "image" : "adv_power_plant",
-            "title" : "Advanced Power Plant"
+            "title" : "Advanced Power Plant",
+            "desc"  : "This high-yield structure handles the energy strains of some later, more power intensive structures. Double the power output of the Power Plant."
           },
           "Barracks" : {
-            "image" : "barracks",
-            "title" : "Barracs (Unit facility)"
+            "image"  : "barracks",
+            "title"  : "Barracs (Unit facility)",
+            "desc"   : "This structure is a field training center for all available infantry units.",
+            "object" : {
+              'type'   : _ob,
+              'width'  : 48,
+              'height' : 48,
+              'image'  : "gdi/structures/barracs",
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 50
+              },
+              'mask' : [0, 0, 48, 48]
+            }
           },
           "Refinery" : {
             "image" : "refinery",
-            "title" : "Tiberium Refinery"
+            "title" : "Tiberium Refinery",
+            "desc"  : "This unit processes Tiberium into its component elements. Building the Refinery immediately deploys a Tiberium harvester and each Refinery can handle an infinite number of Harvesters. The Refinery stores 1,000 credits of processed Tiberium."
           },
           "Silo" : {
             "image" : "tiberium_silo",
-            "title" : "Tiberium Silo"
+            "title" : "Tiberium Silo",
+            "desc"  : "This unit stores up to 1,500 credits of processed Tiberium. Guard it carefully. If destroyed or captured, the amount stored is deducted from your account."
           },
           "Factory" : {
             "image" : "weapons_factory",
-            "title" : "Weapons Factory (Vehicle facility)"
+            "title" : "Weapons Factory (Vehicle facility)",
+            "desc"  : "This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met."
           },
           "CommunicationCenter" : {
             "image" : "comm_center",
-            "title" : "Communications Center"
+            "title" : "Communications Center",
+            "desc"  : "Allows the use of the radar screen as long as there is sufficient power."
           },
           "AdvancedCommunicationCenter" : {
             "image" : "adv_comm",
-            "title" : "Advanced Communications Center"
+            "title" : "Advanced Communications Center",
+            "desc"  : "An upgrade to the Communications Center, this structure not only provides radar, but is the uplink center for the Orbital Ion Cannon."
           },
           "Helipad" : {
             "image" : "helipad",
-            "title" : "Helipad (Helicopter facility)"
+            "title" : "Helipad (Helicopter facility)",
+            "desc"  : "Building the Helipad allows the use of the Orca attack aircraft. Each Orca requires a Helipad."
           },
           "RepairFacility" : {
             "image" : "repair_facility",
-            "title" : "Repair facility"
+            "title" : "Repair facility",
+            "desc"  : " This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met."
           },
           "GuardTower" : {
             "image" : "guard_tower",
-            "title" : "Guard Tower (defence)"
+            "title" : "Guard Tower (defence)",
+            "desc"  : "Armed with a high velocity machine gun, this structure provides manned defense against Nod ground attack."
           },
           "AdvancedGuardTower" : {
             "image" : "adv_guard_tower",
-            "title" : "Advanced Guard Tower (defence)"
+            "title" : "Advanced Guard Tower (defence)",
+            "desc"  : "Provides strong fortification against Nod ground and air units. Weapons complement includes a rocket launcher."
           },
           "SandbagBarrier" : {
             "image" : "sandbag_barrier",
-            "title" : "Sandbag Barrier (defence)"
+            "title" : "Sandbag Barrier (defence)",
+            "desc"  : "Used to deter the enemy from advancing. Sandbags provide limited cover and may slow units down."
           },
           "ConcreteBarrier" : {
             "image" : "concrete_barrier",
-            "title" : "Concrete Barrier (defence)"
+            "title" : "Concrete Barrier (defence)",
+            "desc"  : "Concrete walls are the most effective barrier. They are much harder to destroy and will take the enemy much longer to blast through."
           },
           "ChainLinkBarrier" : {
             "image" : "chain_link_barrier",
-            "title" : "Chain-Link Barrier (defence)"
+            "title" : "Chain-Link Barrier (defence)",
+            "desc"  : "Chain Link fences will stop light vehicles, yet can be crushed or even destroyed by most heavier vechicles."
+          }
+        },
+
+        "units"      : {
+          "Minigunner" : {
+            "image"  : "minigunner",
+            "title"  : "Minigunner",
+            "desc"   : 'Equipped with the GAU-3 "Eliminator" 5.56mm chain gun and light body armour, this troop is the key player in the GDI forces.',
+            "object" : {
+              'type'   : _ou,
+              'width'  : 50,
+              'height' : 50,
+              'image'  : "gdi/units/unit",
+              'attrs'  : {
+                'movable'   : true,
+                'speed'     : 5,
+                'turning'   : 0,
+                'strength'  : 10
+              },
+              'mask' : [0, 0, 50, 50]
+            }
+          },
+          "Grenaider" : {
+            "image" : "grenaider",
+            "title" : "Grenaider",
+            "desc"  : 'Using grenades as a principal form of attack, grenade infantry can throw over barriers to great effect.'
+          },
+          "Engineer" : {
+            "image" : "engineer",
+            "title" : "Engineer",
+            "desc"  : 'Engineers are used to capture enemy buildings. Since they carry no weapons, they are extremely vulnerable on the battlefield and must be directed very carefully.'
+          },
+          "Commando" : {
+            "image" : "commando",
+            "title" : "Commando",
+            "desc"  : "The Commando is part of the GDI Elite Forces Unit. The Commando will be dispatched under your command for special missions in the GDI's service. This unit uses a high powered Raptor 50cal. assault rifle with suppressor and long range/IR vision enhancement goggles and is extremely specialised in demolitions and stealth."
+          },
+          "Harvester" : {
+            "image" : "harvester",
+            "title" : "Tiberium Harvester",
+            "desc"  : "This armor-plated vehicle seeks out and scoops up raw Tiberium, then transports it to Refineries for processing. It is slow and unwieldy."
+          },
+          "HUMVee" : {
+            "image"  : "hum-vee",
+            "title"  : "HUM-Vee",
+            "desc"   : "These all terrain attack vehicles are armed with a 7.62mm chaingun. Its light armour makes it the fastes vehicle in the GDI's arsenal.",
+            "object" : {
+              'type'   : _ov,
+              'width'  : 24,
+              'height' : 24,
+              'image'  : "gdi/units/tank",
+              'sprite' : {
+                'src' : "gdi/units/jeep_sprite",
+                'cw'  : 24,
+                'ch'  : 24,
+                'rotation' : {
+                  270 : 0,
+                  180 : 191,
+                  90  : 384,
+                  0   : 576,
+                  360 : 576
+                }
+              },
+              'attrs'  : {
+                'movable'   : true,
+                'speed'     : 10,
+                'turning'   : 10,
+                'strength'  : 10
+              },
+              'mask' : [0, 0, 24, 24]
+            }
+          },
+          "MediumTank" : {
+            "image" : "medium_tank",
+            "title" : "Medium Tank",
+            "desc"  : "From its single barrel, the Medium Tank fires armor piercing shells. It is faster, heavier and more destructive than Nod's Light Tank."
+          },
+          "MRLS" : {
+            "image" : "mrls",
+            "title" : "Mobile Rocket Launch System",
+            "desc"  : "Mobile devastation. GDI's longest-range attacker fires 227mm rockets. With no short range fighting ability, this unit needs close quarter backup."
+          },
+          "APC" : {
+            "image" : "apc",
+            "title" : "Armored Personal Carrier",
+            "desc"  : "The Armored Personnel Carrier (APC) transports and protects up to five troops heading to and from battle locations."
+          },
+          "MCV" : {
+            "image" : "mcv",
+            "title" : "Mobile Construction Vehicle",
+            "desc"  : "The mobile construction vehicle lets you search for suitable base sites. Once one is found, deploy the MCV into a full service Construction Yard and use it to build other structures."
+          },
+          "MammothTank" : {
+            "image" : "mammoth_tank",
+            "title" : "Mammoth (Heavy) Tank",
+            "desc"  : "Armed with dual 120mm cannons, this giant has dual missile packs to help compensate for its lack of speed and mobility."
+          },
+          "Chinook" : {
+            "image" : "chinook",
+            "title" : "Chinook Transport Helicopter",
+            "desc"  : 'The Transport "Chinook" Helicopter provides field transportation for all infantry, rapidly deploying new troops into, or out of battle.'
+          },
+          "Orca" : {
+            "image" : "orca",
+            "title" : "ORCA Helicopter",
+            "desc"  : "This vertical takeoff and landing (VTOL) craft has a nose mounted 30mm chaingun complemented by four Fang rockets."
+          }
+        }
+      },
+
+
+
+
+      "NOD" : {
+        "structures" : {
+          "ConstructionYard" : {
+            "image" : null,
+            "title" : "Construction Yard",
+            "desc"  : "The Construction Yard is the foundation of a base and allows the construction of other buildings."
+          },
+          "PowerPlan" : {
+            "image" : "power_plant",
+            "title" : "Power Plan",
+            "desc"  : "This unit provides power to adjoining structures. Power output is directly related to the Power Plant's condition, so protect them during battles."
+          },
+          "AdvancedPowerPlan" : {
+            "image" : "adv_power_plant",
+            "title" : "Advanced Power Plant",
+            "desc"  : "This high-yield structure handles the energy strains of some later, more power intensive structures. Double the power output of the Power Plant."
+          },
+          "HandOfNod" : {
+            "image" : "hand_of_nod",
+            "title" : "Hand Of NOD (Unit facility)",
+            "desc"  : "This building creates elite infantry units for the Brotherhood of Nod."
+          },
+          "Refinery" : {
+            "image" : "refinery",
+            "title" : "Tiberium Refinery",
+            "desc"  : "This unit processes Tiberium into its component elements. Building the Refinery immediately deploys a Tiberium harvester and each Refinery can handle an infinite number of Harvesters. The Refinery stores 1,000 credits of processed Tiberium."
+          },
+          "Silo" : {
+            "image" : "tiberium_silo",
+            "title" : "Tiberium Silo",
+            "desc"  : "This unit stores up to 1,500 credits of processed Tiberium. Guard it carefully. If destroyed or captured, the amount stored is deducted from your account."
+          },
+          "Airstrip" : {
+            "image" : "air_strip",
+            "title" : "Air Strip (Vehicle facility)",
+            "desc"  : "The Brotherhood of Nod buys all its units. The Air Strip allows cargo planes to land safely and deliver vital equipment. It is functionally equivalent to the GDI Weapons Factory."
+          },
+          "CommunicationCenter" : {
+            "image" : "comm_center",
+            "title" : "Communications Center",
+            "desc"  : "Allows the use of the radar screen as long as there is sufficient power."
+          },
+          "TempleOfNod" : {
+            "image" : "temple_of_nod",
+            "title" : "Temple Of NOD",
+            "desc"  : "Houses the central computer core that is the hub of all Nod communications and center of Nod command. It is heavily armored."
+          },
+          "Helipad" : {
+            "image" : "helipad",
+            "title" : "Helipad (Helicopter facility)",
+            "desc"  : "Building the Helipad allows the use of the Apache attack aircraft. Each Apache requires a Helipad."
+          },
+          "RepairFacility" : {
+            "image" : "repair_facility",
+            "title" : "Repair facility",
+            "desc"  : "Repairs damaged vehicles. All repairs are deducted from your credits. Damage to the facility significantly slows repair work."
+          },
+          "Turret" : {
+            "image" : "turret",
+            "title" : "Turret (defence)",
+            "desc"  : "For broad sweep, short range protection against heavy assault vehicles."
+          },
+          "Obelisk" : {
+            "image" : "obelisk",
+            "title" : "Obelisk of Light (defence)",
+            "desc"  : "This high power laser effectively destroys troops and armament at long range. You must have excess power to operate the Obelisk of Light safely."
+          },
+          "SAMSite" : {
+            "image" : "sam_site",
+            "title" : "SAM Site (defence)",
+            "desc"  : "Fires surface-to-air missiles at airborne GDI units."
+          },
+          "SandbagBarrier" : {
+            "image" : "sandbag_barrier",
+            "title" : "Sandbag Barrier (defence)",
+            "desc"  : "Used to deter the enemy from advancing. Sandbags provide limited cover and may slow units down."
+          },
+          "ConcreteBarrier" : {
+            "image" : "concrete_barrier",
+            "title" : "Concrete Barrier (defence)",
+            "desc"  : "Concrete walls are the most effective barrier. They are much harder to destroy and will take the enemy much longer to blast through."
+          },
+          "ChainLinkBarrier" : {
+            "image" : "chain_link_barrier",
+            "title" : "Chain-Link Barrier (defence)",
+            "desc"  : "Chain Link fences will stop light vehicles, yet can be crushed or even destroyed by most heavier vechicles."
           }
         },
 
         "units"      : {
           "Minigunner" : {
             "image" : "minigunner",
-            "title" : "Minigunner"
+            "title" : "Minigunner",
+            "desc"  : 'Equipped with the GAU-3 "Eliminator" 5.56mm chain gun and light body armour, this troop is the key player in the GDI forces.'
           },
-          "Grenaider" : {
-            "image" : "grenaider",
-            "title" : "Grenaider"
+          "Rocketeer" : {
+            "image" : "rocket_soldier",
+            "title" : "Rocketeer",
+            "desc"  : 'Portable rocket launchers create more damage at a greater range. These units can fire from lower to higher elevations and attack air units.'
           },
           "Engineer" : {
             "image" : "engineer",
-            "title" : "Engineer"
+            "title" : "Engineer",
+            "desc"  : 'Engineers are used to capture enemy buildings. Since they carry no weapons, they are extremely vulnerable on the battlefield and must be directed very carefully.'
           },
-          "Commando" : {
-            "image" : "commando",
-            "title" : "Commando"
+          "Flamethrower" : {
+            "image" : "flame_thrower",
+            "title" : "Flame Thrower",
+            "desc"  : 'Effective for maximum close range destruction. Produces fire which burns more slowly than normal, allowing more effective elimination of humans and armament.'
+          },
+          "ChemWarrior" : {
+            "image" : "chemical_warrior",
+            "title" : "Chemical Warrior",
+            "desc"  : 'The Chem-Warrior is an advanced infantry unit immune to the effects of Tiberium. The chem-blast they carry produces a short lived toxic cloud of Tiberium gas that will kill any infantry caught within its effects.'
           },
           "Harvester" : {
             "image" : "harvester",
-            "title" : "Tiberium Harvester"
+            "title" : "Tiberium Harvester",
+            "desc"  : "This armor-plated vehicle seeks out and scoops up raw Tiberium, then transports it to Refineries for processing. It is slow and unwieldy."
           },
-          "HUM-Vee" : {
-            "image" : "hum-vee",
-            "title" : "HUM-Vee"
+          "Buggy" : {
+            "image" : "buggy",
+            "title" : "Buggy",
+            "desc"  : "These all-terrain vehicles are armed with an assault weapons mounted in a turret."
           },
-          "MediumTank" : {
-            "image" : "medium_tank",
-            "title" : "Medium Tank"
+          "LightTank" : {
+            "image" : "light_tank",
+            "title" : "Light Tank",
+            "desc"  : "This highly mobile tread vehicle, delivers maximum enemy unit and personnel destruction with minimum weight, maintenance and weaponry."
           },
-          "MRLS" : {
-            "image" : "mrls",
-            "title" : "Missile Rocket Launcher"
+          "MobileArtillery" : {
+            "image" : "artillery",
+            "title" : "Mobile Artillery",
+            "desc"  : "The biggest weapon in the Nod arsenal, this massive mobile cannon has great range and ballistic power. Slow and unwieldy, it needs close quarter protection."
+          },
+          "FlameTank" : {
+            "image" : "flame_tank",
+            "title" : "Flame Tank",
+            "desc"  : "When strategy calls for total short range annihilation with minimum exposure, this light armoured tank fits the bill. Especially useful against infantry."
+          },
+          "StealthTank" : {
+            "image" : "stealth_tank",
+            "title" : "Stealth Tank",
+            "desc"  : 'This lightly armored, mobile tank is equipped with the "Lazarus" shield whick makes it invisible. This sheild is neutralised during firing. Backup protect is provided by two high powered missiles.'
+          },
+          "SSM" : {
+            "image" : "ssm_launcher",
+            "title" : "Surface-To-Surface Missile Launcher (SSM)",
+            "desc"  : "The SSM is Nod's longest ranged unit, able to fire on the enemy from a great distance. Its napalm rounds are useful at cracking through tough base defenses without any worry of retaliation. Infantry in a large group will also suffer from its high area of effect. The reload rate on this unit is extremely long, requiring other units to protect it during its lag time."
           },
           "APC" : {
             "image" : "apc",
-            "title" : "Armored Personal Carrier"
+            "title" : "Armored Personal Carrier",
+            "desc"  : "The Armored Personnel Carrier (APC) transports and protects up to five troops heading to and from battle locations."
           },
           "MCV" : {
             "image" : "mcv",
-            "title" : "Mobile Construction Vehicle"
-          },
-          "MammothTank" : {
-            "image" : "mammoth_tank",
-            "title" : "Mammoth (Heavy) Tank"
+            "title" : "Mobile Construction Vehicle",
+            "desc"  : "The mobile construction vehicle lets you search for suitable base sites. Once one is found, deploy the MCV into a full service Construction Yard and use it to build other structures."
           },
           "Chinook" : {
             "image" : "chinook",
-            "title" : "Chinook Transport Helicopter"
+            "title" : "Chinook Transport Helicopter",
+            "desc"  : 'The Transport "Chinook" Helicopter provides field transportation for all infantry, rapidly deploying new troops into, or out of battle.'
           },
-          "Orca" : {
-            "image" : "orca",
-            "title" : "ORCA Helicopter"
+          "Apache" : {
+            "image" : "apache",
+            "title" : "Apache Helicopter",
+            "desc"  : "Nod's Apache Helicopter is fast, mobile, and carries a large quantity of ammunition. Used primarily against infantry and structures, the Apache can take down armored units when en-masse."
           }
         }
-      },
-      "NOD" : {
-      }
-    },
-
-    // Objects
-    MapObjects : {
-      'GDI_Minigunner'     : {
-        'type'   : _ou,
-        'width'  : 50,
-        'height' : 50,
-        'image'  : "gdi/units/unit",
-        'attrs'  : {
-          'movable'   : true,
-          'speed'     : 5,
-          'turning'   : 0,
-          'strength'  : 10
-        },
-        'mask' : [0, 0, 50, 50]
-      },
-
-
-      'GDI_Jeep'  : {
-        'type'   : _ov,
-        'width'  : 24,
-        'height' : 24,
-        'image'  : "gdi/units/tank",
-        'sprite' : {
-          'src' : "gdi/units/jeep_sprite",
-          'cw'  : 24,
-          'ch'  : 24,
-          'rotation' : {
-            270 : 0,
-            180 : 191,
-            90  : 384,
-            0   : 576,
-            360 : 576
-          }
-        },
-        'attrs'  : {
-          'movable'   : true,
-          'speed'     : 10,
-          'turning'   : 10,
-          'strength'  : 10
-        },
-        'mask' : [0, 0, 24, 24]
-      },
-
-      'GDI_Headquarter' : {
-        'type'   : _ob,
-        'width'  : 72,
-        'height' : 48,
-        'image'  : "gdi/structures/hq",
-        'attrs'  : {
-          'movable'   : false,
-          'speed'     : 0,
-          'turning'   : 0,
-          'strength'  : 100
-        },
-        'mask' : [0, 0, 72, 48]
-      },
-
-      'GDI_Barracs' : {
-        'type'   : _ob,
-        'width'  : 48,
-        'height' : 48,
-        'image'  : "gdi/structures/barracs",
-        'attrs'  : {
-          'movable'   : false,
-          'speed'     : 0,
-          'turning'   : 0,
-          'strength'  : 50
-        },
-        'mask' : [0, 0, 48, 48]
       }
     }
 

@@ -108,8 +108,18 @@
     /*if ( player != _Player ) {
       team = _EnemyTeam;
     }*/
-    opts = CnC.MapObjects[team + "_" + opts];
-    return new MapObject(player, x, y, a, opts);
+    var args;
+    if ( CnC.MapObjectsMeta[team].structures[opts]  ) {
+      args = CnC.MapObjectsMeta[team].structures[opts].object;
+    } else if ( CnC.MapObjectsMeta[team].units[opts]  ) {
+      args = CnC.MapObjectsMeta[team].units[opts].object;
+    }
+
+    if ( !args ) {
+      throw("Cannot create '" + opts + "'.");
+    }
+
+    return new MapObject(player, x, y, a, args);
   };
 
   /**
@@ -400,11 +410,13 @@
 
         for ( var s in structures ) {
           if ( structures.hasOwnProperty(s) ) {
-            price         = structures[s].price === undefined ? 0 : structures[s].price;
-            time          = structures[s].time  === undefined ? 0 : structures[s].time;
-            title         = structures[s].title === undefined ? s : structures[s].title;
-            src           = "/img/" + team.toLowerCase() + "/sidebar/structures/" + structures[s].image + ".jpg";
-            _createItem("ConstructMapObjectBuilding", left, src, s, title, price, time);
+            if ( structures[s].image !== null ) {
+              price         = structures[s].price === undefined ? 0 : structures[s].price;
+              time          = structures[s].time  === undefined ? 0 : structures[s].time;
+              title         = structures[s].title === undefined ? s : structures[s].title;
+              src           = "/img/" + team.toLowerCase() + "/sidebar/structures/" + structures[s].image + ".jpg";
+              _createItem("ConstructMapObjectBuilding", left, src, s, title, price, time);
+            }
           }
         }
 
@@ -416,11 +428,13 @@
 
         for ( var u in units ) {
           if ( units.hasOwnProperty(u) ) {
-            price         = units[u].price === undefined ? 0 : units[u].price;
-            time          = units[u].time  === undefined ? 0 : units[u].time;
-            title         = units[u].title === undefined ? u : units[u].title;
-            src           = "/img/" + team.toLowerCase() + "/sidebar/units/" + units[u].image + ".jpg";
-            _createItem("ConstructMapObjectBuilding", right, src, u, title, price, time);
+            if ( units[u].image !== null ) {
+              price         = units[u].price === undefined ? 0 : units[u].price;
+              time          = units[u].time  === undefined ? 0 : units[u].time;
+              title         = units[u].title === undefined ? u : units[u].title;
+              src           = "/img/" + team.toLowerCase() + "/sidebar/units/" + units[u].image + ".jpg";
+              _createItem("ConstructMapObjectBuilding", right, src, u, title, price, time);
+            }
           }
         }
 
@@ -2277,20 +2291,20 @@
       },
       'objects' : [
         // Player 1
-        ["Jeep",        0, 50,  30],
-        ["Jeep",        0, 50,  90],
-        ["Jeep",        0, 50,  150],
-        ["Headquarter", 0, 143, 143],
-        ["Barracs",     0, 240, 143],
+        ["HUMVee",        0, 50,  30],
+        ["HUMVee",        0, 50,  90],
+        ["HUMVee",        0, 50,  150],
+        ["ConstructionYard", 0, 143, 143],
+        ["Barracks",     0, 240, 143],
         ["Minigunner",  0, 170, 10],
         ["Minigunner",  0, 170, 40],
         ["Minigunner",  0, 170, 70],
 
         // Player 2
-        ["Jeep",        1, 2000, 1700],
-        ["Jeep",        1, 2000, 1750],
-        ["Jeep",        1, 2000, 1800],
-        ["Headquarter", 1, 2000, 2000]
+        ["HUMVee",        1, 2000, 1700],
+        ["HUMVee",        1, 2000, 1750],
+        ["HUMVee",        1, 2000, 1800],
+        ["ConstructionYard", 1, 2000, 2000]
       ]
     };
 
