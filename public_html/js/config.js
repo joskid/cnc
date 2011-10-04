@@ -164,6 +164,131 @@
       }
     },
 
+    // Object Metadata
+    MapObjectsMeta : {
+      "GDI" : {
+        "structures" : {
+          "PowerPlan" : {
+            "image" : "power_plant",
+            "title" : "Power Plan"
+          },
+          "AdvancedPowerPlan" : {
+            "image" : "adv_power_plant",
+            "title" : "Advanced Power Plant"
+          },
+          "Barracks" : {
+            "image" : "barracks",
+            "title" : "Barracs (Unit facility)"
+          },
+          "Refinery" : {
+            "image" : "refinery",
+            "title" : "Tiberium Refinery"
+          },
+          "Silo" : {
+            "image" : "tiberium_silo",
+            "title" : "Tiberium Silo"
+          },
+          "Factory" : {
+            "image" : "weapons_factory",
+            "title" : "Weapons Factory (Vehicle facility)"
+          },
+          "CommunicationCenter" : {
+            "image" : "comm_center",
+            "title" : "Communications Center"
+          },
+          "AdvancedCommunicationCenter" : {
+            "image" : "adv_comm",
+            "title" : "Advanced Communications Center"
+          },
+          "Helipad" : {
+            "image" : "helipad",
+            "title" : "Helipad (Helicopter facility)"
+          },
+          "RepairFacility" : {
+            "image" : "repair_facility",
+            "title" : "Repair facility"
+          },
+          "GuardTower" : {
+            "image" : "guard_tower",
+            "title" : "Guard Tower (defence)"
+          },
+          "AdvancedGuardTower" : {
+            "image" : "adv_guard_tower",
+            "title" : "Advanced Guard Tower (defence)"
+          },
+          "SandbagBarrier" : {
+            "image" : "sandbag_barrier",
+            "title" : "Sandbag Barrier (defence)"
+          },
+          "ConcreteBarrier" : {
+            "image" : "concrete_barrier",
+            "title" : "Concrete Barrier (defence)"
+          },
+          "ChainLinkBarrier" : {
+            "image" : "chain_link_barrier",
+            "title" : "Chain-Link Barrier (defence)"
+          }
+        },
+
+        "units"      : {
+          "Minigunner" : {
+            "image" : "minigunner",
+            "title" : "Minigunner"
+          },
+          "Grenaider" : {
+            "image" : "grenaider",
+            "title" : "Grenaider"
+          },
+          "Engineer" : {
+            "image" : "engineer",
+            "title" : "Engineer"
+          },
+          "Commando" : {
+            "image" : "commando",
+            "title" : "Commando"
+          },
+          "Harvester" : {
+            "image" : "harvester",
+            "title" : "Tiberium Harvester"
+          },
+          "HUM-Vee" : {
+            "image" : "hum-vee",
+            "title" : "HUM-Vee"
+          },
+          "MediumTank" : {
+            "image" : "medium_tank",
+            "title" : "Medium Tank"
+          },
+          "MRLS" : {
+            "image" : "mrls",
+            "title" : "Missile Rocket Launcher"
+          },
+          "APC" : {
+            "image" : "apc",
+            "title" : "Armored Personal Carrier"
+          },
+          "MCV" : {
+            "image" : "mcv",
+            "title" : "Mobile Construction Vehicle"
+          },
+          "MammothTank" : {
+            "image" : "mammoth_tank",
+            "title" : "Mammoth (Heavy) Tank"
+          },
+          "Chinook" : {
+            "image" : "chinook",
+            "title" : "Chinook Transport Helicopter"
+          },
+          "Orca" : {
+            "image" : "orca",
+            "title" : "ORCA Helicopter"
+          }
+        }
+      },
+      "NOD" : {
+      }
+    },
+
     // Objects
     MapObjects : {
       'GDI_Minigunner'     : {

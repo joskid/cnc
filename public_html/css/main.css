@@ -127,7 +127,7 @@ body.CursorMove {
     top : 200px;
     left : 10px;
     right : 10px;
-    height : 435px;
+    height : 410px;
   }
     #ConstructionLeftScroll,
     #ConstructionRightScroll {
@@ -150,6 +150,9 @@ body.CursorMove {
     #ConstructionRightScroll div {
       border : 1px outset #555;
       margin : 9px;
+      width : 62px;
+      height : 46px;
+      padding : 0;
     }
 
     #ConstructionLeftUp,

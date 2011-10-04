@@ -38,8 +38,8 @@
   var TILE_SIZE          = 24;
   var MINIMAP_WIDTH      = 180;
   var MINIMAP_HEIGHT     = 180;
-  var OBJECT_ICON_WIDTH  = 62;
-  var OBJECT_ICON_HEIGHT = 46;
+  var OBJECT_ICON_WIDTH  = 62 + 2;
+  var OBJECT_ICON_HEIGHT = 46 + 2;
   var SELECTION_SENSE    = 10;
 
   var SOUND_SELECT     = 0;
@@ -59,8 +59,11 @@
   var _GUI      = null;
 
   // Variables
-  var _FPS      = 0;
-  var _Player   = 0;
+  var _FPS        = 0;
+  var _Player     = 0;
+  var _PlayerTeam = "GDI";
+  var _Enemy      = 1;
+  var _EnemyTeam  = "NOD";
 
   // MapObject "statics"
   var _MapObjectCount = 0;
@@ -96,7 +99,11 @@
    * @return MapObject
    */
   var CreateObject = function(opts, player, x, y, a) {
-    opts = CnC.MapObjects[opts];
+    var team = _PlayerTeam;
+    /*if ( player != _Player ) {
+      team = _EnemyTeam;
+    }*/
+    opts = CnC.MapObjects[team + "_" + opts];
     return new MapObject(player, x, y, a, opts);
   };
 
@@ -262,21 +269,20 @@
       });
 
       // Sidebar buttons
-      $.addEvent(document.getElementById("ConstructionLeftUp"), "mousedown", $.preventDefault);
-      $.addEvent(document.getElementById("ConstructionLeftDown"), "mousedown", $.preventDefault );
-      $.addEvent(document.getElementById("ConstructionRightUp"), "mousedown", $.preventDefault);
-      $.addEvent(document.getElementById("ConstructionRightDown"), "mousedown", $.preventDefault);
-
-      $.addEvent(document.getElementById("ConstructionLeftUp"), "click", function() {
+      $.addEvent(document.getElementById("ConstructionLeftUp"), "mousedown", function(ev) {
+        $.preventDefault(ev);
         self.scrollContainer(0, 0);
       });
-      $.addEvent(document.getElementById("ConstructionLeftDown"), "click", function() {
+      $.addEvent(document.getElementById("ConstructionLeftDown"), "mousedown", function(ev) {
+        $.preventDefault(ev);
         self.scrollContainer(0, 1);
       });
-      $.addEvent(document.getElementById("ConstructionRightUp"), "click", function() {
+      $.addEvent(document.getElementById("ConstructionRightUp"), "mousedown", function(ev) {
+        $.preventDefault(ev);
         self.scrollContainer(1, 0);
       });
-      $.addEvent(document.getElementById("ConstructionRightDown"), "click", function() {
+      $.addEvent(document.getElementById("ConstructionRightDown"), "mousedown", function(ev) {
+        $.preventDefault(ev);
         self.scrollContainer(1, 1);
       });
 
@@ -323,21 +329,20 @@
       });
 
       // Sidebar buttons
-      $.removeEvent(document.getElementById("ConstructionLeftUp"), "mousedown", $.preventDefault);
-      $.removeEvent(document.getElementById("ConstructionLeftDown"), "mousedown", $.preventDefault );
-      $.removeEvent(document.getElementById("ConstructionRightUp"), "mousedown", $.preventDefault);
-      $.removeEvent(document.getElementById("ConstructionRightDown"), "mousedown", $.preventDefault);
-
-      $.removeEvent(document.getElementById("ConstructionLeftUp"), "click", function() {
+      $.removeEvent(document.getElementById("ConstructionLeftUp"), "mousedown", function(ev) {
+        $.preventDefault(ev);
         self.scrollContainer(0, 0);
       });
-      $.removeEvent(document.getElementById("ConstructionLeftDown"), "click", function() {
+      $.removeEvent(document.getElementById("ConstructionLeftDown"), "mousedown", function(ev) {
+        $.preventDefault(ev);
         self.scrollContainer(0, 1);
       });
-      $.removeEvent(document.getElementById("ConstructionRightUp"), "click", function() {
+      $.removeEvent(document.getElementById("ConstructionRightUp"), "mousedown", function(ev) {
+        $.preventDefault(ev);
         self.scrollContainer(1, 0);
       });
-      $.removeEvent(document.getElementById("ConstructionRightDown"), "click", function() {
+      $.removeEvent(document.getElementById("ConstructionRightDown"), "mousedown", function(ev) {
+        $.preventDefault(ev);
         self.scrollContainer(1, 1);
       });
 
@@ -349,8 +354,67 @@
         self.toggleMenu();
       });
 
+      var left  = document.getElementById("ConstructionLeftScroll");
+      var right = document.getElementById("ConstructionRightScroll");
+
+      while ( left.hasChildNodes() )
+        left.removeChild(left.firstChild);
+      while ( right.hasChildNodes() )
+        right.removeChild(right.firstChild);
+
       console.groupEnd();
     },
+
+    //
+    // METHODS
+    //
+
+    prepare : function(team) {
+      var el, img;
+      var left  = document.getElementById("ConstructionLeftScroll");
+      var right = document.getElementById("ConstructionRightScroll");
+
+      while ( left.hasChildNodes() )
+        left.removeChild(left.firstChild);
+      while ( right.hasChildNodes() )
+        right.removeChild(right.firstChild);
+
+      var structures = CnC.MapObjectsMeta[team].structures;
+      for ( var s in structures ) {
+        if ( structures.hasOwnProperty(s) ) {
+          el            = document.createElement("div");
+          el.className  = "ConstructMapObjectBuilding";
+
+          img           = document.createElement("img");
+          img.alt       = s;
+          img.src       = "/img/" + team.toLowerCase() + "/sidebar/structures/" + structures[s].image + ".jpg";
+          img.title     = structures[s].title === undefined ? s : structures[s].title;
+
+          el.appendChild(img);
+          left.appendChild(el);
+        }
+      }
+
+      var units      = CnC.MapObjectsMeta[team].units;
+      for ( var u in units ) {
+        if ( units.hasOwnProperty(u) ) {
+          el            = document.createElement("div");
+          el.className  = "ConstructMapObjectBuilding";
+
+          img           = document.createElement("img");
+          img.alt       = u;
+          img.src       = "/img/" + team.toLowerCase() + "/sidebar/units/" + units[u].image + ".jpg";
+          img.title     = units[u].title === undefined ? u : units[u].title;
+
+          el.appendChild(img);
+          right.appendChild(el);
+        }
+      }
+    },
+
+    //
+    // EVENTS
+    //
 
     toggleSidebar : function() {
       this._sidebar = !this._sidebar;
@@ -369,25 +433,26 @@
       var tmp;
 
       if ( c ) { // Right
-        tmp = this._unit_top - (dir ? -(OBJECT_ICON_HEIGHT + 15) : (OBJECT_ICON_HEIGHT + 15));
-        if ( Math.abs(tmp - el.scrollTop) == 1 ) {
-          return;
+        if ( !dir ) { // Up
+          tmp = this._unit_top - (OBJECT_ICON_HEIGHT + 9);
+        } else {
+          tmp = this._unit_top + (OBJECT_ICON_HEIGHT + 9);
         }
         if ( tmp >= 0 && tmp <= th ) {
           el.scrollTop = tmp;
           this._unit_top = tmp;
         }
       } else { // Left
-        tmp = this._structure_top - (dir ? -(OBJECT_ICON_HEIGHT + 15) : (OBJECT_ICON_HEIGHT + 15));
-        if ( Math.abs(tmp - el.scrollTop) == 1 ) {
-          return;
+        if ( !dir ) { // Up
+          tmp = this._structure_top - (OBJECT_ICON_HEIGHT + 9);
+        } else {
+          tmp = this._structure_top + (OBJECT_ICON_HEIGHT + 9);
         }
         if ( tmp >= 0 && tmp <= th ) {
           el.scrollTop = tmp;
           this._structure_top = tmp;
         }
       }
-
     }
 
   });
@@ -818,6 +883,7 @@
       console.log("Using game data", game);
       console.groupEnd();
 
+      // Set the game variable
       this._game = game;
 
       // Create events
@@ -979,6 +1045,14 @@
     prepare : function() {
       var self = this;
       if ( !this._running ) {
+
+
+        // Set players
+        _Player     = this._game.player.index === undefined ? _Player      : parseInt(this._game.player.index, 10);
+        _PlayerTeam = this._game.player.team  === undefined ? _PlayerTeam  : this._game.player.team;
+        _Enemy      = this._game.enemy.index  === undefined ? _Enemy       : parseInt(this._game.enemy.index, 10);
+        _EnemyTeam  = this._game.enemy.team   === undefined ? _EnemyTeam   : this._game.enemy.team;
+
         // Create map
         var mt = this._game.map.type;
         var dt = this._game.map.data;
@@ -994,6 +1068,9 @@
             this._map.addObject(CreateObject.apply(this, os[i]));
           }
         }
+
+        // Init GUI
+        _GUI.prepare(_PlayerTeam);
 
         // Init map
         this._map.prepare();
@@ -2120,6 +2197,12 @@
 
     // Example data
     var game_data = {
+      'player' : {
+        'team' : "GDI"
+      },
+      'enemy' : {
+        'team' : "NOD"
+      },
       'map' : {
         'type' : "desert",
         'sx'   : 100,
@@ -2142,20 +2225,20 @@
       },
       'objects' : [
         // Player 1
-        ["GDI_Jeep",  0, 50,  30],
-        ["GDI_Jeep",  0, 50,  90],
-        ["GDI_Jeep",  0, 50,  150],
-        ["GDI_Headquarter", 0, 143, 143],
-        ["GDI_Barracs", 0, 240, 143],
-        ["GDI_Minigunner",  0, 170, 10],
-        ["GDI_Minigunner",  0, 170, 40],
-        ["GDI_Minigunner",  0, 170, 70],
+        ["Jeep",        0, 50,  30],
+        ["Jeep",        0, 50,  90],
+        ["Jeep",        0, 50,  150],
+        ["Headquarter", 0, 143, 143],
+        ["Barracs",     0, 240, 143],
+        ["Minigunner",  0, 170, 10],
+        ["Minigunner",  0, 170, 40],
+        ["Minigunner",  0, 170, 70],
 
         // Player 2
-        ["GDI_Jeep",  1, 2000, 1700],
-        ["GDI_Jeep",  1, 2000, 1750],
-        ["GDI_Jeep",  1, 2000, 1800],
-        ["GDI_Headquarter", 1, 2000, 2000]
+        ["Jeep",        1, 2000, 1700],
+        ["Jeep",        1, 2000, 1750],
+        ["Jeep",        1, 2000, 1800],
+        ["Headquarter", 1, 2000, 2000]
       ]
     };
 
