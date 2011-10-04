@@ -1505,7 +1505,9 @@
           x2 = pos.x - (w / 2),
           y2 = pos.y - (h / 2),
           tx = Math.round(x2 / (TILE_SIZE)),
-          ty = Math.round(y2 / (TILE_SIZE));
+          ty = Math.round(y2 / (TILE_SIZE)),
+          sx = Math.round(x1 / (TILE_SIZE)),
+          sy = Math.round(y1 / (TILE_SIZE));
 
       // Calculate rotation and distance to target
       var deg      = Math.atan2((y2-y1), (x2-x1)) * (180 / Math.PI);
@@ -1520,7 +1522,7 @@
         ty : ty
       };
       this._heading     = parseInt(rotation, 10);
-      this._path        = _Main.getMap().calculateObjectPath(this, this._destination, this._heading);
+      this._path        = _Main.getMap().calculateObjectPath(this, sx, sy, tx, ty);
 
 
       console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::move()");
@@ -1837,9 +1839,8 @@
      * calculateObjectPath -- Calculate the path of MapObject
      * @return Array
      */
-    calculateObjectPath : function(obj, dst, rot) {
-      return [];
-      //return (new CnC.PathFinder(this.getEnvironmentData())).find(dst.tx, dst.ty);
+    calculateObjectPath : function(obj, x1, y1, x2, y2, ang) {
+      return (new CnC.PathFinder(this.getEnvironmentData())).find(x1, y1, x2, y2);
     },
 
     //

@@ -32,6 +32,8 @@
       this._rows             = ed.length;
       this._cols             = ed[0].length;
 
+      console.log("PathFinder::init()");
+
       var row, col;
       for ( row = 0; row < this._rows; row++ ) {
         this._mapStatus[row] = [];
@@ -99,6 +101,8 @@
      * @return Array
      */
     find : function(startRow, startCol, endRow, endCol) {
+      console.group("PathFinder::find()");
+
       var row, col;
 
       this._openList = [];
@@ -115,16 +119,20 @@
         // Open all nearby tiles for movment
         for ( row = nowRow-1; row < nowRow+2; row++ ) {
           for ( col = nowCol-1; col < nowCol+2; col++ ) {
+            //if ( row >= 0 && row < this._rows && col >= 0 && col < this._cols && !(row == nowRow && col == nowCol ) && (ALLOW_DIAGONAL || row == nowRow || col == nowCol ) && 
+            //         (ALLOW_DIAGONAL_CORNERING || row == nowRow || col == nowCol || (this._environmentData[row][nowCol].isWalkable() && this._environmentData[nowRow][col])) ) {
             if ( row >= 0 && row < this._rows && col >= 0 && col < this._cols && !(row == nowRow && col == nowCol ) && (ALLOW_DIAGONAL || row == nowRow || col == nowCol ) && 
-                      (ALLOW_DIAGONAL_CORNERING || row == nowRow || col == nowCol || (this._environmentData[row][nowCol].isWalkable() && this._environmentData[nowRow][col])) ) {
+                      (ALLOW_DIAGONAL_CORNERING || row == nowRow || col == nowCol (this._environmentData[nowRow][col])) ) {
               // If not outside the boundaries or at the same point or a diagonal (if disabled) or a diagonal (with a block next to it)...
-              if ( this._environmentData[row][col].isWalkable() ) {
+              //if ( this._environmentData[row][col].isWalkable() ) {
+              if ( true ) {
 
                 // Is not a blocked tile
                 if ( !this.getClosed(row,col) ) {
                   // Not a closed tile
-                  var movementCost = this._mapStatus[nowRow][nowCol].movementCost + ((row == nowRow || col == nowCol ? HV_COST : D_COST) * this._environmentData[row][col].getCost());
-                  if ( isOpen(row,col) ) {
+                  //var movementCost = this._mapStatus[nowRow][nowCol].movementCost + ((row == nowRow || col == nowCol ? HV_COST : D_COST) * this._environmentData[row][col].getCost());
+                  var movementCost = this._mapStatus[nowRow][nowCol].movementCost + ((row == nowRow || col == nowCol ? HV_COST : D_COST) * 1);
+                  if ( this.getOpen(row,col) ) {
                     if (movementCost < this._mapStatus[row][col].movementCost) {
                       // Cheaper: simply replaces with new cost and parent.
                       this.open(row, col, [nowRow, nowCol], movementCost, undefined, true); // heuristic not passed: faster, not needed 'cause it's already set
@@ -165,6 +173,9 @@
 
         result.push([startRow,startCol]);
       }
+
+      console.log("Result", result);
+      console.groupEnd();
 
       return result;
     },

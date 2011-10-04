@@ -31,6 +31,7 @@ Features:
   * Movment and rotation
   * With player mapping
   * Basic sprites (animations) - Under development
+  * Path finding -- Under development
   * Selection by dragging a rectangle
 * Minimap
   * Displays objects
