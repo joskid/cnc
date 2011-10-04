@@ -35,6 +35,9 @@ Features:
 * Minimap
   * Displays objects
   * Can scroll the map via clicking or dragging
+* GUI
+  * Topbar with buttons
+  * Sidebar with construction buttons etc.
 
 NOTES:
 -------------------------------------------------------------------------------

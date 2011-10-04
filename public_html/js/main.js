@@ -375,7 +375,7 @@
     //
 
     prepare : function(team) {
-      var el, img;
+      var el, img, price, time;
       var left  = document.getElementById("ConstructionLeftScroll");
       var right = document.getElementById("ConstructionRightScroll");
 
@@ -387,13 +387,16 @@
       var structures = CnC.MapObjectsMeta[team].structures;
       for ( var s in structures ) {
         if ( structures.hasOwnProperty(s) ) {
+          price         = structures[s].price === undefined ? 0 : structures[s].price;
+          time          = structures[s].time === undefined ? 0 : structures[s].time;
+
           el            = document.createElement("div");
           el.className  = "ConstructMapObjectBuilding";
 
           img           = document.createElement("img");
           img.alt       = s;
           img.src       = "/img/" + team.toLowerCase() + "/sidebar/structures/" + structures[s].image + ".jpg";
-          img.title     = structures[s].title === undefined ? s : structures[s].title;
+          img.title     = (structures[s].title === undefined ? s : structures[s].title) + (" ($" + price  + ", " + time + "s)");
 
           el.appendChild(img);
           left.appendChild(el);
@@ -403,13 +406,16 @@
       var units      = CnC.MapObjectsMeta[team].units;
       for ( var u in units ) {
         if ( units.hasOwnProperty(u) ) {
+          price         = units[u].price === undefined ? 0 : units[u].price;
+          time          = units[u].time === undefined ? 0 : units[u].time;
+
           el            = document.createElement("div");
           el.className  = "ConstructMapObjectBuilding";
 
           img           = document.createElement("img");
           img.alt       = u;
           img.src       = "/img/" + team.toLowerCase() + "/sidebar/units/" + units[u].image + ".jpg";
-          img.title     = units[u].title === undefined ? u : units[u].title;
+          img.title     = (units[u].title === undefined ? u : units[u].title) + (" ($" + price  + ", " + time + "s)");
 
           el.appendChild(img);
           right.appendChild(el);
@@ -940,8 +946,6 @@
      * @return void
      */
     keypress : function(ev) {
-      $.preventDefault(ev);
-
       var key = $.keyButton(ev);
 
       _Keyboard   = {
@@ -957,7 +961,8 @@
       } else if ( key.mod == "ALT" ) {
         _Keyboard.ALT = true;
       } else if ( key.mod == "TAB" ) {
-        return false; // NO TABBING!
+        $.preventDefault(ev); // NO tabindex-ing!
+        return false;
       }
 
       return true;

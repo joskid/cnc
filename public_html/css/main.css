@@ -64,7 +64,6 @@ body.CursorMove {
     height : 30px;
     background : url('/img/gui/gui_background.png');
     text-align : center;
-    color : #fff;
     font-size : 12px;
     font-weight : bold;
     line-height : 30px;
@@ -78,14 +77,26 @@ body.CursorMove {
     -moz-border-radius-topright: 15px;
     border-top-right-radius: 15px;
   }
+    #TopBar .Button.Clickable {
+      color : #fff;
+      text-shadow: 0px 0px 1px #fff;
+    }
     #TopBar .Button.Clickable:hover {
       color : #eee;
+      text-shadow: 0px 0px 1px #eee;
     }
 
   #TopBarButtonMenu {
   }
+  #TopBarButtonPower {
+    right : 400px;
+    color : #2770e7;
+    text-shadow: 0px 0px 1px #2770e7;
+  }
   #TopBarButtonMoney {
     right : 200px;
+    color : #e7b827;
+    text-shadow: 0px 0px 1px #e7b827;
   }
   #TopBarButtonSideBar {
     right : 0px;
@@ -274,6 +285,7 @@ body.CursorMove {
   left : 10px;
   z-index : 1900000;
   color : #fff;
+  text-shadow: 0px 0px 1px #000;
   font-size : 10px;
 }
 
