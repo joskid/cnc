@@ -64,6 +64,11 @@
   var _PlayerTeam = "GDI";
   var _Enemy      = 1;
   var _EnemyTeam  = "NOD";
+  var _Keyboard   = {
+    "CTRL"  : false,
+    "SHIFT" : false,
+    "ALT"   : false
+  };
 
   // MapObject "statics"
   var _MapObjectCount = 0;
@@ -887,6 +892,9 @@
       this._game = game;
 
       // Create events
+      $.addEvent(document, "keydown", function(ev) {
+        return self.keypress(ev);
+      });
       $.addEvent(document.getElementById("Window"), "mousedown", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
@@ -908,6 +916,9 @@
       this.stop();
 
       // Remove events
+      $.removeEvent(document, "keydown", function(ev) {
+        return self.keypress(ev);
+      });
       $.removeEvent(document.getElementById("Window"), "mousedown", function(ev) {
         $.preventDefault(ev);
         $.stopPropagation(ev);
@@ -923,6 +934,34 @@
     //
     // EVENTS
     //
+
+    /**
+     * keypress -- keypress event
+     * @return void
+     */
+    keypress : function(ev) {
+      $.preventDefault(ev);
+
+      var key = $.keyButton(ev);
+
+      _Keyboard   = {
+        "CTRL"  : false,
+        "SHIFT" : false,
+        "ALT"   : false
+      };
+
+      if ( key.mod == "CTRL" ) {
+        _Keyboard.CTRL = true;
+      } else if ( key.mod == "SHIFT" ) {
+        _Keyboard.SHIFT = true;
+      } else if ( key.mod == "ALT" ) {
+        _Keyboard.ALT = true;
+      } else if ( key.mod == "TAB" ) {
+        return false; // NO TABBING!
+      }
+
+      return true;
+    },
 
     /**
      * resize -- onresize event

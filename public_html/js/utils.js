@@ -105,6 +105,32 @@ var $ = (function(undefined) {
       };
     },
 
+    'keyButton' : function(ev) {
+      ev = ev || window.event;
+
+      var key = ev.which || ev.keyCode;
+      var chr = String.fromCharCode(key);
+      var mod = null;
+
+      var spe = {
+        9  : "TAB",
+        17 : "CTRL",
+        18 : "ALT",
+        16 : "SHIFT",
+        27 : "ESC"
+      };
+
+      if ( spe[key] !== undefined ) {
+        mod = spe[key];
+      }
+
+      return {
+        'key'  : key,
+        'char' : chr,
+        'mod'  : mod
+      };
+    },
+
     //
     // DOM
     //
