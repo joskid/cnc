@@ -1204,6 +1204,7 @@
     _sprite        : null,
     _destination   : null,
     _heading       : null,
+    _path          : null,
 
     /**
      * @constructor
@@ -1502,7 +1503,9 @@
           x1 = this.getPosition()[0] - (w / 2),
           y1 = this.getPosition()[1] - (h / 2),
           x2 = pos.x - (w / 2),
-          y2 = pos.y - (h / 2);
+          y2 = pos.y - (h / 2),
+          tx = Math.round(x2 / (TILE_SIZE)),
+          ty = Math.round(y2 / (TILE_SIZE));
 
       // Calculate rotation and distance to target
       var deg      = Math.atan2((y2-y1), (x2-x1)) * (180 / Math.PI);
@@ -1510,17 +1513,20 @@
       var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
 
       // Set destination and heading
+      this._heading     = parseInt(rotation, 10);
+      this._path        = _Main.getMap().calculateObjectPath(this, this._destination, this._heading);
       this._destination = {
         x : pos.x - (w  /2),
         y : pos.y - (h / 2)
       };
 
-      this._heading = parseInt(rotation, 10);
 
       console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::move()");
       console.log("Destination", this._destination.x, "x", this._destination.y);
       console.log("Heading", this._heading, "degrees");
       console.log("Distance", distance, "px");
+      console.log("Tile", tx, "x", ty);
+      console.log("Path", this._path);
       console.groupEnd();
     },
 
@@ -1631,9 +1637,10 @@
   var Map = CanvasObject.extend({
 
     // Objects etc
-    _type     : null,
-    _objects  : [],
-    _data     : [],
+    _type       : null,
+    _objects    : [],
+    _data       : [],
+    _pathfinder : null,
 
     // Base attributes
     _marginX    : -1,
@@ -1726,6 +1733,12 @@
       this._minimap.appendChild(canvas);
 
       //
+      // PATHFINDER
+      //
+
+      this._pathfinder = new CnC.PathFinder();
+
+      //
       // EVENTS
       //
 
@@ -1767,6 +1780,11 @@
       this._mincanvas.parentNode.removeChild(this._mincanvas);
       delete this._mincontext;
       delete this._mincanvas;
+
+      if ( this._pathfinder ) {
+        this._pathfinder.destroy();
+        delete this._pathfinder;
+      }
 
       $.removeEvent(document, "mousemove", function(ev) {
         self._onMouseMove(ev, false);
@@ -1822,6 +1840,14 @@
       this._objects = [];
 
       _MapObjectCount = 0;
+    },
+
+    /**
+     * calculateObjectPath -- Calculate the path of MapObject
+     * @return Array
+     */
+    calculateObjectPath : function(obj, dst, rot) {
+      return this._pathfinder.getPath();
     },
 
     //
@@ -2239,6 +2265,14 @@
         */
 
       //this._super(); // Do not call!
+    },
+
+    //
+    // GETTERS/SETTERS
+    //
+
+    getPathfinder : function() {
+      return this._pathfinder;
     }
 
   });
