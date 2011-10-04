@@ -1513,12 +1513,14 @@
       var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
 
       // Set destination and heading
+      this._destination = {
+        x  : pos.x - (w  /2),
+        y  : pos.y - (h / 2),
+        tx : tx,
+        ty : ty
+      };
       this._heading     = parseInt(rotation, 10);
       this._path        = _Main.getMap().calculateObjectPath(this, this._destination, this._heading);
-      this._destination = {
-        x : pos.x - (w  /2),
-        y : pos.y - (h / 2)
-      };
 
 
       console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::move()");
@@ -1640,7 +1642,7 @@
     _type       : null,
     _objects    : [],
     _data       : [],
-    _pathfinder : null,
+    _env        : [],
 
     // Base attributes
     _marginX    : -1,
@@ -1733,12 +1735,6 @@
       this._minimap.appendChild(canvas);
 
       //
-      // PATHFINDER
-      //
-
-      this._pathfinder = new CnC.PathFinder();
-
-      //
       // EVENTS
       //
 
@@ -1780,11 +1776,6 @@
       this._mincanvas.parentNode.removeChild(this._mincanvas);
       delete this._mincontext;
       delete this._mincanvas;
-
-      if ( this._pathfinder ) {
-        this._pathfinder.destroy();
-        delete this._pathfinder;
-      }
 
       $.removeEvent(document, "mousemove", function(ev) {
         self._onMouseMove(ev, false);
@@ -1847,7 +1838,8 @@
      * @return Array
      */
     calculateObjectPath : function(obj, dst, rot) {
-      return this._pathfinder.getPath();
+      return [];
+      //return (new CnC.PathFinder(this.getEnvironmentData())).find(dst.tx, dst.ty);
     },
 
     //
@@ -2155,6 +2147,19 @@
         }
         py += TILE_SIZE;
       }
+
+
+      for ( x = 0; x < this._sizeX; x++ ) {
+        if ( this._env[x] === undefined ) {
+          this._env[x] = [];
+        }
+        for ( y = 0; y < this._sizeY; y++ ) {
+          if ( this._env[x][y] === undefined ) {
+            this._env[x][y] = 0;
+          }
+        }
+      }
+
       this._root.appendChild(this.getRoot());
       console.log("Created tiles", this._sizeX, "x", this._sizeY);
 
@@ -2271,8 +2276,8 @@
     // GETTERS/SETTERS
     //
 
-    getPathfinder : function() {
-      return this._pathfinder;
+    getEnvironmentData : function() {
+      return this._env;
     }
 
   });
