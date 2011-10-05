@@ -59,11 +59,21 @@
         "desert/t09",
         "desert/t18",
 
-        //GDIStuff
+        //GDI Stuff
         "gdi/units/jeep_sprite",
         "gdi/units/unit",
         "gdi/structures/hq_sprite",
-        "gdi/structures/barracks_sprite"
+        "gdi/structures/power_sprite",
+        "gdi/structures/adv_power_sprite",
+        "gdi/structures/barracks_sprite",
+        "gdi/structures/refinery_sprite",
+        "gdi/structures/silo_sprite",
+        "gdi/structures/comm_sprite",
+        "gdi/structures/adv_comm_sprite",
+        "gdi/structures/helipad_sprite",
+        "gdi/structures/repair_sprite",
+        "gdi/structures/guardtower_sprite",
+        "gdi/structures/adv_guardtower_sprite"
       ],
       'snd' : [
         // Units
@@ -207,6 +217,30 @@
             "construct"  : {
               "width"  : 3,
               "height" : 2
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 48,
+              'height' : 48,
+              'sprite' : {
+                'src' : "gdi/structures/power_sprite",
+                'cw'  : 48,
+                'ch'  : 48,
+                'animation' : [
+                  0 * 48,
+                  1 * 48,
+                  2 * 48,
+                  3 * 48
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 48, 48],
+              'sounds' : {}
             }
           },
           "AdvancedPowerPlan" : {
@@ -216,6 +250,30 @@
             "construct"  : {
               "width"  : 3,
               "height" : 2
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 48,
+              'height' : 48,
+              'sprite' : {
+                'src' : "gdi/structures/adv_power_sprite",
+                'cw'  : 48,
+                'ch'  : 48,
+                'animation' : [
+                  0 * 48,
+                  1 * 48,
+                  2 * 48,
+                  3 * 48
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 48, 48],
+              'sounds' : {}
             }
           },
           "Barracks" : {
@@ -265,6 +323,33 @@
             "construct"  : {
               "width"  : 4,
               "height" : 4
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 72,
+              'height' : 72,
+              'sprite' : {
+                'src' : "gdi/structures/refinery_sprite",
+                'cw'  : 72,
+                'ch'  : 72,
+                'animation' : [
+                  0 * 72,
+                  1 * 72,
+                  2 * 72,
+                  3 * 72,
+                  4 * 72,
+                  5 * 72,
+                  6 * 72
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 72, 72],
+              'sounds' : {}
             }
           },
           "Silo" : {
@@ -274,6 +359,27 @@
             "construct"  : {
               "width"  : 3,
               "height" : 2
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 48,
+              'height' : 24,
+              'sprite' : {
+                'src' : "gdi/structures/silo_sprite",
+                'cw'  : 48,
+                'ch'  : 24,
+                'animation' : [
+                  0
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 72, 72],
+              'sounds' : {}
             }
           },
           "Factory" : {
@@ -292,6 +398,42 @@
             "construct"  : {
               "width"  : 4,
               "height" : 3
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 48,
+              'height' : 48,
+              'sprite' : {
+                'src' : "gdi/structures/comm_sprite",
+                'cw'  : 48,
+                'ch'  : 48,
+                'animation' : [
+                  0 * 48,
+                  1 * 48,
+                  2 * 48,
+                  3 * 48,
+                  4 * 48,
+                  5 * 48,
+                  6 * 48,
+                  7 * 48,
+                  8 * 48,
+                  9 * 48,
+                  10 * 48,
+                  11 * 48,
+                  12 * 48,
+                  13 * 48,
+                  14 * 48,
+                  15 * 48
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 48, 48],
+              'sounds' : {}
             }
           },
           "AdvancedCommunicationCenter" : {
@@ -301,6 +443,42 @@
             "construct"  : {
               "width"  : 4,
               "height" : 3
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 48,
+              'height' : 48,
+              'sprite' : {
+                'src' : "gdi/structures/adv_comm_sprite",
+                'cw'  : 48,
+                'ch'  : 48,
+                'animation' : [
+                  0 * 48,
+                  1 * 48,
+                  2 * 48,
+                  3 * 48,
+                  4 * 48,
+                  5 * 48,
+                  6 * 48,
+                  7 * 48,
+                  8 * 48,
+                  9 * 48,
+                  10 * 48,
+                  11 * 48,
+                  12 * 48,
+                  13 * 48,
+                  14 * 48,
+                  15 * 48
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 48, 48],
+              'sounds' : {}
             }
           },
           "Helipad" : {
@@ -310,6 +488,33 @@
             "construct"  : {
               "width"  : 3,
               "height" : 3
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 48,
+              'height' : 48,
+              'sprite' : {
+                'src' : "gdi/structures/helipad_sprite",
+                'cw'  : 48,
+                'ch'  : 48,
+                'animation' : [
+                  0 * 48,
+                  1 * 48,
+                  2 * 48,
+                  3 * 48,
+                  4 * 48,
+                  5 * 48,
+                  6 * 48
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 48, 48],
+              'sounds' : {}
             }
           },
           "RepairFacility" : {
@@ -319,6 +524,27 @@
             "construct"  : {
               "width"  : 3,
               "height" : 3
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 72,
+              'height' : 72,
+              'sprite' : {
+                'src' : "gdi/structures/repair_sprite",
+                'cw'  : 72,
+                'ch'  : 72,
+                'animation' : [
+                  0
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 72, 72],
+              'sounds' : {}
             }
           },
           "GuardTower" : {
@@ -328,6 +554,27 @@
             "construct"  : {
               "width"  : 1,
               "height" : 1
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 24,
+              'height' : 24,
+              'sprite' : {
+                'src' : "gdi/structures/guardtower_sprite",
+                'cw'  : 24,
+                'ch'  : 24,
+                'animation' : [
+                  0
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 24, 24],
+              'sounds' : {}
             }
           },
           "AdvancedGuardTower" : {
@@ -337,6 +584,27 @@
             "construct"  : {
               "width"  : 1,
               "height" : 1
+            },
+            "object" : {
+              'type'   : _ob,
+              'width'  : 24,
+              'height' : 48,
+              'sprite' : {
+                'src' : "gdi/structures/adv_guardtower_sprite",
+                'cw'  : 24,
+                'ch'  : 48,
+                'animation' : [
+                  0
+                ]
+              },
+              'attrs'  : {
+                'movable'   : false,
+                'speed'     : 0,
+                'turning'   : 0,
+                'strength'  : 100
+              },
+              'mask' : [0, 0, 24, 24],
+              'sounds' : {}
             }
           },
           "SandbagBarrier" : {
