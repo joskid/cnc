@@ -98,20 +98,20 @@
    * CreateObject -- Create an object
    * @return MapObject
    */
-  var CreateObject = function(opts, player, x, y, a) {
+  var CreateObject = function(type, player, x, y, a) {
     var team = _PlayerTeam;
     /*if ( player != _Player ) {
       team = _EnemyTeam;
     }*/
     var args;
-    if ( CnC.MapObjectsMeta[team].structures[opts]  ) {
-      args = CnC.MapObjectsMeta[team].structures[opts].object;
-    } else if ( CnC.MapObjectsMeta[team].units[opts]  ) {
-      args = CnC.MapObjectsMeta[team].units[opts].object;
+    if ( CnC.MapObjectsMeta[team].structures[type]  ) {
+      args = CnC.MapObjectsMeta[team].structures[type].object;
+    } else if ( CnC.MapObjectsMeta[team].units[type]  ) {
+      args = CnC.MapObjectsMeta[team].units[type].object;
     }
 
     if ( !args ) {
-      throw("Cannot create '" + opts + "'.");
+      throw("Cannot create '" + type + "'.");
     }
 
     return new MapObject(player, x, y, a, args);
@@ -387,7 +387,7 @@
 
     prepare : (function() {
 
-      function _createItem(cname, root, src, key, title, price, time, tw, th, type) {
+      function _createItem(cname, root, src, key, title, price, time, type) {
         var el        = document.createElement("div");
         el.className  = cname;
 
@@ -398,10 +398,8 @@
 
         el.onclick = function() {
           _Main.getMap().setConstruction({
-            "width"  : TILE_SIZE * tw,
-            "height" : TILE_SIZE * th,
-            "type"   : type,
-            "object" : key
+            object : CnC.MapObjectsMeta[_PlayerTeam][type][key].object,
+            type : key
           });
         };
 
@@ -424,11 +422,9 @@
               price         = structures[s].price     === undefined ? 0 : structures[s].price;
               time          = structures[s].time      === undefined ? 0 : structures[s].time;
               title         = structures[s].title     === undefined ? s : structures[s].title;
-              tw            = structures[s].construct === undefined ? 1 : structures[s].construct.width;
-              th            = structures[s].construct === undefined ? 1 : structures[s].construct.height;
               src           = "/img/gui/sidebar/" + team.toLowerCase() + "/structures/" + structures[s].image + ".jpg";
 
-              _createItem("ConstructMapObjectBuilding", left, src, s, title, price, time, tw, th, "structures");
+              _createItem("ConstructMapObjectBuilding", left, src, s, title, price, time, "structures");
             }
           }
         }
@@ -445,10 +441,8 @@
               price         = units[u].price     === undefined ? 0 : units[u].price;
               time          = units[u].time      === undefined ? 0 : units[u].time;
               title         = units[u].title     === undefined ? u : units[u].title;
-              tw            = units[u].construct === undefined ? 1 : units[u].construct.width;
-              th            = units[u].construct === undefined ? 1 : units[u].construct.height;
               src           = "/img/gui/sidebar/" + team.toLowerCase() + "/units/" + units[u].image + ".jpg";
-              _createItem("ConstructMapObjectUnit", right, src, u, title, price, time, tw, th, "units");
+              _createItem("ConstructMapObjectUnit", right, src, u, title, price, time, "units");
             }
           }
         }
@@ -1215,6 +1209,7 @@
     _image_loaded  : false,
     _selected      : false,
     _angle         : 0,
+    //_center        : {x:0, y:0},
     _sonuds        : null,
 
     // Instance attributes
@@ -1249,6 +1244,7 @@
       this._iid           = _MapObjectCount;
       this._type          = opts.type;
       this._sprite        = opts.sprite !== undefined ? opts.sprite : null;
+      //this._center        = {x : parseInt(opts.centerX, 10), y : parseInt(opts.centerY, 10)};
       this._sounds        = opts.sounds;
       if ( this._sprite ) {
         this._image       = _Graphic.getImage(opts.sprite.src);
@@ -1263,6 +1259,9 @@
       this._speed         = opts.attrs.speed;
       this._turning_speed = opts.attrs.turning;
       this._strength      = opts.attrs.strength;
+
+      //x -= this._center.x;
+      //y -= this._center.y;
 
       // Init canvas
       this._super(w, h, x, y, a, "MapObject");
@@ -1541,8 +1540,8 @@
       // Calculate positions
       var w  = this.getDimension()[0],
           h  = this.getDimension()[1],
-          x1 = this.getPosition()[0] - (w / 2),
-          y1 = this.getPosition()[1] - (h / 2),
+          x1 = this.getPosition()[0], // - this._center.x,
+          y1 = this.getPosition()[1], // - this._center.y,
           x2 = pos.x - (w / 2),
           y2 = pos.y - (h / 2),
           tx = Math.round(x2 / (TILE_SIZE)),
@@ -1557,8 +1556,8 @@
 
       // Set destination and heading
       this._destination = {
-        x  : pos.x - (w  /2),
-        y  : pos.y - (h / 2),
+        x  : pos.x, // - this._center.x,
+        y  : pos.y, // - this._center.y,
         tx : tx,
         ty : ty
       };
@@ -1706,6 +1705,14 @@
         y2 : this.__y + this.__height
       };
     }
+
+    /**
+     * getCenter -- Get the center of object
+     * @return Object
+    getCenter : function() {
+      return this._center;
+    }
+     */
 
   });
 
@@ -2118,10 +2125,14 @@
       var mY = $.mousePosY(ev);
 
       if ( this._constructing ) {
-        var px = Math.round((mX - this._marginX));
-        var py = Math.round((mY - this._marginY));
+        var w  = this._constructing.object.width;
+        var h  = this._constructing.object.height;
+        var px = Math.round((mX - this._marginX - this._posX));
+        var py = Math.round((mY - this._marginY - this._posY));
+        var tx = Math.round((px - (w / 2)) / (TILE_SIZE)) * TILE_SIZE;
+        var ty = Math.round((py - (h / 2)) / (TILE_SIZE)) * TILE_SIZE;
 
-        this.onConstructClick(ev, px, py);
+        this.onConstructClick(ev, tx, ty);
       }
     },
 
@@ -2248,8 +2259,8 @@
      */
     onConstructMask : function(ev, x, y) {
       if ( ev ) {
-        var w  = this._constructing.width;
-        var h  = this._constructing.height;
+        var w  = this._constructing.object.width;
+        var h  = this._constructing.object.height;
         var tx = Math.round((x - (w / 2)) / (TILE_SIZE)) * TILE_SIZE;
         var ty = Math.round((y - (h / 2)) / (TILE_SIZE)) * TILE_SIZE;
 
@@ -2268,16 +2279,13 @@
      * @return void
      */
     onConstructClick : function(ev, px, py) {
-      var key  = this._constructing.type;
-      var type = this._constructing.object;
       try {
-        px -= (CnC.MapObjectsMeta[_PlayerTeam][key][type].object.width / 2) + this._posX;
-        py -= (CnC.MapObjectsMeta[_PlayerTeam][key][type].object.height / 2) + this._posY;
-
+        var type = this._constructing.type;
         var obj = CreateObject(type, _Player, px, py);
         this.addObject(obj, true);
       } catch ( e ) {
         alert("Cannot create this type!");
+        console.error(e);
       }
 
       this.onConstructMask(false);
@@ -2540,14 +2548,14 @@
       },
       'objects' : [
         // Player 1
-        ["HUMVee",        0, 50,  30],
-        ["HUMVee",        0, 50,  90],
-        ["HUMVee",        0, 50,  150],
-        ["ConstructionYard", 0, 143, 143],
-        ["Barracks",     0, 240, 143],
-        ["Minigunner",  0, 170, 10],
-        ["Minigunner",  0, 170, 40],
-        ["Minigunner",  0, 170, 70],
+        ["HUMVee",        0, (TILE_SIZE * 2),  (TILE_SIZE * 7)],
+        ["HUMVee",        0, (TILE_SIZE * 4),  (TILE_SIZE * 7)],
+        ["HUMVee",        0, (TILE_SIZE * 6),  (TILE_SIZE * 7)],
+        ["ConstructionYard", 0, (TILE_SIZE * 2), (TILE_SIZE * 2)],
+        ["Barracks",     0, (TILE_SIZE * 5), (TILE_SIZE * 2)],
+        ["Minigunner",  0, (TILE_SIZE * 20),  (TILE_SIZE * 2)],
+        ["Minigunner",  0, (TILE_SIZE * 20),  (TILE_SIZE * 3)],
+        ["Minigunner",  0, (TILE_SIZE * 20),  (TILE_SIZE * 4)],
 
         // Player 2
         ["HUMVee",        1, 2000, 1700],

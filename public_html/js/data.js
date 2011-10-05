@@ -175,10 +175,6 @@
           "image"      : null,
           "title"      : "Construction Yard",
           "desc"       : "The Construction Yard is the foundation of a base and allows the construction of other buildings.",
-          "construct"  : {
-            "width"  : 3,
-            "height" : 2
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 72,
@@ -208,10 +204,6 @@
           "image"      : "power_plant",
           "title"      : "Power Plan",
           "desc"       : "This unit provides power to adjoining structures. Power output is directly related to the Power Plant's condition, so protect them during battles.",
-          "construct"  : {
-            "width"  : 3,
-            "height" : 2
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 48,
@@ -241,10 +233,6 @@
           "image"      : "adv_power_plant",
           "title"      : "Advanced Power Plant",
           "desc"      : "This high-yield structure handles the energy strains of some later, more power intensive structures. Double the power output of the Power Plant.",
-          "construct"  : {
-            "width"  : 3,
-            "height" : 2
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 48,
@@ -274,10 +262,6 @@
           "image"      : "barracks",
           "title"      : "Barracs (Unit facility)",
           "desc"       : "This structure is a field training center for all available infantry units.",
-          "construct"  : {
-            "width"  : 3,
-            "height" : 2
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 48,
@@ -305,7 +289,7 @@
               'turning'   : 0,
               'strength'  : 50
             },
-            'mask' : [0, 0, 48, 48],
+            'mask' : [0, 0, 72, 48],
             'sounds' : {}
 
           }
@@ -314,10 +298,6 @@
           "image" : "refinery",
           "title" : "Tiberium Refinery",
           "desc"  : "This unit processes Tiberium into its component elements. Building the Refinery immediately deploys a Tiberium harvester and each Refinery can handle an infinite number of Harvesters. The Refinery stores 1,000 credits of processed Tiberium.",
-          "construct"  : {
-            "width"  : 4,
-            "height" : 4
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 72,
@@ -350,10 +330,6 @@
           "image" : "tiberium_silo",
           "title" : "Tiberium Silo",
           "desc"  : "This unit stores up to 1,500 credits of processed Tiberium. Guard it carefully. If destroyed or captured, the amount stored is deducted from your account.",
-          "construct"  : {
-            "width"  : 3,
-            "height" : 2
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 48,
@@ -379,20 +355,12 @@
         "Factory" : {
           "image" : "weapons_factory",
           "title" : "Weapons Factory (Vehicle facility)",
-          "desc"  : "This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met.",
-          "construct"  : {
-            "width"  : 6,
-            "height" : 5
-          }
+          "desc"  : "This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met."
         },
         "CommunicationCenter" : {
           "image" : "comm_center",
           "title" : "Communications Center",
           "desc"  : "Allows the use of the radar screen as long as there is sufficient power.",
-          "construct"  : {
-            "width"  : 4,
-            "height" : 3
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 48,
@@ -434,10 +402,6 @@
           "image" : "adv_comm",
           "title" : "Advanced Communications Center",
           "desc"  : "An upgrade to the Communications Center, this structure not only provides radar, but is the uplink center for the Orbital Ion Cannon.",
-          "construct"  : {
-            "width"  : 4,
-            "height" : 3
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 48,
@@ -479,10 +443,6 @@
           "image" : "helipad",
           "title" : "Helipad (Helicopter facility)",
           "desc"  : "Building the Helipad allows the use of the Orca attack aircraft. Each Orca requires a Helipad.",
-          "construct"  : {
-            "width"  : 3,
-            "height" : 3
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 48,
@@ -515,10 +475,6 @@
           "image" : "repair_facility",
           "title" : "Repair facility",
           "desc"  : " This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met.",
-          "construct"  : {
-            "width"  : 3,
-            "height" : 3
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 72,
@@ -545,10 +501,6 @@
           "image" : "guard_tower",
           "title" : "Guard Tower (defence)",
           "desc"  : "Armed with a high velocity machine gun, this structure provides manned defense against Nod ground attack.",
-          "construct"  : {
-            "width"  : 1,
-            "height" : 1
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 24,
@@ -575,10 +527,6 @@
           "image" : "adv_guard_tower",
           "title" : "Advanced Guard Tower (defence)",
           "desc"  : "Provides strong fortification against Nod ground and air units. Weapons complement includes a rocket launcher.",
-          "construct"  : {
-            "width"  : 1,
-            "height" : 1
-          },
           "object" : {
             'type'   : _ob,
             'width'  : 24,
@@ -604,29 +552,17 @@
         "SandbagBarrier" : {
           "image" : "sandbag_barrier",
           "title" : "Sandbag Barrier (defence)",
-          "desc"  : "Used to deter the enemy from advancing. Sandbags provide limited cover and may slow units down.",
-          "construct"  : {
-            "width"  : 1,
-            "height" : 1
-          }
+          "desc"  : "Used to deter the enemy from advancing. Sandbags provide limited cover and may slow units down."
         },
         "ConcreteBarrier" : {
           "image" : "concrete_barrier",
           "title" : "Concrete Barrier (defence)",
-          "desc"  : "Concrete walls are the most effective barrier. They are much harder to destroy and will take the enemy much longer to blast through.",
-          "construct"  : {
-            "width"  : 1,
-            "height" : 1
-          }
+          "desc"  : "Concrete walls are the most effective barrier. They are much harder to destroy and will take the enemy much longer to blast through."
         },
         "ChainLinkBarrier" : {
           "image" : "chain_link_barrier",
           "title" : "Chain-Link Barrier (defence)",
-          "desc"  : "Chain Link fences will stop light vehicles, yet can be crushed or even destroyed by most heavier vechicles.",
-          "construct"  : {
-            "width"  : 1,
-            "height" : 1
-          }
+          "desc"  : "Chain Link fences will stop light vehicles, yet can be crushed or even destroyed by most heavier vechicles."
         }
       },
 
