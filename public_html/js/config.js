@@ -62,9 +62,8 @@
         //GDIStuff
         "gdi/units/jeep_sprite",
         "gdi/units/unit",
-        "gdi/units/tank",
-        "gdi/structures/hq",
-        "gdi/structures/barracs"
+        "gdi/structures/hq_sprite",
+        "gdi/structures/barracks_sprite"
       ],
       'snd' : [
         // Units
@@ -176,7 +175,17 @@
               'type'   : _ob,
               'width'  : 72,
               'height' : 48,
-              'image'  : "gdi/structures/hq",
+              'sprite' : {
+                'src' : "gdi/structures/hq_sprite",
+                'cw'  : 72,
+                'ch'  : 48,
+                'animation' : [
+                  0 * 72,
+                  1 * 72,
+                  2 * 72,
+                  3 * 72
+                ]
+              },
               'attrs'  : {
                 'movable'   : false,
                 'speed'     : 0,
@@ -205,7 +214,23 @@
               'type'   : _ob,
               'width'  : 48,
               'height' : 48,
-              'image'  : "gdi/structures/barracs",
+              'sprite' : {
+                'src' : "gdi/structures/barracks_sprite",
+                'cw'  : 72,
+                'ch'  : 48,
+                'animation' : [
+                  0 * 48,
+                  1 * 48,
+                  2 * 48,
+                  3 * 48,
+                  4 * 48,
+                  5 * 48,
+                  6 * 48,
+                  7 * 48,
+                  8 * 48,
+                  9 * 48
+                ]
+              },
               'attrs'  : {
                 'movable'   : false,
                 'speed'     : 0,
@@ -330,7 +355,6 @@
               'type'   : _ov,
               'width'  : 24,
               'height' : 24,
-              'image'  : "gdi/units/tank",
               'sprite' : {
                 'src' : "gdi/units/jeep_sprite",
                 'cw'  : 24,

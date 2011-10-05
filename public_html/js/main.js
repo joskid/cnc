@@ -1197,6 +1197,7 @@
     _destination   : null,
     _heading       : null,
     _path          : null,
+    _frame         : 0,
 
     /**
      * @constructor
@@ -1303,6 +1304,8 @@
         }, true);
 
         this._blank.parentNode.removeChild(this._blank);
+        this._mask.parentNode.parentNode.removeChild(this._mask.parentNode);
+
         this._blank = null;
         this._mask  = null;
       }
@@ -1553,13 +1556,25 @@
         var srcY = 0;
         var srcW = this._sprite.cw;
         var srcH = this._sprite.ch;
-        var rndA = Math.abs($.roundedAngle(Math.round(this._angle), 45));
 
-        if ( this._sprite.rotation[rndA] !== undefined ) {
-          srcX = this._sprite.rotation[rndA];
-        }/* else {
-          console.info("No position found for", rndA, this._angle);
-        }*/
+
+        if ( this._type == CnC.OBJECT_BUILDING ) {
+          srcX = this._sprite.animation[this._frame];
+
+          if ( this._frame >= (this._sprite.animation.length - 1) ) {
+            this._frame = 0;
+          } else {
+            this._frame++;
+          }
+        } else {
+          var rndA = Math.abs($.roundedAngle(Math.round(this._angle), 45));
+          if ( this._sprite.rotation[rndA] !== undefined ) {
+            srcX = this._sprite.rotation[rndA];
+          }/* else {
+            console.info("No position found for", rndA, this._angle);
+          }*/
+        }
+
         this.drawClipImage(this._image, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
       }
 
