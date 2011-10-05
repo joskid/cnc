@@ -5,6 +5,11 @@ HTML5 API.
 
 Running example: http://cnc.0o.no/ (May not be up to date)
 
+Requirements:
+-------------------------------------------------------------------------------
+* Some kind of web-server (Apache used)
+* PHP5 With ZIP and JSON support
+
 Code:
 -------------------------------------------------------------------------------
 * Strict coding style (jslint)
@@ -15,6 +20,7 @@ Code:
 * Canvas helper/wrapper class via HTML Canvas API
 * Audio support via the HTML5 Audio API
   * Also supports WebAudio API (experimental)
+* Using ZIP as storage for data
 
 Browser Support:
 -------------------------------------------------------------------------------

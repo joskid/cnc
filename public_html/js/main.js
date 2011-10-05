@@ -87,6 +87,14 @@
   /////////////////////////////////////////////////////////////////////////////
 
   /**
+   * Create Preload URL
+   * @return String
+   */
+  var PreloadDataURL = function(type, file) {
+    return CnC.SERVICE_URI + "?action=load_file&type=" + type + "&file=" + encodeURIComponent(file);
+  };
+
+  /**
    * CreateObject -- Create an object
    * @return MapObject
    */
@@ -412,7 +420,7 @@
               title         = structures[s].title     === undefined ? s : structures[s].title;
               tw            = structures[s].construct === undefined ? 1 : structures[s].construct.width;
               th            = structures[s].construct === undefined ? 1 : structures[s].construct.height;
-              src           = "/img/" + team.toLowerCase() + "/sidebar/structures/" + structures[s].image + ".jpg";
+              src           = "/img/gui/sidebar/" + team.toLowerCase() + "/structures/" + structures[s].image + ".jpg";
 
               _createItem("ConstructMapObjectBuilding", left, src, s, title, price, time, tw, th, "structures");
             }
@@ -433,7 +441,7 @@
               title         = units[u].title     === undefined ? u : units[u].title;
               tw            = units[u].construct === undefined ? 1 : units[u].construct.width;
               th            = units[u].construct === undefined ? 1 : units[u].construct.height;
-              src           = "/img/" + team.toLowerCase() + "/sidebar/units/" + units[u].image + ".jpg";
+              src           = "/img/gui/sidebar/" + team.toLowerCase() + "/units/" + units[u].image + ".jpg";
               _createItem("ConstructMapObjectUnit", right, src, u, title, price, time, tw, th, "units");
             }
           }
@@ -699,12 +707,13 @@
       // Preload all images
       console.group("Preloading gfx");
       var count = CnC.PRELOAD.gfx.length;
-      var item, img;
+      var item, img, src, tsrc, s;
       for ( var i = 0; i < count; i++ ) {
         item = CnC.PRELOAD.gfx[i];
-        src  = "/img/"  + item + ".png";
+        tsrc = item + ".png";
+        src  = PreloadDataURL("general", tsrc);
 
-        console.log(i+1 + "/" + count, item, src);
+        console.log(i+1 + "/" + count, item, tsrc);
 
         s = new Image();
         s.onload = (function(ii, cc, cb) {
@@ -829,12 +838,13 @@
         console.group("Preloading audio");
 
         var count = CnC.PRELOAD.snd.length;
-        var src, item;
+        var item, img, src, tsrc;
         for ( i = 0; i < count; i++ ) {
           item = CnC.PRELOAD.snd[i];
-          src  = "/snd/" + this._codec + "/" + item + "." + this._ext;
+          tsrc = this._codec + "/" + item + "." + this._ext;
+          src  = PreloadDataURL("sound", tsrc); //
 
-          console.log(i+1 + "/" + count, item, src);
+          console.log(i+1 + "/" + count, item, tsrc);
 
           s            = new Audio(src);
           s.type       = this._codec;

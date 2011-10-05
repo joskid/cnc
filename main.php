@@ -1,9 +1,11 @@
 <?php
+error_reporting(E_ALL | E_STRICT);
 
-header("Expires: Tue, 03 Jul 2001 06:00:00 GMT");
-header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
+define("DIR_ROOT",  dirname(__FILE__));
+define("DIR_SRC",   DIR_ROOT . "/src/");
+define("DIR_HTML",  DIR_ROOT . "/public_html/");
+define("DIR_DATA",  DIR_ROOT . "/data/");
 
+define("DATA_SOUNDS",   "sounds.zip");
+define("DATA_GENERAL",  "general.zip");
 ?>
