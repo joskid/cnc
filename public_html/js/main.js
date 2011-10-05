@@ -1209,7 +1209,6 @@
     _image_loaded  : false,
     _selected      : false,
     _angle         : 0,
-    //_center        : {x:0, y:0},
     _sonuds        : null,
 
     // Instance attributes
@@ -1244,7 +1243,6 @@
       this._iid           = _MapObjectCount;
       this._type          = opts.type;
       this._sprite        = opts.sprite !== undefined ? opts.sprite : null;
-      //this._center        = {x : parseInt(opts.centerX, 10), y : parseInt(opts.centerY, 10)};
       this._sounds        = opts.sounds;
       if ( this._sprite ) {
         this._image       = _Graphic.getImage(opts.sprite.src);
@@ -1260,8 +1258,10 @@
       this._turning_speed = opts.attrs.turning;
       this._strength      = opts.attrs.strength;
 
-      //x -= this._center.x;
-      //y -= this._center.y;
+      if ( self._type != CnC.OBJECT_BUILDING ) {
+        x += parseInt(w / 2, 10);
+        y += parseInt(h / 2, 10);
+      }
 
       // Init canvas
       this._super(w, h, x, y, a, "MapObject");
@@ -1540,8 +1540,8 @@
       // Calculate positions
       var w  = this.getDimension()[0],
           h  = this.getDimension()[1],
-          x1 = this.getPosition()[0], // - this._center.x,
-          y1 = this.getPosition()[1], // - this._center.y,
+          x1 = this.getPosition()[0] - this.__width / 2,
+          y1 = this.getPosition()[1] - this.__height / 2,
           x2 = pos.x - (w / 2),
           y2 = pos.y - (h / 2),
           tx = Math.round(x2 / (TILE_SIZE)),
@@ -1556,8 +1556,8 @@
 
       // Set destination and heading
       this._destination = {
-        x  : pos.x, // - this._center.x,
-        y  : pos.y, // - this._center.y,
+        x  : pos.x - this.__width / 2,
+        y  : pos.y - this.__height / 2,
         tx : tx,
         ty : ty
       };
@@ -1705,14 +1705,6 @@
         y2 : this.__y + this.__height
       };
     }
-
-    /**
-     * getCenter -- Get the center of object
-     * @return Object
-    getCenter : function() {
-      return this._center;
-    }
-     */
 
   });
 
