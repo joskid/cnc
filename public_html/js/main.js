@@ -77,19 +77,6 @@
       _MapObjectTypes[CnC.OBJECT_VEHICLE]   =  "MapObjectVehicle";
       _MapObjectTypes[CnC.OBJECT_BUILDING]  =  "MapObjectBuilding";
 
-  var _MapObjectSounds = {};
-      _MapObjectSounds[CnC.OBJECT_UNIT]     =  {
-        /*SOUND_SELECT*/ 0 : ["await1", "yessir1"],
-        /*SOUND_MOVE*/   1 : ["roger", "movout1", "ritaway", "ritaway", "ugotit", "affirm1", "ackno"]
-      };
-      _MapObjectSounds[CnC.OBJECT_VEHICLE]  =  {
-        /*SOUND_SELECT*/ 0 : ["unit1", "vehic1"],
-        /*SOUND_MOVE*/   1 : ["roger", "movout1", "ritaway", "ritaway", "ugotit", "affirm1", "ackno"]
-      };
-      _MapObjectSounds[CnC.OBJECT_BUILDING] =  {
-      };
-
-
   // Debugging elements
   var _DebugMap     = null;
   var _DebugFPS     = null;
@@ -1187,6 +1174,7 @@
     _image_loaded  : false,
     _selected      : false,
     _angle         : 0,
+    _sonuds        : null,
 
     // Instance attributes
     _player        : 0,
@@ -1219,6 +1207,7 @@
       this._iid           = _MapObjectCount;
       this._type          = opts.type;
       this._sprite        = opts.sprite !== undefined ? opts.sprite : null;
+      this._sounds        = opts.sounds;
       if ( this._sprite ) {
         this._image       = _Graphic.getImage(opts.sprite.src);
       } else {
@@ -1295,12 +1284,6 @@
      * @destructor
      */
     destroy : function() {
-      if ( this._blank ) {
-        this._blank.parentNode.removeChild(this._blank);
-        this._blank = null;
-        this._mask = null;
-      }
-
       // Remove events
       $.removeEvent(this._blank, "mousedown", function(ev) {
         $.preventDefault(ev);
@@ -1309,6 +1292,15 @@
       $.removeEvent(this._mask, "click", function(ev) {
         self.onClick(ev);
       }, true);
+
+      // Remove DOM
+      if ( this._blank ) {
+        this._blank.parentNode.removeChild(this._blank);
+        this._blank = null;
+        this._mask  = null;
+      }
+
+      this._image = null;
 
       // Destroy canvas
       this._super();
@@ -1613,8 +1605,12 @@
       var s = null;
 
       if ( snd  !== null ) {
+        /*
         if ( _MapObjectSounds[this._type] !== undefined ) {
-          var snds = _MapObjectSounds[this._type][snd];
+        }
+        */
+        if ( this._sounds && this._sounds[snd] !== undefined ) {
+          var snds = this._sounds[snd];
           if ( snds !== undefined && snds.length ) {
             s = snds[ Math.floor(Math.random()* (snds.length)) ];
           }

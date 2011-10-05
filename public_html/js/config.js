@@ -18,6 +18,11 @@
     OBJECT_VEHICLE   : _ov,
     OBJECT_BUILDING  : _ob,
 
+    SOUND_SELECT     : 0,
+    SOUND_MOVE       : 1,
+    SOUND_ATTACK     : 2,
+    SOUND_DIE        : 3,
+
     // Debugging options
     DEBUG_MODE : true,
     ENABLE_RAF : false, // DO NOT ENABLE (Decreases performance)
@@ -178,7 +183,8 @@
                 'turning'   : 0,
                 'strength'  : 100
               },
-              'mask' : [0, 0, 72, 48]
+              'mask' : [0, 0, 72, 48],
+              'sounds' : {}
             }
           },
           "PowerPlan" : {
@@ -206,7 +212,9 @@
                 'turning'   : 0,
                 'strength'  : 50
               },
-              'mask' : [0, 0, 48, 48]
+              'mask' : [0, 0, 48, 48],
+              'sounds' : {}
+
             }
           },
           "Refinery" : {
@@ -287,7 +295,11 @@
                 'turning'   : 0,
                 'strength'  : 10
               },
-              'mask' : [0, 0, 50, 50]
+              'mask' : [0, 0, 50, 50],
+              'sounds' : {
+                /* SOUND_SELECT */ 0 : ["await1", "yessir1"],
+                /* SOUND_MOVE */   1 : ["roger", "movout1", "ritaway", "ritaway", "ugotit", "affirm1", "ackno"]
+              }
             }
           },
           "Grenaider" : {
@@ -337,7 +349,12 @@
                 'turning'   : 10,
                 'strength'  : 10
               },
-              'mask' : [0, 0, 24, 24]
+              'mask' : [0, 0, 24, 24],
+              'sounds' : {
+                /* SOUND_SELECT */ 0 : ["unit1", "vehic1"],
+                /* SOUND_MOVE */   1 : ["roger", "movout1", "ritaway", "ritaway", "ugotit", "affirm1", "ackno"]
+              }
+
             }
           },
           "MediumTank" : {
