@@ -1283,7 +1283,9 @@
       // Add events
       $.addEvent(this._mask, "mousedown", function(ev) {
         $.preventDefault(ev);
-        $.stopPropagation(ev);
+        if ( $.mouseButton(ev) <= 1 ) {
+          $.stopPropagation(ev);
+        }
       });
 
       $.addEvent(this._mask, "click", function(ev) {
@@ -1310,7 +1312,9 @@
         // Remove events
         $.removeEvent(this._blank, "mousedown", function(ev) {
           $.preventDefault(ev);
-          $.stopPropagation(ev);
+          if ( $.mouseButton(ev) <= 1 ) {
+            $.stopPropagation(ev);
+          }
         });
 
         $.removeEvent(this._mask, "click", function(ev) {
