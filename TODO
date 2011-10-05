@@ -1,6 +1,5 @@
 High:
 * Fix rotation beyond 90deg increments
-* Add all other object types
 
 Medium:
 * Fix path-finding
