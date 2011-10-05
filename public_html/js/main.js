@@ -1029,10 +1029,10 @@
 
       this._last = tick;
 
-      if ( CnC.DEBUG_MODE ) {
+      //if ( CnC.DEBUG_MODE ) {
         _DebugFPS.innerHTML = _FPS;
         _DebugObjects.innerHTML = this._map._objects.length;
-      }
+      //}
     },
 
     //
@@ -1793,9 +1793,9 @@
       // EVENTS
       //
 
-      if ( CnC.DEBUG_MODE ) {
+      //if ( CnC.DEBUG_MODE ) {
         _DebugMap.innerHTML = (this._sizeX + "x" + this._sizeY) + (" (" + (w + "x" + h) + ")");
-      }
+      //}
 
       // Map dragging and clicking
       $.addEvent(document, "mousemove", function(ev) {
