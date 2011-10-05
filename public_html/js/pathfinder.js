@@ -104,7 +104,6 @@
       console.group("PathFinder::find()");
       var result = [];
 
-      /*
       var row, col;
 
       this._openList = [];
@@ -174,7 +173,6 @@
 
         result.push([startRow,startCol]);
       }
-      */
 
       console.log("Result", result);
       console.groupEnd();

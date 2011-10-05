@@ -146,7 +146,13 @@
     context.drawImage(img, 0, 0);
     root.appendChild(canvas);
 
-    return root;
+    return {
+      dom : root,
+      x   : x,
+      y   : y,
+      tw  : 1,
+      th  : 1
+    };
   };
 
   /**
@@ -999,6 +1005,11 @@
       } else if ( key.mod == "ALT" ) {
         _Keyboard.ALT = true;
       } else if ( key.mod == "TAB" ) {
+
+        if ( CnC.DEBUG_MODE ) {
+          _Main.getMap().renderEnvironment();
+        }
+
         $.preventDefault(ev); // NO tabindex-ing!
         return false;
       }
@@ -1525,6 +1536,8 @@
         return;
       }
 
+      console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::move()");
+
       // Calculate positions
       var w  = this.getDimension()[0],
           h  = this.getDimension()[1],
@@ -1550,10 +1563,14 @@
         ty : ty
       };
       this._heading     = parseInt(rotation, 10);
-      this._path        = _Main.getMap().calculateObjectPath(this, sx, sy, tx, ty);
+      try {
+        this._path      = _Main.getMap().calculateObjectPath(this, sx, sy, tx, ty);
+      } catch ( exc ) {
+        this._path      = [];
+        console.error("Failed to calculate path", exc);
+      }
 
 
-      console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::move()");
       console.log("Destination", this._destination.x, "x", this._destination.y);
       console.log("Heading", this._heading, "degrees");
       console.log("Distance", distance, "px");
@@ -1675,6 +1692,19 @@
       }
 
       return s;
+    },
+
+    /**
+     * getRect -- Get the rect of an object
+     * @return Object
+     */
+    getRect : function() {
+      return {
+        x1 : this.__x,
+        y1 : this.__y,
+        x2 : this.__x + this.__width,
+        y2 : this.__y + this.__height
+      };
     }
 
   });
@@ -1768,7 +1798,7 @@
       // Init canvas
       this._super(w, h, 0, 0, 0, "Map");
 
-      this.__coverlay.fillStyle   = "rgba(255,255,255,0.9)";
+      this.__coverlay.fillStyle   = "rgba(255,0,0,0.2)";
       this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
       this.__coverlay.lineWidth   = 0.1;
 
@@ -2263,8 +2293,9 @@
     prepare : function() {
       console.group("Map::prepare()");
 
-      var img, obj;
-      var cc = this.__coverlay;
+      var img, obj, rect;
+      var blocked_tiles = [];
+      var cc            = this.__coverlay;
 
       //
       // Load tiles
@@ -2281,7 +2312,38 @@
         py += TILE_SIZE;
       }
 
+      this._root.appendChild(this.getRoot());
+      console.log("Created tiles", this._sizeX, "x", this._sizeY);
 
+      //
+      // Draw map data
+      //
+      var tx = 0,
+          ty = 0;
+      for ( var o = 0; o < this._data.length; o++ ) {
+        obj = CreateOverlay(this._data[o]);
+        tx  = Math.round(obj.x / TILE_SIZE);
+        ty  = Math.round(obj.y / TILE_SIZE);
+
+        for ( var a = tx; a < (tx + obj.tw); a++ ) {
+          if ( blocked_tiles[a] === undefined ) {
+            blocked_tiles[a] = [];
+          }
+        }
+        for ( var b = ty; b < (ty + obj.th); b++ ) {
+          blocked_tiles[tx][b] = true;
+        }
+
+        this._root.appendChild(obj.dom);
+      }
+
+      console.log("Created", o, "overlay objects");
+
+
+      //
+      // Set environment data
+      //
+      var src, tst;
       for ( x = 0; x < this._sizeX; x++ ) {
         if ( this._env[x] === undefined ) {
           this._env[x] = [];
@@ -2289,36 +2351,11 @@
         for ( y = 0; y < this._sizeY; y++ ) {
           if ( this._env[x][y] === undefined ) {
             this._env[x][y] = 0;
+            if ( blocked_tiles[x] !== undefined && blocked_tiles[x][y] !== undefined ) {
+              this._env[x][y] = 1;
+            }
           }
         }
-      }
-
-      this._root.appendChild(this.getRoot());
-      console.log("Created tiles", this._sizeX, "x", this._sizeY);
-
-      //
-      // Draw map data
-      //
-      for ( var o = 0; o < this._data.length; o++ ) {
-        this._root.appendChild(CreateOverlay(this._data[o]));
-      }
-      console.log("Created", o, "overlay objects");
-
-      //
-      // Draw grid
-      //
-      if ( CnC.DEBUG_MODE ) {
-        cc.beginPath();
-        for ( y = 0; y < this._sizeY; y++ ) {
-          cc.moveTo(0, y * TILE_SIZE);
-          cc.lineTo(this.__width, y * TILE_SIZE);
-        }
-        for ( x = 0; x < this._sizeX; x++ ) {
-          cc.moveTo(x * TILE_SIZE, 0);
-          cc.lineTo(x * TILE_SIZE, this.__height);
-        }
-        cc.stroke();
-        cc.closePath();
       }
 
       //
@@ -2332,10 +2369,14 @@
       console.log("Inserted", i, "object(s)");
 
       //
-      // Initialize minimap
+      // Initialize minimap etc
       //
       this.onResize();
       this.onDragMove(null, {x : this._posX, y : this._posY});
+
+      if ( CnC.DEBUG_MODE ) {
+        this.renderEnvironment();
+      }
 
       console.groupEnd();
     },
@@ -2403,6 +2444,38 @@
         */
 
       //this._super(); // Do not call!
+    },
+
+    renderEnvironment : function() {
+      console.group("Map::renderEnvironment()");
+      var x, y, e;
+      var cc = this.__coverlay;
+
+      cc.clearRect(0, 0, this.__width, this.__height);
+
+      cc.beginPath();
+      for ( y = 0; y < this._sizeY; y++ ) {
+        cc.moveTo(0, y * TILE_SIZE);
+        cc.lineTo(this.__width, y * TILE_SIZE);
+      }
+      for ( x = 0; x < this._sizeX; x++ ) {
+        cc.moveTo(x * TILE_SIZE, 0);
+        cc.lineTo(x * TILE_SIZE, this.__height);
+      }
+      cc.stroke();
+      cc.closePath();
+
+      for ( x = 0; x < this._sizeX; x++ ) {
+        for ( y = 0; y < this._sizeY; y++ ) {
+          e = this._env[x][y];
+          if ( e > 0 ) {
+            cc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+          }
+        }
+      }
+
+
+      console.groupEnd();
     },
 
     //
