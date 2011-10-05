@@ -170,7 +170,7 @@
       }
 
       if ( snd !== null ) {
-        _Sound.play(snd);
+        _Sound.play(snd, true);
       }
     }
 
@@ -690,7 +690,7 @@
         item = CnC.PRELOAD.gfx[i];
         src  = "/img/"  + item + ".png";
 
-        console.log(i + "/" + count, item, src);
+        console.log(i+1 + "/" + count, item, src);
 
         s = new Image();
         s.onload = (function(ii, cc, cb) {
@@ -820,7 +820,7 @@
           item = CnC.PRELOAD.snd[i];
           src  = "/snd/" + this._codec + "/" + item + "." + this._ext;
 
-          console.log(i + "/" + count, item, src);
+          console.log(i+1 + "/" + count, item, src);
 
           s            = new Audio(src);
           s.type       = this._codec;
@@ -867,10 +867,16 @@
      * Play a preloaded sound
      * @return void
      */
-    play : function(snd) {
+    play : function(snd, obj) {
+      var t = obj ? "audio_sfx" : "audio_gui";
+
       if ( this._enabled ) {
-        var s = this._preloaded[snd];
+        var s    = this._preloaded[snd];
+        var vol  = (parseInt(CnC.CONFIG[t], 10) || 100) / 100;
+        var time = 0;
         if ( s ) {
+          s.currentTime = time;
+          s.volume = vol;
           s.play();
         }
       }
@@ -1284,17 +1290,18 @@
      * @destructor
      */
     destroy : function() {
-      // Remove events
-      $.removeEvent(this._blank, "mousedown", function(ev) {
-        $.preventDefault(ev);
-        $.stopPropagation(ev);
-      });
-      $.removeEvent(this._mask, "click", function(ev) {
-        self.onClick(ev);
-      }, true);
-
       // Remove DOM
       if ( this._blank ) {
+        // Remove events
+        $.removeEvent(this._blank, "mousedown", function(ev) {
+          $.preventDefault(ev);
+          $.stopPropagation(ev);
+        });
+
+        $.removeEvent(this._mask, "click", function(ev) {
+          self.onClick(ev);
+        }, true);
+
         this._blank.parentNode.removeChild(this._blank);
         this._blank = null;
         this._mask  = null;
