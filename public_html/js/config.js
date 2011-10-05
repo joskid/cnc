@@ -39,47 +39,42 @@
 
     // Preloading
     PRELOAD : {
-      'gfx' : {
-        'count' : 17,
-        'items' : {
-          // Desert theme stuff
-          "desert/tile"            : null,
-          "desert/rock1"           : null,
-          "desert/rock2"           : null,
-          "desert/rock3"           : null,
-          "desert/rock4"           : null,
-          "desert/rock5"           : null,
-          "desert/rock6"           : null,
-          "desert/rock7"           : null,
-          "desert/t04"             : null,
-          "desert/t08"             : null,
-          "desert/t09"             : null,
-          "desert/t18"             : null,
+      'gfx' : [
+        // Desert Theme
+        "desert/tile",
+        "desert/rock1",
+        "desert/rock2",
+        "desert/rock3",
+        "desert/rock4",
+        "desert/rock5",
+        "desert/rock6",
+        "desert/rock7",
+        "desert/t04",
+        "desert/t08",
+        "desert/t09",
+        "desert/t18",
 
-          // GDI Stuff
-          "gdi/units/jeep_sprite"  : null,
-          "gdi/units/unit"         : null,
-          "gdi/units/tank"         : null,
-          "gdi/structures/hq"      : null,
-          "gdi/structures/barracs" : null
-        }
-      },
-      'snd' : {
-        'count' : 10,
-        'items' : {
-          "await1" : null,
-          "ackno" : null,
-          "affirm1" : null,
-          "yessir1" : null,
-          "roger" : null,
-          "movout1" : null,
-          "ritaway" : null,
-          "ritaway" : null,
-          "ugotit" : null,
-          "unit1" : null,
-          "vehic1" : null
-        }
-      }
+        //GDIStuff
+        "gdi/units/jeep_sprite",
+        "gdi/units/unit",
+        "gdi/units/tank",
+        "gdi/structures/hq",
+        "gdi/structures/barracs"
+      ],
+      'snd' : [
+        // Units
+        "await1",
+        "ackno",
+        "affirm1",
+        "yessir1",
+        "roger",
+        "movout1",
+        "ritaway",
+        "ritaway",
+        "ugotit",
+        "unit1",
+        "vehic1"
+      ]
     },
 
     // Overlays

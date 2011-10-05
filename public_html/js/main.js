@@ -686,36 +686,37 @@
   var Graphics = Class.extend({
 
     // Preloaded items
-    _preloaded     : CnC.PRELOAD.gfx.items,
-    _preload_count : CnC.PRELOAD.gfx.count,
+    _preloaded     : {},
 
     /**
      * @constructor
      */
     init : function(callback) {
+      var self = this;
       console.group("Graphics::init()");
 
       // Preload all images
       console.group("Preloading gfx");
-      var index = 1;
-      var self = this;
-      for ( var i in this._preloaded ) {
-        if ( this._preloaded.hasOwnProperty(i) ) {
-          var src  = "/img/"  + i + ".png";
+      var count = CnC.PRELOAD.gfx.length;
+      var item, img;
+      for ( var i = 0; i < count; i++ ) {
+        item = CnC.PRELOAD.gfx[i];
+        src  = "/img/"  + item + ".png";
 
-          console.log(i, src);
+        console.log(i + "/" + count, item, src);
 
-          s = new Image();
-          s.onload = function() {
-            if ( index >= self._preload_count ) {
-              callback();
+        s = new Image();
+        s.onload = (function(ii, cc, cb) {
+          return function() {
+            if ( (ii + 1) >= cc ) {
+              cb();
             }
-            index++;
           };
-          s.src = src;
+        })(i, count, callback);
 
-          this._preloaded[i] = s;
-        }
+        s.src = src;
+
+        this._preloaded[item] = s;
       }
       console.groupEnd();
 
@@ -767,8 +768,7 @@
     _cpanners    : null,
 
     // Preloaded items
-    _preloaded     : CnC.PRELOAD.snd.items,
-    _preload_count : CnC.PRELOAD.snd.count,
+    _preloaded   : {},
 
     /**
      * @constructor
@@ -827,34 +827,32 @@
       if ( this._enabled ) {
         console.group("Preloading audio");
 
-        var src;
-        var index = 1;
-        for ( i in this._preloaded ) {
-          if ( this._preloaded.hasOwnProperty(i) ) {
-            src  = "/snd/" + this._codec + "/" + i + "." + this._ext;
+        var count = CnC.PRELOAD.snd.length;
+        var src, item;
+        for ( i = 0; i < count; i++ ) {
+          item = CnC.PRELOAD.snd[i];
+          src  = "/snd/" + this._codec + "/" + item + "." + this._ext;
 
-            console.log(i, src);
+          console.log(i + "/" + count, item, src);
 
-            s            = new Audio(src);
-            s.type       = this._codec;
-            s.preload    = "auto";
-            s.controls   = false;
-            s.autobuffer = true;
-            s.loop       = false;
-            s.load();
+          s            = new Audio(src);
+          s.type       = this._codec;
+          s.preload    = "auto";
+          s.controls   = false;
+          s.autobuffer = true;
+          s.loop       = false;
+          s.load();
 
-            if ( this._cpanner ) {
-              (this._context.createMediaElementSource(s)).connect(this._cpanner);
-            }
-
-            this._preloaded[i] = s;
-
-            if ( index >= this._preload_count ) {
-              callback();
-            }
-
-            index++;
+          if ( this._cpanner ) {
+            (this._context.createMediaElementSource(s)).connect(this._cpanner);
           }
+
+          this._preloaded[item] = s;
+
+          if ( (i + 1) >= count ) {
+            callback();
+          }
+
         }
         console.groupEnd();
       }
