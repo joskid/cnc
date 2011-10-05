@@ -49,9 +49,9 @@
       "desert/t09",
       "desert/t18",
 
-      //GDI Stuff
+      // GDI Stuff
       "gdi/units/jeep_sprite",
-      "gdi/units/unit",
+      "gdi/units/minigunner_sprite",
       "gdi/structures/hq_sprite",
       "gdi/structures/power_sprite",
       "gdi/structures/adv_power_sprite",
@@ -64,6 +64,8 @@
       "gdi/structures/repair_sprite",
       "gdi/structures/guardtower_sprite",
       "gdi/structures/adv_guardtower_sprite"
+
+      // NOD Stuff
     ],
     'snd' : [
       // Units
@@ -636,15 +638,20 @@
           "object" : {
             'type'   : _ou,
             'width'  : 50,
-            'height' : 50,
-            'image'  : "gdi/units/unit",
+            'height' : 39,
+            'sprite' : {
+              'src' : "gdi/units/minigunner_sprite",
+              'cw'  : 50,
+              'ch'  : 39,
+              'rot' : 45
+            },
             'attrs'  : {
               'movable'   : true,
               'speed'     : 5,
               'turning'   : 0,
               'strength'  : 10
             },
-            'mask' : [0, 0, 50, 50],
+            'mask' : [0, 0, 50, 39],
             'sounds' : {
               /* SOUND_SELECT */ 0 : ["await1", "yessir1"],
               /* SOUND_MOVE */   1 : ["roger", "movout1", "ritaway", "ritaway", "ugotit", "affirm1", "ackno"]
@@ -683,13 +690,7 @@
               'src' : "gdi/units/jeep_sprite",
               'cw'  : 24,
               'ch'  : 24,
-              'rotation' : {
-                270 : 0,
-                180 : 191,
-                90  : 384,
-                0   : 576,
-                360 : 576
-              }
+              'rot' : 11.25
             },
             'attrs'  : {
               'movable'   : true,
@@ -919,6 +920,21 @@
       }
     }
   }; // Public namespace
+
+  // Fix rotation for objects
+  var o = CnC.MapObjectsMeta.GDI.units;
+  for ( var i in o ) {
+    if ( o.hasOwnProperty(i) ) {
+      if ( o[i].object && o[i].object.sprite ) {
+        var px = 0;
+        o[i].object.sprite.rotation = {};
+        for ( var j = 360; j > 0; j -= o[i].object.sprite.rot ) {
+          o[i].object.sprite.rotation[j] = px;
+          px += o[i].object.sprite.cw;
+        }
+      }
+    }
+  }
 
 })();
 

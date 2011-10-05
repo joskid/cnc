@@ -1,5 +1,4 @@
 High:
-* Fix rotation beyond 90deg increments
 
 Medium:
 * Fix path-finding

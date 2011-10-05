@@ -10,7 +10,7 @@
 
   window.CnC = {
     // Debugging options
-    DEBUG_MODE : true,
+    DEBUG_MODE : false,
     ENABLE_RAF : false, // DO NOT ENABLE (Decreases performance)
 
     // Main configuration

@@ -102,7 +102,9 @@
      */
     find : function(startRow, startCol, endRow, endCol) {
       console.group("PathFinder::find()");
+      var result = [];
 
+      /*
       var row, col;
 
       this._openList = [];
@@ -156,7 +158,6 @@
         }
       }
 
-      var result = [];
       var found = this.getClosed(endRow, endCol);
       if ( found ) {
         nowRow = endRow;
@@ -173,6 +174,7 @@
 
         result.push([startRow,startCol]);
       }
+      */
 
       console.log("Result", result);
       console.groupEnd();

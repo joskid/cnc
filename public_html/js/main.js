@@ -1442,7 +1442,7 @@
 
             cc.beginPath();
               cc.moveTo((tw / 2), (th / 2));
-              cc.lineTo(tw, (th / 2));
+              cc.lineTo((tw / 2), 0);
               cc.stroke();
             cc.closePath();
           }
@@ -1539,7 +1539,7 @@
 
       // Calculate rotation and distance to target
       var deg      = Math.atan2((y2-y1), (x2-x1)) * (180 / Math.PI);
-      var rotation = (/*this._angle + */deg) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
+      var rotation = (/*this._angle + */deg + 90) + (x2 < 0 ? 180 : (y2 < 0 ? 360 : 0));
       var distance = Math.round(Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)));
 
       // Set destination and heading
@@ -1575,6 +1575,7 @@
 
     /**
      * onRender -- Handle sprite rendering
+     * FIXME Dynamic rotation metadata
      * @return void
      */
     onRenderSprite : function() {
@@ -1595,12 +1596,18 @@
             this._frame++;
           }
         } else {
-          var rndA = Math.abs($.roundedAngle(Math.round(this._angle), 45));
-          if ( this._sprite.rotation[rndA] !== undefined ) {
-            srcX = this._sprite.rotation[rndA];
-          }/* else {
-            console.info("No position found for", rndA, this._angle);
-          }*/
+          var j = Math.abs($.roundedAngle(Math.round(this._angle), this._sprite.rot));
+          if ( this._sprite.rotation[j] !== undefined ) {
+            srcX = this._sprite.rotation[j];
+          }
+
+          /*
+          var rndA = Math.abs($.roundedAngle(Math.round(this._angle), 90));
+          var rndB = Math.abs($.roundedAngle(Math.round(this._angle), 11.25));
+          if ( this._sprite.rotation[rndB] !== undefined ) {
+            srcX = this._sprite.rotation[rndB];
+          }
+          */
         }
 
         this.drawClipImage(this._image, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
