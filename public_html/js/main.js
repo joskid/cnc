@@ -792,7 +792,7 @@
         var i, s, t, codec, types;
 
         // First check if we have audio support, and find codec
-        types = CnC.CONFIG.audio_codecs;
+        types = CnC.AUDIO_CODECS;
         for ( s in types ) {
           if ( types.hasOwnProperty(s) ) {
             t = types[s];
