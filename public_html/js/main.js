@@ -2055,8 +2055,8 @@
       }
       // Update construction indicator
       else if ( this._constructing ) {
-        var px = Math.round((mX - this._marginX));
-        var py = Math.round((mY - this._marginY));
+        var px = Math.round((mX - this._marginX - this._posX));
+        var py = Math.round((mY - this._marginY - this._posY));
 
         this.onConstructMask(ev, px, py);
       }
@@ -2220,8 +2220,8 @@
       var key  = this._constructing.type;
       var type = this._constructing.object;
       try {
-        px -= CnC.MapObjectsMeta[_PlayerTeam][key][type].object.width / 2;
-        py -= CnC.MapObjectsMeta[_PlayerTeam][key][type].object.height / 2;
+        px -= (CnC.MapObjectsMeta[_PlayerTeam][key][type].object.width / 2) + this._posX;
+        py -= (CnC.MapObjectsMeta[_PlayerTeam][key][type].object.height / 2) + this._posY;
 
         var obj = CreateObject(type, _Player, px, py);
         this.addObject(obj, true);
