@@ -373,7 +373,7 @@
 
     prepare : (function() {
 
-      function _createItem(cname, root, src, key, title, price, time) {
+      function _createItem(cname, root, src, key, title, price, time, tw, th, type) {
         var el        = document.createElement("div");
         el.className  = cname;
 
@@ -382,12 +382,21 @@
         img.src       = src;
         img.title     = title + (" ($" + price  + ", " + time + "s)");
 
+        el.onclick = function() {
+          _Main.getMap().setConstruction({
+            "width"  : TILE_SIZE * tw,
+            "height" : TILE_SIZE * th,
+            "type"   : type,
+            "object" : key
+          });
+        };
+
         el.appendChild(img);
         root.appendChild(el);
       }
 
       return function(team) {
-        var price, time, title, src;
+        var price, time, title, src, tw, th;
 
         // Structures
         var structures = CnC.MapObjectsMeta[team].structures;
@@ -398,11 +407,14 @@
         for ( var s in structures ) {
           if ( structures.hasOwnProperty(s) ) {
             if ( structures[s].image !== null ) {
-              price         = structures[s].price === undefined ? 0 : structures[s].price;
-              time          = structures[s].time  === undefined ? 0 : structures[s].time;
-              title         = structures[s].title === undefined ? s : structures[s].title;
+              price         = structures[s].price     === undefined ? 0 : structures[s].price;
+              time          = structures[s].time      === undefined ? 0 : structures[s].time;
+              title         = structures[s].title     === undefined ? s : structures[s].title;
+              tw            = structures[s].construct === undefined ? 1 : structures[s].construct.width;
+              th            = structures[s].construct === undefined ? 1 : structures[s].construct.height;
               src           = "/img/" + team.toLowerCase() + "/sidebar/structures/" + structures[s].image + ".jpg";
-              _createItem("ConstructMapObjectBuilding", left, src, s, title, price, time);
+
+              _createItem("ConstructMapObjectBuilding", left, src, s, title, price, time, tw, th, "structures");
             }
           }
         }
@@ -416,11 +428,13 @@
         for ( var u in units ) {
           if ( units.hasOwnProperty(u) ) {
             if ( units[u].image !== null ) {
-              price         = units[u].price === undefined ? 0 : units[u].price;
-              time          = units[u].time  === undefined ? 0 : units[u].time;
-              title         = units[u].title === undefined ? u : units[u].title;
+              price         = units[u].price     === undefined ? 0 : units[u].price;
+              time          = units[u].time      === undefined ? 0 : units[u].time;
+              title         = units[u].title     === undefined ? u : units[u].title;
+              tw            = units[u].construct === undefined ? 1 : units[u].construct.width;
+              th            = units[u].construct === undefined ? 1 : units[u].construct.height;
               src           = "/img/" + team.toLowerCase() + "/sidebar/units/" + units[u].image + ".jpg";
-              _createItem("ConstructMapObjectBuilding", right, src, u, title, price, time);
+              _createItem("ConstructMapObjectUnit", right, src, u, title, price, time, tw, th, "units");
             }
           }
         }
@@ -1678,6 +1692,7 @@
     _rect       : null,
     _mincanvas  : null,
     _mincontext : null,
+    _mask       : null,
 
     // Minimap variables
     _scaleX     : -1,
@@ -1716,6 +1731,7 @@
       this._minimap  = document.getElementById("MiniMap");
       this._minirect = document.getElementById("MiniMapRect");
       this._rect     = document.getElementById("Rectangle");
+      this._mask     = document.getElementById("Mask");
 
       this._root.style.width  = w + "px";
       this._root.style.height = h + "px";
@@ -1774,6 +1790,9 @@
         self._onMouseDown(ev, undefined, true);
       });
       $.addEvent(this._minimap, "click", function(ev) {
+        self._onMiniMapMouseClick(ev);
+      });
+      $.addEvent(this._main, "click", function(ev) {
         self._onMouseClick(ev);
       });
       $.disableContext(this._main);
@@ -1789,12 +1808,7 @@
      * @destructor
      */
     destroy : function() {
-      this.clearObjects();
-
-      this._mincanvas.parentNode.removeChild(this._mincanvas);
-      delete this._mincontext;
-      delete this._mincanvas;
-
+      // Remove events
       $.removeEvent(document, "mousemove", function(ev) {
         self._onMouseMove(ev, false);
       });
@@ -1808,9 +1822,29 @@
         self._onMouseDown(ev, undefined, true);
       });
       $.removeEvent(this._minimap, "click", function(ev) {
+        self._onMiniMapMouseClick(ev);
+      });
+      $.removeEvent(this._main, "click", function(ev) {
         self._onMouseClick(ev);
       });
 
+      // Remove objects
+      this.clearObjects();
+
+      // Remove minimap
+      this._mincanvas.parentNode.removeChild(this._mincanvas);
+      delete this._mincontext;
+      delete this._mincanvas;
+
+      // Unset
+      this._main     = null;
+      this._root     = null;
+      this._minimap  = null;
+      this._minirect = null;
+      this._rect     = null;
+      this._mask     = null;
+
+      // Destroy canvas
       this._super();
     },
 
@@ -1822,9 +1856,13 @@
      * addObject -- Add a MapObject
      * @return void
      */
-    addObject : function(o) {
+    addObject : function(o, dom) {
       if ( o instanceof MapObject ) {
         this._objects.push(o);
+
+        if ( dom ) {
+          this._root.appendChild(o.getRoot());
+        }
       }
     },
 
@@ -2013,15 +2051,30 @@
       }
       // Scroll map to minimap selection
       else if ( this._scrolling ) {
-        this._onMouseClick(ev);
+        this._onMiniMapMouseClick(ev);
       }
       // Update construction indicator
       else if ( this._constructing ) {
-        (function(){})(); // TODO
+        var px = Math.round((mX - this._marginX));
+        var py = Math.round((mY - this._marginY));
+
+        this.onConstructMask(ev, px, py);
       }
     },
 
     _onMouseClick : function(ev) {
+      var mX = $.mousePosX(ev);
+      var mY = $.mousePosY(ev);
+
+      if ( this._constructing ) {
+        var px = Math.round((mX - this._marginX));
+        var py = Math.round((mY - this._marginY));
+
+        this.onConstructClick(ev, px, py);
+      }
+    },
+
+    _onMiniMapMouseClick : function(ev) {
       // Center the click position for the rectangle and update scrolling
       var rel = $.getOffset(this._minimap);
       var mx  = $.mousePosX(ev) - rel.left;
@@ -2136,6 +2189,48 @@
       ObjectAction(select);
 
       console.groupEnd();
+    },
+
+    /**
+     * onConstructMask -- Construction mask event
+     * @return void
+     */
+    onConstructMask : function(ev, x, y) {
+      if ( ev ) {
+        var w  = this._constructing.width;
+        var h  = this._constructing.height;
+        var tx = Math.round((x - (w / 2)) / (TILE_SIZE)) * TILE_SIZE;
+        var ty = Math.round((y - (h / 2)) / (TILE_SIZE)) * TILE_SIZE;
+
+        this._mask.style.left     = (tx) + "px";
+        this._mask.style.top      = (ty) + "px";
+        this._mask.style.width    = (w) + "px";
+        this._mask.style.height   = (h) + "px";
+        this._mask.style.display  = "block";
+      } else {
+        this._mask.style.display  = "none";
+      }
+    },
+
+    /**
+     * onConstructClick -- Construction click event
+     * @return void
+     */
+    onConstructClick : function(ev, px, py) {
+      var key  = this._constructing.type;
+      var type = this._constructing.object;
+      try {
+        px -= CnC.MapObjectsMeta[_PlayerTeam][key][type].object.width / 2;
+        py -= CnC.MapObjectsMeta[_PlayerTeam][key][type].object.height / 2;
+
+        var obj = CreateObject(type, _Player, px, py);
+        this.addObject(obj, true);
+      } catch ( e ) {
+        alert("Cannot create this type!");
+      }
+
+      this.onConstructMask(false);
+      this.setConstruction(false);
     },
 
     // METHODS
@@ -2292,6 +2387,10 @@
     //
     // GETTERS/SETTERS
     //
+
+    setConstruction : function(cons) {
+      this._constructing = cons;
+    },
 
     getEnvironmentData : function() {
       return this._env;

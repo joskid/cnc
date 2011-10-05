@@ -279,6 +279,21 @@ body.CursorMove {
   margin : -1px;
 }
 
+#Mask {
+  position : absolute;
+  top : 0px;
+  right : 0px;
+  width : 0px;
+  height : 0px;
+  z-index : 6;
+  background : #ff0000;
+  display : none;
+
+  -moz-opacity: 0.5;
+  -khtml-opacity: 0.5;
+  opacity: 0.5;
+}
+
 #Debugging {
   position : absolute;
   bottom : 10px;

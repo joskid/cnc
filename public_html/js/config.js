@@ -168,9 +168,13 @@
       "GDI" : {
         "structures" : {
           "ConstructionYard" : {
-            "image"  : null,
-            "title"  : "Construction Yard",
-            "desc"   : "The Construction Yard is the foundation of a base and allows the construction of other buildings.",
+            "image"      : null,
+            "title"      : "Construction Yard",
+            "desc"       : "The Construction Yard is the foundation of a base and allows the construction of other buildings.",
+            "construct"  : {
+              "width"  : 3,
+              "height" : 2
+            },
             "object" : {
               'type'   : _ob,
               'width'  : 72,
@@ -197,19 +201,31 @@
             }
           },
           "PowerPlan" : {
-            "image" : "power_plant",
-            "title" : "Power Plan",
-            "desc"  : "This unit provides power to adjoining structures. Power output is directly related to the Power Plant's condition, so protect them during battles."
+            "image"      : "power_plant",
+            "title"      : "Power Plan",
+            "desc"       : "This unit provides power to adjoining structures. Power output is directly related to the Power Plant's condition, so protect them during battles.",
+            "construct"  : {
+              "width"  : 3,
+              "height" : 2
+            }
           },
           "AdvancedPowerPlan" : {
-            "image" : "adv_power_plant",
-            "title" : "Advanced Power Plant",
-            "desc"  : "This high-yield structure handles the energy strains of some later, more power intensive structures. Double the power output of the Power Plant."
+            "image"      : "adv_power_plant",
+            "title"      : "Advanced Power Plant",
+            "desc"      : "This high-yield structure handles the energy strains of some later, more power intensive structures. Double the power output of the Power Plant.",
+            "construct"  : {
+              "width"  : 3,
+              "height" : 2
+            }
           },
           "Barracks" : {
-            "image"  : "barracks",
-            "title"  : "Barracs (Unit facility)",
-            "desc"   : "This structure is a field training center for all available infantry units.",
+            "image"      : "barracks",
+            "title"      : "Barracs (Unit facility)",
+            "desc"       : "This structure is a field training center for all available infantry units.",
+            "construct"  : {
+              "width"  : 3,
+              "height" : 2
+            },
             "object" : {
               'type'   : _ob,
               'width'  : 48,
@@ -245,62 +261,110 @@
           "Refinery" : {
             "image" : "refinery",
             "title" : "Tiberium Refinery",
-            "desc"  : "This unit processes Tiberium into its component elements. Building the Refinery immediately deploys a Tiberium harvester and each Refinery can handle an infinite number of Harvesters. The Refinery stores 1,000 credits of processed Tiberium."
+            "desc"  : "This unit processes Tiberium into its component elements. Building the Refinery immediately deploys a Tiberium harvester and each Refinery can handle an infinite number of Harvesters. The Refinery stores 1,000 credits of processed Tiberium.",
+            "construct"  : {
+              "width"  : 4,
+              "height" : 4
+            }
           },
           "Silo" : {
             "image" : "tiberium_silo",
             "title" : "Tiberium Silo",
-            "desc"  : "This unit stores up to 1,500 credits of processed Tiberium. Guard it carefully. If destroyed or captured, the amount stored is deducted from your account."
+            "desc"  : "This unit stores up to 1,500 credits of processed Tiberium. Guard it carefully. If destroyed or captured, the amount stored is deducted from your account.",
+            "construct"  : {
+              "width"  : 3,
+              "height" : 2
+            }
           },
           "Factory" : {
             "image" : "weapons_factory",
             "title" : "Weapons Factory (Vehicle facility)",
-            "desc"  : "This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met."
+            "desc"  : "This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met.",
+            "construct"  : {
+              "width"  : 6,
+              "height" : 5
+            }
           },
           "CommunicationCenter" : {
             "image" : "comm_center",
             "title" : "Communications Center",
-            "desc"  : "Allows the use of the radar screen as long as there is sufficient power."
+            "desc"  : "Allows the use of the radar screen as long as there is sufficient power.",
+            "construct"  : {
+              "width"  : 4,
+              "height" : 3
+            }
           },
           "AdvancedCommunicationCenter" : {
             "image" : "adv_comm",
             "title" : "Advanced Communications Center",
-            "desc"  : "An upgrade to the Communications Center, this structure not only provides radar, but is the uplink center for the Orbital Ion Cannon."
+            "desc"  : "An upgrade to the Communications Center, this structure not only provides radar, but is the uplink center for the Orbital Ion Cannon.",
+            "construct"  : {
+              "width"  : 4,
+              "height" : 3
+            }
           },
           "Helipad" : {
             "image" : "helipad",
             "title" : "Helipad (Helicopter facility)",
-            "desc"  : "Building the Helipad allows the use of the Orca attack aircraft. Each Orca requires a Helipad."
+            "desc"  : "Building the Helipad allows the use of the Orca attack aircraft. Each Orca requires a Helipad.",
+            "construct"  : {
+              "width"  : 3,
+              "height" : 3
+            }
           },
           "RepairFacility" : {
             "image" : "repair_facility",
             "title" : "Repair facility",
-            "desc"  : " This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met."
+            "desc"  : " This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met.",
+            "construct"  : {
+              "width"  : 3,
+              "height" : 3
+            }
           },
           "GuardTower" : {
             "image" : "guard_tower",
             "title" : "Guard Tower (defence)",
-            "desc"  : "Armed with a high velocity machine gun, this structure provides manned defense against Nod ground attack."
+            "desc"  : "Armed with a high velocity machine gun, this structure provides manned defense against Nod ground attack.",
+            "construct"  : {
+              "width"  : 1,
+              "height" : 1
+            }
           },
           "AdvancedGuardTower" : {
             "image" : "adv_guard_tower",
             "title" : "Advanced Guard Tower (defence)",
-            "desc"  : "Provides strong fortification against Nod ground and air units. Weapons complement includes a rocket launcher."
+            "desc"  : "Provides strong fortification against Nod ground and air units. Weapons complement includes a rocket launcher.",
+            "construct"  : {
+              "width"  : 1,
+              "height" : 1
+            }
           },
           "SandbagBarrier" : {
             "image" : "sandbag_barrier",
             "title" : "Sandbag Barrier (defence)",
-            "desc"  : "Used to deter the enemy from advancing. Sandbags provide limited cover and may slow units down."
+            "desc"  : "Used to deter the enemy from advancing. Sandbags provide limited cover and may slow units down.",
+            "construct"  : {
+              "width"  : 1,
+              "height" : 1
+            }
           },
           "ConcreteBarrier" : {
             "image" : "concrete_barrier",
             "title" : "Concrete Barrier (defence)",
-            "desc"  : "Concrete walls are the most effective barrier. They are much harder to destroy and will take the enemy much longer to blast through."
+            "desc"  : "Concrete walls are the most effective barrier. They are much harder to destroy and will take the enemy much longer to blast through.",
+            "construct"  : {
+              "width"  : 1,
+              "height" : 1
+            }
           },
           "ChainLinkBarrier" : {
             "image" : "chain_link_barrier",
             "title" : "Chain-Link Barrier (defence)",
-            "desc"  : "Chain Link fences will stop light vehicles, yet can be crushed or even destroyed by most heavier vechicles."
+            "desc"  : "Chain Link fences will stop light vehicles, yet can be crushed or even destroyed by most heavier vechicles.",
+            "construct"  : {
+              "width"  : 1,
+              "height" : 1
+            }
           }
         },
 
