@@ -41,19 +41,8 @@ if ( isset($_POST["action"]) ) {
   $result = Array("error" => "", "result" => null);
   $data   = isset($_POST["data"]) ? (Array)json_decode($_POST["data"]) : null;
   switch ( $_POST["action"] ) {
-    case "load_file" :
-      if ( isset($_POST['type']) && isset($_POST['file']) ) {
-        if ( $data = Service::LoadFile($_POST['type'], $_POST['file']) ) {
-          list($mime, $out) = $data;
-          if ( $mime && $out ) {
-            header("Content-type: $mime");
-            die($out);
-          }
-        }
-      }
-    break;
     case "load_game" :
-      $result["result"] = Service::LoadGame();
+      $result["result"] = json_decode(Service::LoadGame());
     break;
     case "save_game" :
       if ( is_array($data) ) {

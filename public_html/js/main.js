@@ -87,14 +87,6 @@
   /////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Create Preload URL
-   * @return String
-   */
-  var PreloadDataURL = function(type, file) {
-    return CnC.SERVICE_URI + "?action=load_file&type=" + type + "&file=" + encodeURIComponent(file);
-  };
-
-  /**
    * CreateObject -- Create an object
    * @return MapObject
    */
@@ -539,6 +531,14 @@
     //
 
     /**
+     * preload -- Create a preloading URL
+     * @return String
+     */
+    preload : function(type, file) {
+      return CnC.SERVICE_URI + "?action=load_file&type=" + type + "&file=" + encodeURIComponent(file);
+    },
+
+    /**
      * service -- Do a service request
      * @return bool
      */
@@ -711,7 +711,7 @@
       for ( var i = 0; i < count; i++ ) {
         item = CnC.PRELOAD.gfx[i];
         tsrc = item + ".png";
-        src  = PreloadDataURL("general", tsrc);
+        src  = _Net.preload("general", tsrc);
 
         console.log(i+1 + "/" + count, item, tsrc);
 
@@ -842,7 +842,7 @@
         for ( i = 0; i < count; i++ ) {
           item = CnC.PRELOAD.snd[i];
           tsrc = this._codec + "/" + item + "." + this._ext;
-          src  = PreloadDataURL("sound", tsrc); //
+          src  = _Net.preload("sound", tsrc); //
 
           console.log(i+1 + "/" + count, item, tsrc);
 
