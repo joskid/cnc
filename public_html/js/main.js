@@ -2605,6 +2605,20 @@
   };
 
   /**
+   * Window 'onbeforeunload' function
+   * @return void
+  window.onbeforeunload = function(ev) {
+    ev = ev || window.event;
+
+    var ret = CnC.DEBUG_MODE ? false : "Are you sure you want to quit?";
+    if ( ev ) {
+      ev.returnValue = ret;
+    }
+    return ret;
+  };
+   */
+
+  /**
    * Window 'onunload' function
    * @return void
    */
@@ -2636,9 +2650,10 @@
     _DebugFPS     = null;
     _DebugObjects = null;
 
-    window.onload   = undefined;
-    window.onunload = undefined;
-    window.onresize = undefined;
+    window.onload         = undefined;
+    window.onunload       = undefined;
+    window.onresize       = undefined;
+    window.onbeforeunload = undefined;
   };
 
   /**
