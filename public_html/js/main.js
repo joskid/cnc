@@ -569,20 +569,24 @@
               callback_error(req, req.statusText);
             }
 
+            /*
             console.group("Networking::service() => Response");
             console.log("URI", uri);
             console.log("Action", action);
             console.log("Success", success);
             console.log("Response data", in_data);
             console.groupEnd();
+            */
           }
         };
 
+        /*
         console.group("Networking::service() => Request");
         console.log("URI", uri);
         console.log("Action", action);
         console.log("Request data", data);
         console.groupEnd();
+        */
 
         req.open("POST", uri, true);
         req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
