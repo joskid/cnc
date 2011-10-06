@@ -127,7 +127,7 @@ body.CursorMove {
     height : 180px;
     border : 1px outset #555;
     overflow : hidden;
-    background-color : #aa8555;
+    background-color : #000;
     margin : -1px;
   }
     #MiniMapRect {

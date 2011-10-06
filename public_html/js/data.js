@@ -542,6 +542,7 @@
             'type'   : _ou,
             'width'  : 50,
             'height' : 39,
+            'color'  : "0,255,0",
             'sprite' : {
               'src' : "gdi/units/minigunner_sprite",
               'cw'  : 50,
@@ -589,6 +590,7 @@
             'type'   : _ov,
             'width'  : 24,
             'height' : 24,
+            'color' : "0,0,255",
             'sprite' : {
               'src' : "gdi/units/jeep_sprite",
               'cw'  : 24,

@@ -1285,33 +1285,35 @@
   var MapObject = CanvasObject.extend({
 
     // Base attributes
-    _iid           : -1,          // Internal id (counter)
-    _type          : -1,          // Object type
-    _image         : null,        // Object image (static image)
-    _image_loaded  : false,       // Object image loaded (static image)
-    _sprite        : null,        // Object sprite (dynamic images)
-    _selected      : false,       // Selected state
-    _angle         : 0,           // Current angle
-    _sonuds        : null,        // Object sounds
+    _iid           : -1,            // Internal id (counter)
+    _type          : -1,            // Object type
+    _image         : null,          // Object image (static image)
+    _image_loaded  : false,         // Object image loaded (static image)
+    _sprite        : null,          // Object sprite (dynamic images)
+    _selected      : false,         // Selected state
+    _angle         : 0,             // Current angle
+    _sonuds        : null,          // Object sounds
+    _color         : "255,255,255", // Object color (minimap, debugging)
 
     // Instance attributes
-    _player        : 0,           // Object player Id
-    _selectable    : true,        // Object selectable
-    _movable       : true,        // Object movable
-    _primary       : false,       // Object primary state
-    _speed         : 0,           // Object movment speed
-    _turning_speed : 0,           // Object turning speed
-    _strength      : 10,          // Object strength
+    _player        : 0,             // Object player Id
+    _selectable    : true,          // Object selectable
+    _movable       : true,          // Object movable
+    _primary       : false,         // Object primary state
+    _speed         : 0,             // Object movment speed
+    _turning_speed : 0,             // Object turning speed
+    _strength      : 10,            // Object strength
 
     // Rendering
-    _blank         : null,        // Blank image overlay DOM
-    _mask          : null,        // Clickable mask overlay DOM
-    _destination   : null,        // Current object destination (movment)
-    _heading       : null,        // Current object heading (movment)
-    _path          : null,        // Current object path (movment)
-    _frame         : 0,           // Current sprite frame
+    _blank         : null,          // Blank image overlay DOM
+    _mask          : null,          // Clickable mask overlay DOM
+    _destination   : null,          // Current object destination (movment)
+    _heading       : null,          // Current object heading (movment)
+    _path          : null,          // Current object path (movment)
+    _frame         : 0,             // Current sprite frame
 
     /**
+     * MapObject::init()
      * @constructor
      */
     init : function(mapRef, player, x, y, ang, opts) {
@@ -1327,11 +1329,13 @@
       this._type          = opts.type;
       this._sprite        = opts.sprite !== undefined ? opts.sprite : null;
       this._sounds        = opts.sounds;
+      this._color         = opts.color !== undefined ? opts.color : this._color;
       if ( this._sprite ) {
         this._image       = _Graphic.getImage(opts.sprite.src);
       } else {
         this._image       = opts.image  !== undefined ? _Graphic.getImage(opts.image)  : null;
       }
+
 
       // Set instance attributes
       this._player        = parseInt(player, 10);
@@ -1348,9 +1352,10 @@
 
       // Init canvas
       this._super(w, h, x, y, a, "MapObject");
-      this.__coverlay.fillStyle   = "rgba(255,255,255,0.9)";
+      this.__coverlay.fillStyle   = "rgba(" + this._color + ",0.2)";
       this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
-      this.__coverlay.lineWidth   = 1;
+      this.__coverlay.strokeStyle = "rgba(0,0,0,0.9)";
+      this.__coverlay.lineWidth   = 0.5;
 
       // Init mask
       var img        = document.createElement("img");
@@ -1511,34 +1516,24 @@
           var th = h + 20;
 
           // Select correct debugging color
-          if ( self._type != CnC.OBJECT_BUILDING ) {
-            if ( self._type == CnC.OBJECT_UNIT ) {
-              cc.fillStyle   = "rgba(100,255,100,0.2)";
-            } else if ( self._type == CnC.OBJECT_VEHICLE ) {
-              cc.fillStyle   = "rgba(100,100,255,0.2)";
-            } else {
-              cc.fillStyle   = "rgba(255,255,255,0.2)";
-            }
-            cc.strokeStyle = "rgba(0,0,0,0.9)";
+          cc.fillStyle   = "rgba(" + this._color +  ",0.2)";
+          cc.strokeStyle = "rgba(0,0,0,0.9)";
 
-            cc.beginPath();
-              if ( self._type == CnC.OBJECT_BUILDING ) {
-                cc.fillRect((tw/2 - w/2), (th/2 - h/2), w, h);
-              } else {
-                cc.arc((tw / 2), (th / 2), (w / 2), (Math.PI * 2), false);
-                cc.fill();
-              }
-              if ( self._selected ) {
-                cc.stroke();
-              }
-            cc.closePath();
+          cc.beginPath();
+          cc.fillRect((tw/2 - w/2), (th/2 - h/2), w, h);
+          //cc.arc((tw / 2), (th / 2), (w / 2), (Math.PI * 2), false);
+          //cc.fill();
 
-            cc.beginPath();
-              cc.moveTo((tw / 2), (th / 2));
-              cc.lineTo((tw / 2), 0);
-              cc.stroke();
-            cc.closePath();
+          if ( self._selected ) {
+            cc.stroke();
           }
+          cc.closePath();
+
+          cc.beginPath();
+            cc.moveTo((tw / 2), (th / 2));
+            cc.lineTo((tw / 2), 0);
+            cc.stroke();
+          cc.closePath();
         }
 
         self.onRenderSprite();
@@ -1745,6 +1740,14 @@
     },
 
     /**
+     * MapObject::getColor -- Get the color of the object
+     * @return String
+     */
+    getColor : function() {
+      return this._color;
+    },
+
+    /**
      * MapObject::getSound -- Get the sound of the MapObject
      * @return String
      */
@@ -1799,6 +1802,7 @@
     _objects    : [],       // MapObjects
     _data       : [],       // Map Data
     _env        : [],       // Map Environmental Data
+    _envstatic  : null,     // Map Environmental Data image
 
     // Base attributes
     _marginX    : -1,       // Map container left margin
@@ -1969,12 +1973,14 @@
       delete cn;
 
       // Unset
-      this._main     = null;
-      this._root     = null;
-      this._minimap  = null;
-      this._minirect = null;
-      this._rect     = null;
-      this._mask     = null;
+      this._main       = null;
+      this._root       = null;
+      this._minimap    = null;
+      this._minirect   = null;
+      this._rect       = null;
+      this._mask       = null;
+      this._env        = null;
+      this._envstatic  = null;
 
       // Destroy canvas
       this._super();
@@ -2390,6 +2396,8 @@
      * @return void
      */
     prepare : function() {
+      var self = this;
+
       console.group("Map::prepare()");
 
       var img, obj, rect;
@@ -2473,9 +2481,32 @@
       this.onResize();
       this.onDragMove(null, {x : this._posX, y : this._posY});
 
-      if ( CnC.DEBUG_MODE ) {
-        this.renderEnvironment();
+      var canvas          = document.createElement("canvas");
+      var context         = canvas.getContext("2d");
+      canvas.width        = MINIMAP_WIDTH;
+      canvas.height       = MINIMAP_HEIGHT;
+      context.fillStyle   = "rgb(170,133,85)";
+      context.fillRect(0, 0, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+
+      context.fillStyle   = "rgb(0, 0, 0)";
+      for ( x = 0; x < this._sizeX; x++ ) {
+        if ( this._env[x][y] >= 1 ) {
+
+        cc.fillRect(
+          Math.round(TILE_SIZE / this._scaleX),
+          Math.round(TILE_SIZE / this._scaleY),
+          Math.round(TILE_SIZE / this._scaleX),
+          Math.round(TILE_SIZE / this._scaleY) );
+        }
       }
+
+      img = new Image();
+      img.onload = function() {
+        self._envstatic = this;
+      };
+      img.src = canvas.toDataURL("image/png");
+      delete canvas;
+      delete context;
 
       console.groupEnd();
     },
@@ -2487,18 +2518,22 @@
     render : function() {
       // Update objects and minimap
       var cc = this._mincontext;
-      var o;
+      var o, color;
 
       cc.clearRect(0, 0, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+      if ( this._envstatic ) {
+        cc.drawImage(this._envstatic, 0, 0);
+      }
       for ( var i = 0; i < this._objects.length; i++ ) {
         o = this._objects[i];
 
         // Render minimap object
-        cc.fillStyle = ( o.getIsSelected() ?
-          "rgba(0,0,255,0.9)" : // Selected
-          (o.getIsMine() ?
-            "rgba(255,255,255,0.9)" : // Current player
-            "rgba(255,0,0,0.9)") );   // Other player
+        color = "255,0,0";
+        if ( o.getIsMine() ) {
+          color = o.getColor();
+        }
+
+        cc.fillStyle = "rgb(" + color + ")";
 
         cc.fillRect(
           Math.round(o.__x / this._scaleX),
