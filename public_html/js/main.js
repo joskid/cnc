@@ -733,7 +733,7 @@
         tsrc = item + ".png";
         src  = _Net.preload("general", tsrc);
 
-        console.log(i+1 + "/" + count, item, tsrc);
+        //console.log(i+1 + "/" + count, item, tsrc);
 
         s = new Image();
         s.onload = (function(ii, cc, cb) {
@@ -746,8 +746,13 @@
 
         s.src = src;
 
+        if ( (i + 1) >= count ) {
+          console.log("Loaded",count,"files");
+        }
+
         this._preloaded[item] = s;
       }
+
       console.groupEnd();
     },
 
@@ -880,7 +885,7 @@
           tsrc = this._codec + "/" + item + "." + this._ext;
           src  = _Net.preload("sound", tsrc); //
 
-          console.log(i+1 + "/" + count, item, tsrc);
+          //console.log(i+1 + "/" + count, item, tsrc);
 
           s            = new Audio(src);
           s.type       = this._codec;
@@ -897,6 +902,8 @@
           this._preloaded[item] = s;
 
           if ( (i + 1) >= count ) {
+            console.log("Loaded",count,"files");
+
             callback();
           }
 
