@@ -937,11 +937,12 @@
       if ( this._enabled ) {
         var s    = this._preloaded[snd];
         var vol  = (parseInt(CnC.CONFIG[t], 10) || 100) / 100;
-        var time = 0;
+        //var time = 0;
         if ( s ) {
-          s.currentTime = time;
-          s.volume = vol;
-          s.play();
+          var ss = new Audio(s.src);
+          //ss.currentTime = time;
+          ss.volume = vol;
+          ss.play();
         }
       }
     }
