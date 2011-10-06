@@ -29,62 +29,6 @@
     "mp3" : 'audio/mpeg'                  // MP3
   };
 
-
-  //
-  // Preloading
-  //
-  /*
-  CnC.PRELOAD = {
-    'gfx' : [
-      // Desert Theme
-      "desert/tile",
-      "desert/rock1",
-      "desert/rock2",
-      "desert/rock3",
-      "desert/rock4",
-      "desert/rock5",
-      "desert/rock6",
-      "desert/rock7",
-      "desert/t04",
-      "desert/t08",
-      "desert/t09",
-      "desert/t18",
-
-      // GDI Stuff
-      "gdi/units/jeep_sprite",
-      "gdi/units/minigunner_sprite",
-      "gdi/structures/hq_sprite",
-      "gdi/structures/power_sprite",
-      "gdi/structures/adv_power_sprite",
-      "gdi/structures/barracks_sprite",
-      "gdi/structures/refinery_sprite",
-      "gdi/structures/silo_sprite",
-      "gdi/structures/comm_sprite",
-      "gdi/structures/adv_comm_sprite",
-      "gdi/structures/helipad_sprite",
-      "gdi/structures/repair_sprite",
-      "gdi/structures/guardtower_sprite",
-      "gdi/structures/adv_guardtower_sprite"
-
-      // NOD Stuff
-    ],
-    'snd' : [
-      // Units
-      "await1",
-      "ackno",
-      "affirm1",
-      "yessir1",
-      "roger",
-      "movout1",
-      "ritaway",
-      "ritaway",
-      "ugotit",
-      "unit1",
-      "vehic1"
-    ]
-  }; // Public namespace
-  */
-
   //
   // Overlays
   //
