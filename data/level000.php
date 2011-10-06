@@ -1,6 +1,6 @@
 <?php
 
-print json_encode(Array(
+$data = Array(
   "data" => Array(
     "player" => Array(
       "team" => "GDI"
@@ -50,6 +50,8 @@ print json_encode(Array(
     'gfx' => Array(
       // Desert Theme
       "desert/tile",
+      "desert/water",
+      "desert/coast_s",
       "desert/rock1",
       "desert/rock2",
       "desert/rock3",
@@ -96,6 +98,17 @@ print json_encode(Array(
       "vehic1"
     )
   )
-));
+);
 
+/*for ( $x = 0; $x < 30; $x++ ) {
+  $data["data"]["map"]["data"][] = Array("coast_s", 24 * $x, 24  * 16);
+}*/
+for ( $x = 0; $x < 25; $x++ ) {
+  for ( $y = 17; $y < 100; $y++ ) {
+    $data["data"]["map"]["data"][] = Array("water", 24 * $x, 24  * $y);
+  }
+}
+
+print json_encode($data);
+unset($data);
 ?>

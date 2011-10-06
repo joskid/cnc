@@ -166,6 +166,7 @@ body.CursorMove {
 
     #ConstructionLeftScroll div,
     #ConstructionRightScroll div {
+      position : relative;
       border : 1px outset #555;
       margin : 9px;
       width : 62px;
@@ -236,6 +237,18 @@ body.CursorMove {
         bottom : 30px;
         overflow : hidden;
       }
+
+  #Construction .Timer {
+    position : absolute;
+    top : 0px;
+    left : 0px;
+    width : 62px;
+    height : 46px;
+    z-index : 10;
+    margin : 0;
+    border : 0 none;
+    background : transparent;
+  }
 
 #WindowBackground {
   position : absolute;

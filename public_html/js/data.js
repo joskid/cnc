@@ -110,6 +110,20 @@
       'height' : 47,
       'x'      : 32, //71 / 2,
       'y'      : 40 //47 / 2
+    },
+    'water' : {
+      'image'  : "desert/water",
+      'width'  : 24,
+      'height' : 24,
+      'x'      : 12,
+      'y'      : 12
+    },
+    'coast_s' : {
+      'image'  : "desert/coast_s",
+      'width'  : 24,
+      'height' : 24,
+      'x'      : 12,
+      'y'      : 12
     }
   }; // Public namespace
 

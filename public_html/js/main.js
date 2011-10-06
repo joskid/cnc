@@ -38,8 +38,8 @@
   var TILE_SIZE          = 24;
   var MINIMAP_WIDTH      = 180;
   var MINIMAP_HEIGHT     = 180;
-  var OBJECT_ICON_WIDTH  = 62 + 2;
-  var OBJECT_ICON_HEIGHT = 46 + 2;
+  var OBJECT_ICON_WIDTH  = 62;
+  var OBJECT_ICON_HEIGHT = 46;
   var SELECTION_SENSE    = 10;
 
   var SOUND_SELECT     = 0;
@@ -385,7 +385,7 @@
      */
     prepare : (function() {
 
-      function _createItem(cname, root, src, key, title, price, time, type) {
+      function _createItem(self, cname, root, src, key, title, price, time, type) {
         var el        = document.createElement("div");
         el.className  = cname;
 
@@ -395,6 +395,8 @@
         img.title     = title + (" ($" + price  + ", " + time + "s)");
 
         el.onclick = function() {
+          self.constructOverlay(this, root);
+
           _Main.getMap().setConstruction({
             object : CnC.MapObjectsMeta[_PlayerTeam][type][key].object,
             type : key
@@ -422,7 +424,7 @@
               title         = structures[s].title     === undefined ? s : structures[s].title;
               src           = "/img/gui/sidebar/" + team.toLowerCase() + "/structures/" + structures[s].image + ".jpg";
 
-              _createItem("ConstructMapObjectBuilding", left, src, s, title, price, time, "structures");
+              _createItem(this, "ConstructMapObjectBuilding", left, src, s, title, price, time, "structures");
             }
           }
         }
@@ -440,7 +442,7 @@
               time          = units[u].time      === undefined ? 0 : units[u].time;
               title         = units[u].title     === undefined ? u : units[u].title;
               src           = "/img/gui/sidebar/" + team.toLowerCase() + "/units/" + units[u].image + ".jpg";
-              _createItem("ConstructMapObjectUnit", right, src, u, title, price, time, "units");
+              _createItem(this, "ConstructMapObjectUnit", right, src, u, title, price, time, "units");
             }
           }
         }
@@ -477,7 +479,7 @@
     },
 
     /**
-     * GUI::scrolLContainer -- Scroll the construction containers event
+     * GUI::scrollContainer -- Scroll the construction containers event
      * @return void
      */
     scrollContainer : function(c, dir) {
@@ -487,9 +489,9 @@
 
       if ( c ) { // Right
         if ( !dir ) { // Up
-          tmp = this._unit_top - (OBJECT_ICON_HEIGHT + 9);
+          tmp = this._unit_top - (OBJECT_ICON_HEIGHT + 11);
         } else {
-          tmp = this._unit_top + (OBJECT_ICON_HEIGHT + 9);
+          tmp = this._unit_top + (OBJECT_ICON_HEIGHT + 11);
         }
         if ( tmp >= 0 && tmp <= th ) {
           el.scrollTop = tmp;
@@ -497,15 +499,47 @@
         }
       } else { // Left
         if ( !dir ) { // Up
-          tmp = this._structure_top - (OBJECT_ICON_HEIGHT + 9);
+          tmp = this._structure_top - (OBJECT_ICON_HEIGHT + 11);
         } else {
-          tmp = this._structure_top + (OBJECT_ICON_HEIGHT + 9);
+          tmp = this._structure_top + (OBJECT_ICON_HEIGHT + 11);
         }
         if ( tmp >= 0 && tmp <= th ) {
           el.scrollTop = tmp;
           this._structure_top = tmp;
         }
       }
+    },
+
+    /**
+     * GUI::constructOverlay -- Render a timer
+     * @return void
+     */
+    constructOverlay : function(clicked, root) {
+      var time = 2;
+      var r    = parseInt(OBJECT_ICON_WIDTH / 2, 10) + 10;
+
+      var el            = document.createElement("div");
+      el.className      = "Timer";
+
+      var canvas          = document.createElement("canvas");
+      var context         = canvas.getContext("2d");
+      canvas.width        = OBJECT_ICON_WIDTH;
+      canvas.height       = OBJECT_ICON_HEIGHT;
+      context.fillStyle   = "rgba(255,255,255,0.1)";
+      context.strokeStyle = "rgba(255,255,255,0.1)";
+      context.lineWidth   = 0.1;
+      //context.fillRect(0, 0, OBJECT_ICON_WIDTH, OBJECT_ICON_HEIGHT);
+
+      var interval = setInterval(function() {
+      }, 1000);
+
+      setTimeout(function() {
+        clearInterval(interval);
+        el.parentNode.removeChild(el);
+      }, (time * 1000));
+
+      el.appendChild(canvas);
+      clicked.appendChild(el);
     }
 
   });
@@ -2378,7 +2412,7 @@
     onConstructClick : function(ev, px, py) {
       try {
         var type = this._constructing.type;
-        var obj = CreateObject.apply(this, [type, _Player, px, py]);
+        var obj  = CreateObject.apply(this, [type, _Player, px, py]);
         this.addObject(obj, true);
       } catch ( e ) {
         alert("Cannot create this type!");
@@ -2432,14 +2466,10 @@
         tx  = Math.round(obj.x / TILE_SIZE);
         ty  = Math.round(obj.y / TILE_SIZE);
 
-        for ( var a = tx; a < (tx + obj.tw); a++ ) {
-          if ( blocked_tiles[a] === undefined ) {
-            blocked_tiles[a] = [];
-          }
+        if ( blocked_tiles[tx] === undefined ) {
+          blocked_tiles[tx] = [];
         }
-        for ( var b = ty; b < (ty + obj.th); b++ ) {
-          blocked_tiles[tx][b] = true;
-        }
+        blocked_tiles[tx][ty] = true;
 
         this._root.appendChild(obj.dom);
       }
@@ -2481,25 +2511,31 @@
       this.onResize();
       this.onDragMove(null, {x : this._posX, y : this._posY});
 
+      // Draw environment on to minimap
       var canvas          = document.createElement("canvas");
       var context         = canvas.getContext("2d");
       canvas.width        = MINIMAP_WIDTH;
       canvas.height       = MINIMAP_HEIGHT;
+
       context.fillStyle   = "rgb(170,133,85)";
       context.fillRect(0, 0, MINIMAP_WIDTH, MINIMAP_HEIGHT);
 
+      context.beginPath();
       context.fillStyle   = "rgb(0, 0, 0)";
       for ( x = 0; x < this._sizeX; x++ ) {
-        if ( this._env[x][y] >= 1 ) {
-
-        cc.fillRect(
-          Math.round(TILE_SIZE / this._scaleX),
-          Math.round(TILE_SIZE / this._scaleY),
-          Math.round(TILE_SIZE / this._scaleX),
-          Math.round(TILE_SIZE / this._scaleY) );
+        for ( y = 0; y < this._sizeY; y++ ) {
+          if ( this._env[x][y] > 0 ) {
+            context.fillRect(
+              Math.round((x * TILE_SIZE) / this._scaleX),
+              Math.round((y * TILE_SIZE) / this._scaleY),
+              Math.round(TILE_SIZE / this._scaleX),
+              Math.round(TILE_SIZE / this._scaleY) );
+          }
         }
       }
+      context.closePath();
 
+      // Copy the image and store it for later rendering
       img = new Image();
       img.onload = function() {
         self._envstatic = this;
