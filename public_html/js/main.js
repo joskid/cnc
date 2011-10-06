@@ -700,16 +700,32 @@
     /**
      * @constructor
      */
-    init : function(callback) {
-      var self = this;
+    init : function() {
       console.group("Graphics::init()");
+      console.groupEnd();
+    },
 
-      // Preload all images
-      console.group("Preloading gfx");
-      var count = CnC.PRELOAD.gfx.length;
+    /**
+     * @destructor
+     */
+    destroy : function() {
+      console.group("Graphics::destroy()");
+      this.unload();
+      console.groupEnd();
+    },
+
+    /**
+     * preload -- Preload data for game session
+     * @return void
+     */
+    preload : function(preload, callback) {
+      console.group("Graphics::preload()");
+
+      var self = this;
+      var count = preload.length;
       var item, img, src, tsrc, s;
       for ( var i = 0; i < count; i++ ) {
-        item = CnC.PRELOAD.gfx[i];
+        item = preload[i];
         tsrc = item + ".png";
         src  = _Net.preload("general", tsrc);
 
@@ -729,15 +745,13 @@
         this._preloaded[item] = s;
       }
       console.groupEnd();
-
-      console.groupEnd();
     },
 
     /**
-     * @destructor
+     * unload -- Unload data from game session
+     * @return void
      */
-    destroy : function() {
-      console.group("Graphics::destroy()");
+    unload : function() {
       for ( var i in this._preloaded ) {
         if ( this._preloaded.hasOwnProperty(i) ) {
           if ( this._preloaded[i] ) {
@@ -746,7 +760,6 @@
           }
         }
       }
-      console.groupEnd();
     },
 
     /**
@@ -783,7 +796,7 @@
     /**
      * @constructor
      */
-    init : function(callback) {
+    init : function() {
       var self = this;
 
       console.group("Sounds::init()");
@@ -833,14 +846,33 @@
       console.log("Codec", this._codec, this._ext);
       console.log("WebAudio", !!this._context, this._context);
 
+      console.groupEnd();
+    },
+
+    /**
+     * @destructor
+     */
+    destroy : function() {
+      console.group("Sounds::destroy()");
+      this.unload();
+      console.groupEnd();
+    },
+
+    /**
+     * preload -- Preload data for game session
+     * @return void
+     */
+    preload : function(preload, callback) {
+      console.group("Sound::preload()");
+
       // Preload audio files
       if ( this._enabled ) {
-        console.group("Preloading audio");
 
-        var count = CnC.PRELOAD.snd.length;
+        var self = this;
+        var count = preload.length;
         var item, img, src, tsrc;
         for ( i = 0; i < count; i++ ) {
-          item = CnC.PRELOAD.snd[i];
+          item = preload[i];
           tsrc = this._codec + "/" + item + "." + this._ext;
           src  = _Net.preload("sound", tsrc); //
 
@@ -865,17 +897,14 @@
           }
 
         }
-        console.groupEnd();
       }
-
       console.groupEnd();
     },
-
     /**
-     * @destructor
+     * unload -- Unload data from game session
+     * @return void
      */
-    destroy : function() {
-      console.group("Sounds::destroy()");
+    unload : function() {
       for ( var i in this._preloaded ) {
         if ( this._preloaded.hasOwnProperty(i) ) {
           if ( this._preloaded[i] ) {
@@ -884,7 +913,6 @@
           }
         }
       }
-      console.groupEnd();
     },
 
     /**
@@ -1056,13 +1084,21 @@
         if ( this._interval ) {
           clearInterval(this._interval);
           this._interval = null;
+          console.log("Timer stopped");
         }
 
         // Destroy map
         if ( this._map ) {
           this._map.destroy();
           this._map = null;
+          console.log("Map destroyed");
         }
+
+        // Unload data
+        _Sound.unload();
+        _Graphic.unload();
+
+        console.log("Data unloaded");
 
         this._running = false;
       }
@@ -1070,57 +1106,62 @@
     },
 
     /**
+     * run -- internal
+     */
+    _run : function() {
+      var self = this;
+
+      this._started = new Date();
+      this._running = true;
+
+      var t = null;
+      if ( CnC.ENABLE_RAF ) {
+        t = (window.requestAnimationFrame       ||
+             window.webkitRequestAnimationFrame ||
+             window.mozRequestAnimationFrame    ||
+             window.oRequestAnimationFrame      ||
+             window.msRequestAnimationFrame     ||
+             null);
+      }
+
+      if ( t ) {
+        //var canvas = self.getCanvas();
+        var frame = function() {
+          if ( self._running ) {
+            var tick = ((new Date()) - self._started);
+            self.loop(tick);
+
+            t(frame/*, canvas*/);
+          }
+        };
+
+        t(frame/*, canvas*/);
+      } else {
+        if ( !self._interval ) {
+          self._interval = setInterval(function() {
+            var tick = ((new Date()) - self._started);
+            self.loop(tick);
+          }, LOOP_INTERVAL);
+        }
+      }
+    },
+
+    /**
      * run -- Run Game
      * @return void
      */
     run : function() {
-      var self = this;
 
       console.group("Game::run()");
 
       if ( !this._running ) {
-
-        //
-        // INSERT INIT DATA
-        //
-        this.prepare();
-
-        //
-        // START
-        //
-        this._started = new Date();
-        this._running = true;
-
-        var t = null;
-        if ( CnC.ENABLE_RAF ) {
-          t = (window.requestAnimationFrame       ||
-               window.webkitRequestAnimationFrame ||
-               window.mozRequestAnimationFrame    ||
-               window.oRequestAnimationFrame      ||
-               window.msRequestAnimationFrame     ||
-               null);
-        }
-
-        if ( t ) {
-          //var canvas = self.getCanvas();
-          var frame = function() {
-            if ( self._running ) {
-              var tick = ((new Date()) - self._started);
-              self.loop(tick);
-
-              t(frame/*, canvas*/);
-            }
-          };
-
-          t(frame/*, canvas*/);
-        } else {
-          if ( !self._interval ) {
-            self._interval = setInterval(function() {
-              var tick = ((new Date()) - self._started);
-              self.loop(tick);
-            }, LOOP_INTERVAL);
-          }
-        }
+        var self = this;
+        _Sound.preload(self._game.preload.snd, function() {
+          _Graphic.preload(self._game.preload.gfx, function() {
+            self.prepare(self._game.data);
+            self._run();
+          });
+        });
       }
 
       console.groupEnd();
@@ -1130,27 +1171,24 @@
      * prepare -- Prepare the game for running
      * @return void
      */
-    prepare : function() {
-      var self = this;
+    prepare : function(data) {
       if ( !this._running ) {
-
-
         // Set players
-        _Player     = this._game.player.index === undefined ? _Player      : parseInt(this._game.player.index, 10);
-        _PlayerTeam = this._game.player.team  === undefined ? _PlayerTeam  : this._game.player.team;
-        _Enemy      = this._game.enemy.index  === undefined ? _Enemy       : parseInt(this._game.enemy.index, 10);
-        _EnemyTeam  = this._game.enemy.team   === undefined ? _EnemyTeam   : this._game.enemy.team;
+        _Player     = data.player.index === undefined ? _Player      : parseInt(data.player.index, 10);
+        _PlayerTeam = data.player.team  === undefined ? _PlayerTeam  : data.player.team;
+        _Enemy      = data.enemy.index  === undefined ? _Enemy       : parseInt(data.enemy.index, 10);
+        _EnemyTeam  = data.enemy.team   === undefined ? _EnemyTeam   : data.enemy.team;
 
         // Create map
-        var mt = this._game.map.type;
-        var dt = this._game.map.data;
-        var sx = parseInt(this._game.map.sx, 10);
-        var sy = parseInt(this._game.map.sy, 10);
+        var mt = data.map.type;
+        var dt = data.map.data;
+        var sx = parseInt(data.map.sx, 10);
+        var sy = parseInt(data.map.sy, 10);
 
         this._map = new Map(mt, sx, sy, dt);
 
         // Create objects
-        var os = this._game.objects;
+        var os = data.objects;
         if ( os && os.length ) {
           for ( var i = 0; i < os.length; i++ ) {
             this._map.addObject(CreateObject.apply(this, os[i]));
@@ -1887,6 +1925,14 @@
       delete this._mincontext;
       delete this._mincanvas;
 
+      var cn = this._root.childNodes;
+      while ( cn.length > 2 ) {
+        if ( cn[cn.length - 1].nodeType == 1 ) {
+          this._root.removeChild(cn[cn.length - 1]);
+        }
+      }
+      delete cn;
+
       // Unset
       this._main     = null;
       this._root     = null;
@@ -2501,15 +2547,13 @@
    * Main runner function
    * @return void
    */
-  function main(game) {
-    _Sound      = new Sounds(function() {   // Initialize Sounds
-      _Graphic  = new Graphics(function() { // Initialize Graphics
-        _Main = new Game(game);             // Initialize Game
-          setTimeout(function() {
-            _Main.run();
-          }, SLEEP_INTERVAL);
-      });
-    });
+  function main(args) {
+    _Sound    = new Sounds();    // Initialize Sounds
+    _Graphic  = new Graphics();  // Initialize Graphics
+    _Main     = new Game(args);  // Initialize Game
+
+
+    _Main.run();
   }
 
   /**

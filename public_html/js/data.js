@@ -33,6 +33,7 @@
   //
   // Preloading
   //
+  /*
   CnC.PRELOAD = {
     'gfx' : [
       // Desert Theme
@@ -82,6 +83,7 @@
       "vehic1"
     ]
   }; // Public namespace
+  */
 
   //
   // Overlays

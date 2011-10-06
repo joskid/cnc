@@ -12,6 +12,37 @@ class Service
 {
 
   /**
+   * Load preload lists
+   * @param String    $type    File type
+   * @param String    $file    File name
+   * @return Mixed
+   */
+  public static function LoadPreload($type) {
+    $pack   = ($type == "sound") ? DATA_SOUNDS : DATA_GENERAL;
+    $path   = DIR_DATA . $pack;
+    $result = false;
+
+    if ( file_exists($path) ) {
+      $zip = new ZipArchive();
+      if ( ($res = $zip->open($path)) === true ) {
+        $result = Array();
+        $stat = true;
+        $i = 0;
+        while ( $stat ) {
+          if ( ($stat = $zip->statIndex($i)) !== false ) {
+            if ( !preg_match("/\/$/", $stat["name"]) ) {
+              $result[] = $stat["name"];
+            }
+          }
+          $i++;
+        }
+      }
+    }
+
+    return $result;
+  }
+
+  /**
    * Load a file from ZIP
    * @param String    $type    File type
    * @param String    $file    File name
