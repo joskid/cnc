@@ -8,8 +8,15 @@
  * @repo    https://github.com/andersevenrud/cnc
  * @class
  */
-class Service {
+class Service
+{
 
+  /**
+   * Load a file from ZIP
+   * @param String    $type    File type
+   * @param String    $file    File name
+   * @return Mixed
+   */
   public static function LoadFile($type, $file) {
     $pack = ($type == "sound") ? DATA_SOUNDS : DATA_GENERAL;
     $path = DIR_DATA . $pack;
@@ -43,10 +50,18 @@ class Service {
     return $data;
   }
 
+  /**
+   * TODO Save a Game
+   * @return void
+   */
   public static function SaveGame() {
     return false;
   }
 
+  /**
+   * Load a Game
+   * @return Mixed
+   */
   public static function LoadGame() {
     $path = DIR_DATA . "level000.php";
     if ( file_exists($path) ) {
