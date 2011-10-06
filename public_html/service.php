@@ -21,8 +21,6 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 
 if ( isset($_GET["action"]) ) {
-  $result = Array("error" => "", "result" => null);
-  $data   = isset($_GET["data"]) ? (Array)json_decode($_GET["data"]) : null;
   switch ( $_GET["action"] ) {
     case "load_file" :
       if ( isset($_GET['type']) && isset($_GET['file']) ) {
@@ -35,12 +33,27 @@ if ( isset($_GET["action"]) ) {
         }
       }
     break;
-    case "load_game" :
-      if ( is_array($data) ) {
-        $result["result"] = Service::LoadGame();
-      } else {
-        $result["error"] = ERROR_FORMAT;
+  }
+}
+
+
+if ( isset($_POST["action"]) ) {
+  $result = Array("error" => "", "result" => null);
+  $data   = isset($_POST["data"]) ? (Array)json_decode($_POST["data"]) : null;
+  switch ( $_POST["action"] ) {
+    case "load_file" :
+      if ( isset($_POST['type']) && isset($_POST['file']) ) {
+        if ( $data = Service::LoadFile($_POST['type'], $_POST['file']) ) {
+          list($mime, $out) = $data;
+          if ( $mime && $out ) {
+            header("Content-type: $mime");
+            die($out);
+          }
+        }
       }
+    break;
+    case "load_game" :
+      $result["result"] = Service::LoadGame();
     break;
     case "save_game" :
       if ( is_array($data) ) {

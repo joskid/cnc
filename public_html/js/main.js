@@ -929,11 +929,9 @@
       var self = this;
 
       console.group("Game::init()");
-      console.log("Using game data", game);
-      console.groupEnd();
 
-      // Set the game variable
       this._game = game;
+      console.log("Game data", this._game);
 
       // Create events
       $.addEvent(document, "keydown", function(ev) {
@@ -947,6 +945,8 @@
         $.preventDefault(ev);
         $.stopPropagation(ev);
       });
+
+      console.groupEnd();
     },
 
     /**
@@ -1074,10 +1074,11 @@
      * @return void
      */
     run : function() {
+      var self = this;
+
       console.group("Game::run()");
 
       if ( !this._running ) {
-        var self = this;
 
         //
         // INSERT INIT DATA
@@ -2497,6 +2498,21 @@
   /////////////////////////////////////////////////////////////////////////////
 
   /**
+   * Main runner function
+   * @return void
+   */
+  function main(game) {
+    _Sound      = new Sounds(function() {   // Initialize Sounds
+      _Graphic  = new Graphics(function() { // Initialize Graphics
+        _Main = new Game(game);             // Initialize Game
+          setTimeout(function() {
+            _Main.run();
+          }, SLEEP_INTERVAL);
+      });
+    });
+  }
+
+  /**
    * Window 'onload' function
    * @return void
    */
@@ -2510,66 +2526,20 @@
     console.log("Browser agent", navigator.userAgent);
     console.log("Browser features", SUPPORT);
 
-    // Example data
-    var game_data = {
-      'player' : {
-        'team' : "GDI"
-      },
-      'enemy' : {
-        'team' : "NOD"
-      },
-      'map' : {
-        'type' : "desert",
-        'sx'   : 100,
-        'sy'   : 100,
-        'data' : [
-          ["rock1", (TILE_SIZE * 10), (TILE_SIZE * 10)],
-          ["rock2", (TILE_SIZE * 19), (TILE_SIZE * 10)],
-          ["rock3", (TILE_SIZE * 30), (TILE_SIZE * 30)],
-          ["rock4", (TILE_SIZE * 22), (TILE_SIZE * 22)],
-          ["rock5", (TILE_SIZE * 3), (TILE_SIZE * 15)],
-          ["rock6", (TILE_SIZE * 8), (TILE_SIZE * 13)],
-
-          ["tree4", (TILE_SIZE * 5), (TILE_SIZE * 5)],
-          ["tree8", (TILE_SIZE * 23), (TILE_SIZE * 23)],
-          ["tree8", (TILE_SIZE * 12), (TILE_SIZE * 12)],
-          ["tree18", (TILE_SIZE * 29), (TILE_SIZE * 32)],
-          ["tree8", (TILE_SIZE * 40), (TILE_SIZE * 3)],
-          ["tree8", (TILE_SIZE * 38), (TILE_SIZE * 10)]
-        ]
-      },
-      'objects' : [
-        // Player 1
-        ["HUMVee",        0, (TILE_SIZE * 2),  (TILE_SIZE * 7)],
-        ["HUMVee",        0, (TILE_SIZE * 4),  (TILE_SIZE * 7)],
-        ["HUMVee",        0, (TILE_SIZE * 6),  (TILE_SIZE * 7)],
-        ["ConstructionYard", 0, (TILE_SIZE * 2), (TILE_SIZE * 2)],
-        ["Barracks",     0, (TILE_SIZE * 5), (TILE_SIZE * 2)],
-        ["Minigunner",  0, (TILE_SIZE * 20),  (TILE_SIZE * 2)],
-        ["Minigunner",  0, (TILE_SIZE * 20),  (TILE_SIZE * 3)],
-        ["Minigunner",  0, (TILE_SIZE * 20),  (TILE_SIZE * 4)],
-
-        // Player 2
-        ["HUMVee",        1, 2000, 1700],
-        ["HUMVee",        1, 2000, 1750],
-        ["HUMVee",        1, 2000, 1800],
-        ["ConstructionYard", 1, 2000, 2000]
-      ]
-    };
 
     // Initialize graphics engine (required)
     if ( SUPPORT.json && SUPPORT.canvas && SUPPORT.xhr ) {
-      _GUI        = new GUI();                // Initialize GUI
-      _Net        = new Networking();         // Initialize Networking
-      _Sound      = new Sounds(function() {   // Initialize Sounds
-        _Graphic  = new Graphics(function() { // Initialize Graphics
-            _Main = new Game(game_data);      // Initialize Game
-              setTimeout(function() {
-                _Main.run();
-              }, SLEEP_INTERVAL);
-        });
+      _GUI = new GUI();                // Initialize GUI
+      _Net = new Networking();         // Initialize Networking
+      _Net.service("load_game", {}, function(conn, response) {
+        if ( response && (response instanceof Object) && response.result ) {
+          main(response.result);
+        } else {
+          alert("Failed to validate game data!");
+        }
+      }, function() {
+        alert("Failed to load game data!");
       });
-
     } else {
       alert("Your browser is not supported!");
     }
