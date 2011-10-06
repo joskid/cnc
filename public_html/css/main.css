@@ -5,16 +5,23 @@
  * @author  Anders Evenrud <andersevenrud@gmail.com>
  * @package CnC
  */
+
+@font-face {
+  font-family : "CnC";
+  src : url('/css/tiberium.ttf');
+}
+
 html, body {
   margin : 0;
   padding : 0;
   width : 100%;
   height : 100%;
   overflow : hidden;
+  font-family : "CnC";
+  letter-spacing : 2px;
 }
 body {
   background-color : #000;
-  font-family : Arial;
 }
 body, a, table, td {
   color : #eee;
@@ -301,6 +308,8 @@ body.CursorMove {
   z-index : 1900000;
   color : #fff;
   text-shadow: 0px 0px 1px #000;
+  font-family : Arial;
+  letter-spacing : 0;
   font-size : 10px;
 }
 
