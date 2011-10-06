@@ -2372,7 +2372,7 @@
     onConstructClick : function(ev, px, py) {
       try {
         var type = this._constructing.type;
-        var obj = CreateObject(this, type, _Player, px, py);
+        var obj = CreateObject.apply(this, [type, _Player, px, py]);
         this.addObject(obj, true);
       } catch ( e ) {
         alert("Cannot create this type!");
