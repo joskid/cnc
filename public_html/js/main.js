@@ -106,7 +106,7 @@
       throw("Cannot create '" + type + "'.");
     }
 
-    return new MapObject(player, x, y, a, args);
+    return new MapObject(this /* == Map */, player, x, y, a, args);
   };
 
   /**
@@ -241,8 +241,10 @@
    */
   var GUI = Class.extend({
 
-    _structure_top : 0,
-    _unit_top      : 0,
+    _sidebar       : true,      // Sidebar visibilty
+    _menu          : false,     // Menu visibility
+    _structure_top : 0,         // Structure construction containar scrollTop
+    _unit_top      : 0,         // Unit construction container scrollTop
 
     /**
      * @constructor
@@ -377,6 +379,10 @@
     // METHODS
     //
 
+    /**
+     * GUI::prepare -- Prepare GUI elements
+     * @return void
+     */
     prepare : (function() {
 
       function _createItem(cname, root, src, key, title, price, time, type) {
@@ -451,17 +457,29 @@
     // EVENTS
     //
 
+    /**
+     * GUI::toggleSidebar -- Toggle Sidebar display
+     * @return void
+     */
     toggleSidebar : function() {
       this._sidebar = !this._sidebar;
       document.getElementById("Sidebar").style.display = this._sidebar ? "block" : "none";
     },
 
+    /**
+     * GUI::toggleMenu -- Toggle Main Menu display
+     * @return void
+     */
     toggleMenu : function() {
-        this._menu = !this._menu;
-        document.getElementById("WindowBackground").style.display = this._menu ? "block" : "none";
-        document.getElementById("Window").style.display = this._menu ? "block" : "none";
+      this._menu = !this._menu;
+      document.getElementById("WindowBackground").style.display = this._menu ? "block" : "none";
+      document.getElementById("Window").style.display = this._menu ? "block" : "none";
     },
 
+    /**
+     * GUI::scrolLContainer -- Scroll the construction containers event
+     * @return void
+     */
     scrollContainer : function(c, dir) {
       var el = document.getElementById((c ? "ConstructionRightScroll" : "ConstructionLeftScroll"));
       var th = (el.scrollHeight) - (el.offsetHeight);
@@ -502,12 +520,12 @@
    */
   var Networking = Class.extend({
 
-    _supported  : SUPPORT.WebSocket,
-    _xsupported : SUPPORT.xhr,
-    _socket     : null,
-    _started    : null,
-    _ended      : null,
-    _connected  : false,
+    _supported  : SUPPORT.WebSocket,    // WebSocket support
+    _xsupported : SUPPORT.xhr,          // AJAX support
+    _socket     : null,                 // Current socket
+    _started    : null,                 // Session started timestamp
+    _ended      : null,                 // Sesion ended timestamp
+    _connected  : false,                // Connection state
 
     /**
      * @constructor
@@ -531,7 +549,7 @@
     //
 
     /**
-     * preload -- Create a preloading URL
+     * Networking::preload -- Create a preloading URL
      * @return String
      */
     preload : function(type, file) {
@@ -539,7 +557,7 @@
     },
 
     /**
-     * service -- Do a service request
+     * Networking::service -- Do a service request
      * @return bool
      */
     service : function(action, data, callback_success, callback_error) {
@@ -603,7 +621,7 @@
     //
 
     /**
-     * connect -- Connect to socket
+     * Networking::connect -- Connect to socket
      * @return bool
      */
     connect : function(uri) {
@@ -633,7 +651,7 @@
     },
 
     /**
-     * disconnect -- Disconnect from socket
+     * Networking::disconnect -- Disconnect from socket
      * @return bool
      */
     disconnect : function() {
@@ -649,7 +667,7 @@
     },
 
     /**
-     * send -- Send data over socket
+     * Networking::send -- Send data over socket
      * @return bool
      */
     send : function(data) {
@@ -668,6 +686,10 @@
     // EVENTS
     //
 
+    /**
+     * Networking::onConnect>WebSocket::Event
+     * @return void
+     */
     onConnect : function(ev) {
       this._connected = true;
       this._started   = new Date();
@@ -675,6 +697,10 @@
       console.log("Networking::onConnect()", ev);
     },
 
+    /**
+     * Networking::onDisconnect>WebSocket::Event
+     * @return void
+     */
     onDisconnect : function(ev) {
       this._connected = false;
       this._ended     = new Date();
@@ -682,10 +708,18 @@
       console.log("Networking::onDisconnect()", ev);
     },
 
+    /**
+     * Networking::onRecieve>WebSocket::Event
+     * @return void
+     */
     onRecieve : function(ev) {
       console.log("Networking::onRecieve()", ev.data);
     },
 
+    /**
+     * Networking::onError>WebSocket::Event
+     * @return void
+     */
     onError : function(ev) {
       console.log("Networking::onError()", ev.data);
     }
@@ -698,8 +732,7 @@
    */
   var Graphics = Class.extend({
 
-    // Preloaded items
-    _preloaded     : {},
+    _preloaded   : {},        // Preloaded objects container
 
     /**
      * @constructor
@@ -719,7 +752,7 @@
     },
 
     /**
-     * preload -- Preload data for game session
+     * Graphics::preload -- Preload data for game session
      * @return void
      */
     preload : function(preload, callback) {
@@ -757,7 +790,7 @@
     },
 
     /**
-     * unload -- Unload data from game session
+     * Graphics::unload -- Unload data from game session
      * @return void
      */
     unload : function() {
@@ -772,7 +805,7 @@
     },
 
     /**
-     * Get a preloaded image
+     * Graphics::getImge -- Get a preloaded image
      * @return Image
      */
     getImage : function(img) {
@@ -788,19 +821,16 @@
   var Sounds = Class.extend({
     _enabled     : (CnC.CONFIG.audio_on),
 
-    // <audio>
-    _codec       : "mp3",
-    _ext         : "mp3",
+    _codec       : "mp3",     // Current <audio> codec
+    _ext         : "mp3",     // Current <audio> file-extension
 
-    // Webaudio
-    _webaudio    : false,
-    _context     : null,
-    _csource     : null,
-    _cfilters    : {},
-    _cpanners    : null,
+    _webaudio    : false,     // WebAudio supported and enabled
+    _context     : null,      // WebAudio context
+    _csource     : null,      // WebAudio context sources
+    _cfilters    : {},        // WebAudio context filters
+    _cpanners    : null,      // WebAudio context filter:panner
 
-    // Preloaded items
-    _preloaded   : {},
+    _preloaded   : {},        // Preloaded objects container
 
     /**
      * @constructor
@@ -868,7 +898,7 @@
     },
 
     /**
-     * preload -- Preload data for game session
+     * Sounds::preload -- Preload data for game session
      * @return void
      */
     preload : function(preload, callback) {
@@ -913,7 +943,7 @@
       console.groupEnd();
     },
     /**
-     * unload -- Unload data from game session
+     * Sounds::unload -- Unload data from game session
      * @return void
      */
     unload : function() {
@@ -928,7 +958,7 @@
     },
 
     /**
-     * Play a preloaded sound
+     * Sounds::play -- Play a preloaded sound
      * @return void
      */
     play : function(snd, obj) {
@@ -954,14 +984,12 @@
    */
   var Game = Class.extend({
 
-    _interval : null,
-    _started  : null,
-    _last     : null,
-    _running  : false,
-    _map      : null,
-    _game     : null,
-    _sidebar  : true,
-    _menu     : false,
+    _interval : null,       // Game interval timer for main loop
+    _started  : null,       // Game session started timestamp
+    _last     : null,       // Last tick timestamp
+    _running  : false,      // Running state
+    _map      : null,       // Map instance reference
+    _game     : null,       // Game data object (From AJAX)
 
     /**
      * @constructor
@@ -1021,7 +1049,7 @@
     //
 
     /**
-     * keypress -- keypress event
+     * Game::keypress -- keypress event
      * @return void
      */
     keypress : function(ev) {
@@ -1053,7 +1081,7 @@
     },
 
     /**
-     * resize -- onresize event
+     * Game::resize -- onresize event
      * @return void
      */
     resize : function() {
@@ -1063,7 +1091,7 @@
     },
 
     /**
-     * loop -- main loop
+     * Game::loop -- main loop
      * @return void
      */
     loop : function(tick) {
@@ -1087,7 +1115,7 @@
 
 
     /**
-     * stop -- Stop Game
+     * Game::stop -- Stop Game
      * @return void
      */
     stop : function() {
@@ -1119,7 +1147,7 @@
     },
 
     /**
-     * run -- internal
+     * Game::run -- internal
      */
     _run : function() {
       var self = this;
@@ -1160,7 +1188,7 @@
     },
 
     /**
-     * run -- Run Game
+     * Game::run -- Run Game
      * @return void
      */
     run : function() {
@@ -1183,7 +1211,7 @@
     },
 
     /**
-     * prepare -- Prepare the game for running
+     * Game::prepare -- Prepare the game for running
      * @return void
      */
     prepare : function(data) {
@@ -1219,7 +1247,7 @@
     },
 
     /**
-     * reset -- Reset the Game
+     * Game::reset -- Reset the Game
      * @return void
      */
     reset : function() {
@@ -1237,7 +1265,7 @@
     //
 
     /**
-     * getMap -- Get the current Map instance
+     * Game::getMap -- Get the current Map instance
      * @return Map
      */
     getMap : function() {
@@ -1257,35 +1285,36 @@
   var MapObject = CanvasObject.extend({
 
     // Base attributes
-    _iid           : -1,
-    _type          : -1,
-    _image         : null,
-    _image_loaded  : false,
-    _selected      : false,
-    _angle         : 0,
-    _sonuds        : null,
+    _iid           : -1,          // Internal id (counter)
+    _type          : -1,          // Object type
+    _image         : null,        // Object image (static image)
+    _image_loaded  : false,       // Object image loaded (static image)
+    _sprite        : null,        // Object sprite (dynamic images)
+    _selected      : false,       // Selected state
+    _angle         : 0,           // Current angle
+    _sonuds        : null,        // Object sounds
 
     // Instance attributes
-    _player        : 0,
-    _selectable    : true,
-    _movable       : true,
-    _speed         : 0,
-    _turning_speed : 0,
-    _strength      : 10,
+    _player        : 0,           // Object player Id
+    _selectable    : true,        // Object selectable
+    _movable       : true,        // Object movable
+    _primary       : false,       // Object primary state
+    _speed         : 0,           // Object movment speed
+    _turning_speed : 0,           // Object turning speed
+    _strength      : 10,          // Object strength
 
     // Rendering
-    _blank         : null,
-    _mask          : null,
-    _sprite        : null,
-    _destination   : null,
-    _heading       : null,
-    _path          : null,
-    _frame         : 0,
+    _blank         : null,        // Blank image overlay DOM
+    _mask          : null,        // Clickable mask overlay DOM
+    _destination   : null,        // Current object destination (movment)
+    _heading       : null,        // Current object heading (movment)
+    _path          : null,        // Current object path (movment)
+    _frame         : 0,           // Current sprite frame
 
     /**
      * @constructor
      */
-    init : function(player, x, y, ang, opts) {
+    init : function(mapRef, player, x, y, ang, opts) {
       var self = this;
 
       // Validate input data
@@ -1409,7 +1438,7 @@
     },
 
     /**
-     * render -- Render the MapObject (CanvasObject)
+     * MapObject::render -- Render the MapObject (CanvasObject)
      * @return void
      */
     render : function() {
@@ -1553,7 +1582,7 @@
     },
 
     /**
-     * _toggle -- Toggle selection state of MapObject
+     * MapObject::_toggle -- Toggle selection state of MapObject
      * @return void
      */
     _toggle : function(t) {
@@ -1565,7 +1594,7 @@
     },
 
     /**
-     * select -- Select the MapObject
+     * MapObject::select -- Select the MapObject
      * @return void
      */
     select : function() {
@@ -1573,7 +1602,7 @@
     },
 
     /**
-     * unselect -- Unselect the MapObject
+     * MapObject::unselect -- Unselect the MapObject
      * @return void
      */
     unselect : function() {
@@ -1581,7 +1610,7 @@
     },
 
     /**
-     * move -- Move the MapObject
+     * MapObject::move -- Move the MapObject
      * @return void
      */
     move : function(pos) {
@@ -1633,7 +1662,7 @@
     },
 
     /**
-     * onClick -- Click event
+     * MapObject::onClick -- Click event
      * @return void
      */
     onClick : function(ev) {
@@ -1644,8 +1673,7 @@
     },
 
     /**
-     * onRender -- Handle sprite rendering
-     * FIXME Dynamic rotation metadata
+     * MapObject::onRender -- Handle sprite rendering
      * @return void
      */
     onRenderSprite : function() {
@@ -1670,14 +1698,6 @@
           if ( this._sprite.rotation[j] !== undefined ) {
             srcX = this._sprite.rotation[j];
           }
-
-          /*
-          var rndA = Math.abs($.roundedAngle(Math.round(this._angle), 90));
-          var rndB = Math.abs($.roundedAngle(Math.round(this._angle), 11.25));
-          if ( this._sprite.rotation[rndB] !== undefined ) {
-            srcX = this._sprite.rotation[rndB];
-          }
-          */
         }
 
         this.drawClipImage(this._image, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
@@ -1693,7 +1713,7 @@
     },
 
     /**
-     * getMovable -- Get movable state
+     * MapObject::getMovable -- Get movable state
      * @return bool
      */
     getMovable : function() {
@@ -1701,7 +1721,7 @@
     },
 
     /**
-     * getSelectable -- Get selectable state
+     * MapObject::getSelectable -- Get selectable state
      * @return bool
      */
     getSelectable : function() {
@@ -1709,7 +1729,7 @@
     },
 
     /**
-     * getIsSelected -- Get if this MapObject is selected
+     * MapObject::getIsSelected -- Get if this MapObject is selected
      * @return bool
      */
     getIsSelected : function() {
@@ -1717,7 +1737,7 @@
     },
 
     /**
-     * getIsMine -- Get if this MapObject is the current player's
+     * MapObject::getIsMine -- Get if this MapObject is the current player's
      * @return bool
      */
     getIsMine : function() {
@@ -1725,7 +1745,7 @@
     },
 
     /**
-     * getSound -- Get the sound of the MapObject
+     * MapObject::getSound -- Get the sound of the MapObject
      * @return String
      */
     getSound : function(snd) {
@@ -1748,7 +1768,7 @@
     },
 
     /**
-     * getRect -- Get the rect of an object
+     * MapObject::getRect -- Get the rect of an object
      * @return Object
      */
     getRect : function() {
@@ -1775,40 +1795,40 @@
   var Map = CanvasObject.extend({
 
     // Objects etc
-    _type       : null,
-    _objects    : [],
-    _data       : [],
-    _env        : [],
+    _type       : null,     // Map type (theme)
+    _objects    : [],       // MapObjects
+    _data       : [],       // Map Data
+    _env        : [],       // Map Environmental Data
 
     // Base attributes
-    _marginX    : -1,
-    _marginY    : -1,
-    _sizeX      : 100,
-    _sizeY      : 100,
-    _posX       : 0,
-    _posY       : 0,
+    _marginX    : -1,       // Map container left margin
+    _marginY    : -1,       // Map container top margin
+    _sizeX      : 100,      // Map width in tiles
+    _sizeY      : 100,      // Map height in tiles
+    _posX       : 0,        // Map position x in pixels
+    _posY       : 0,        // Map position y in pixels
 
     // DOM Elements
-    _main       : null,
-    _root       : null,
-    _minimap    : null,
-    _minirect   : null,
-    _rect       : null,
-    _mincanvas  : null,
-    _mincontext : null,
-    _mask       : null,
+    _main       : null,     // #Main
+    _root       : null,     // #MapContainer
+    _minimap    : null,     // #MiniMap
+    _minirect   : null,     // #MiniMapRect
+    _rect       : null,     // #Rectangle
+    _mincanvas  : null,     // MiniMap canvas overlay
+    _mincontext : null,     // MiniMap canvas overlay context
+    _mask       : null,     // Construction mask overlay
 
     // Minimap variables
-    _scaleX     : -1,
-    _scaleY     : -1,
+    _scaleX     : -1,       // MiniMap scaling X factor
+    _scaleY     : -1,       // MiniMap scaling Y factor
 
     // Event variables
-    _constructing : false,
-    _selecting    : false,
-    _dragging     : false,
-    _scrolling    : false,
-    _startX       : -1,
-    _startY       : -1,
+    _constructing : false,  // Construction state (construction)
+    _selecting    : false,  // Selection state (rectangle)
+    _dragging     : false,  // Dragging state (map)
+    _scrolling    : false,  // Scrolling state (minimap)
+    _startX       : -1,     // Mouse starting X position
+    _startY       : -1,     // Mouse starting Y position
 
     /**
      * @constructor
@@ -1965,7 +1985,7 @@
     //
 
     /**
-     * addObject -- Add a MapObject
+     * Map::addObject -- Add a MapObject
      * @return void
      */
     addObject : function(o, dom) {
@@ -1979,7 +1999,7 @@
     },
 
     /**
-     * removeObject -- Remove a MapObject
+     * Map::removeObject -- Remove a MapObject
      * TODO
      * @return bool
      */
@@ -1988,7 +2008,7 @@
     },
 
     /**
-     * clearObjects -- Remove all MapObjects
+     * Map::clearObjects -- Remove all MapObjects
      * @return void
      */
     clearObjects : function() {
@@ -2002,7 +2022,8 @@
     },
 
     /**
-     * calculateObjectPath -- Calculate the path of MapObject
+     * Map::calculateObjectPath -- Calculate the path of MapObject
+     * @see    CnC.PathFinder
      * @return Array
      */
     calculateObjectPath : function(obj, x1, y1, x2, y2, ang) {
@@ -2013,6 +2034,10 @@
     // DOM EVENTS
     //
 
+    /**
+     * Map::_onMouseDown>Window.Event
+     * @return Mixed
+     */
     _onMouseDown : function(ev, main, minimap) {
       var self = this;
 
@@ -2073,6 +2098,10 @@
       });
     },
 
+    /**
+     * Map::_onMouseUp>Window.Event
+     * @return Mixed
+     */
     _onMouseUp : function(ev) {
       this._rect.style.display = 'none';
       this._rect.style.top     = '0px';
@@ -2134,6 +2163,10 @@
       });
     },
 
+    /**
+     * Map::_onMouseMove>Window.Event
+     * @return Mixed
+     */
     _onMouseMove : function(ev) {
       var mX = $.mousePosX(ev);
       var mY = $.mousePosY(ev);
@@ -2190,6 +2223,10 @@
       }
     },
 
+    /**
+     * Map::_onMiniMapMouseClick>Window.Event
+     * @return Mixed
+     */
     _onMiniMapMouseClick : function(ev) {
       // Center the click position for the rectangle and update scrolling
       var rel = $.getOffset(this._minimap);
@@ -2223,7 +2260,7 @@
     //
 
     /**
-     * onDragStart -- Drag starting event
+     * Map::onDragStart -- Drag starting event
      * @return void
      */
     onDragStart : function(ev, pos) {
@@ -2234,7 +2271,7 @@
     },
 
     /**
-     * onDragStop -- Drag stopping event
+     * Map::onDragStop -- Drag stopping event
      * @return void
      */
     onDragStop : function(ev, pos) {
@@ -2249,8 +2286,8 @@
     },
 
     /**
-     * onDragMove -- Drag moving event
-     * @return Position
+     * Map::onDragMove -- Drag moving event
+     * @return void
      */
     onDragMove : function(ev, pos) {
       // Move the map container
@@ -2286,7 +2323,7 @@
     },
 
     /**
-     * onSelect -- Selection rectangle event
+     * Map::onSelect -- Selection rectangle event
      * @return void
      */
     onSelect : function(ev, rect) {
@@ -2308,7 +2345,7 @@
     },
 
     /**
-     * onConstructMask -- Construction mask event
+     * Map::onConstructMask -- Construction mask event
      * @return void
      */
     onConstructMask : function(ev, x, y) {
@@ -2329,13 +2366,13 @@
     },
 
     /**
-     * onConstructClick -- Construction click event
+     * Map::onConstructClick -- Construction click event
      * @return void
      */
     onConstructClick : function(ev, px, py) {
       try {
         var type = this._constructing.type;
-        var obj = CreateObject(type, _Player, px, py);
+        var obj = CreateObject(this, type, _Player, px, py);
         this.addObject(obj, true);
       } catch ( e ) {
         alert("Cannot create this type!");
@@ -2349,7 +2386,7 @@
     // METHODS
 
     /**
-     * prepare -- Prepare the map (Load)
+     * Map::prepare -- Prepare the map (Load)
      * @return void
      */
     prepare : function() {
@@ -2444,7 +2481,7 @@
     },
 
     /**
-     * render -- Render the Map (CanvasObject)
+     * Map::render -- Render the Map (CanvasObject)
      * @return void
      */
     render : function() {
@@ -2508,6 +2545,10 @@
       //this._super(); // Do not call!
     },
 
+    /**
+     * Map::renderEnvironment -- Render the environment overlay (paths)
+     * @return void
+     */
     renderEnvironment : function() {
       console.group("Map::renderEnvironment()");
       var x, y, e;
@@ -2544,10 +2585,19 @@
     // GETTERS/SETTERS
     //
 
+    /**
+     * Map::setConstruction -- Set the construction type
+     * @return void
+     */
     setConstruction : function(cons) {
       this._constructing = cons;
     },
 
+    /**
+     * Map::getEnvironmentData -- Get the environment data
+     * @see    CnC.PathFinder
+     * @return Array
+     */
     getEnvironmentData : function() {
       return this._env;
     }
@@ -2651,9 +2701,9 @@
     _DebugObjects = null;
 
     window.onload         = undefined;
-    window.onunload       = undefined;
     window.onresize       = undefined;
     window.onbeforeunload = undefined;
+    window.onunload       = undefined;
   };
 
   /**

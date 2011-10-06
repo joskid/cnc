@@ -301,7 +301,28 @@
         "Factory" : {
           "image" : "weapons_factory",
           "title" : "Weapons Factory (Vehicle facility)",
-          "desc"  : "This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met."
+          "desc"  : "This structure produces all of the GDI's light and heavy vehicles. Some units can't be built until upgrade mandates are met.",
+          "object" : {
+            'type'   : _ob,
+            'width'  : 72,
+            'height' : 72,
+            'sprite' : {
+              'src' : "gdi/structures/factory_sprite",
+              'cw'  : 72,
+              'ch'  : 72,
+              'animation' : [
+                0
+              ]
+            },
+            'attrs'  : {
+              'movable'   : false,
+              'speed'     : 0,
+              'turning'   : 0,
+              'strength'  : 100
+            },
+            'mask' : [0, 0, 72, 72],
+            'sounds' : {}
+          }
         },
         "CommunicationCenter" : {
           "image" : "comm_center",

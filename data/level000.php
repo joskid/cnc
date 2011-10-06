@@ -70,6 +70,7 @@ print json_encode(Array(
       "gdi/structures/adv_power_sprite",
       "gdi/structures/barracks_sprite",
       "gdi/structures/refinery_sprite",
+      "gdi/structures/factory_sprite",
       "gdi/structures/silo_sprite",
       "gdi/structures/comm_sprite",
       "gdi/structures/adv_comm_sprite",
