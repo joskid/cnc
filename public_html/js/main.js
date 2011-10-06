@@ -2514,34 +2514,6 @@
         o.render();
       }
 
-        /*
-      if ( CnC.DEBUG_MODE ) {
-        var cc = this.__coverlay;
-        var rect;
-        cc.clearRect(0, 0, this.__width, this.__height);
-        cc.beginPath();
-        for ( var y = 0; y < this._sizeY; y++ ) {
-          rect = {
-            x1 : 0,
-            y1 : y * TILE_SIZE,
-            x2 : this.__width,
-            y2 : y * TILE_SIZE
-          };
-        }
-
-        for ( var x = 0; x < this._sizeX; x++ ) {
-          rect = {
-            x1 : x * TILE_SIZE,
-            y1 : 0,
-            x2 : x * TILE_SIZE,
-            y2 : this.__height
-          };
-        }
-        cc.stroke();
-        cc.closePath();
-      }
-        */
-
       //this._super(); // Do not call!
     },
 
