@@ -902,6 +902,7 @@
 
         }
       }
+
       console.groupEnd();
     },
     /**
@@ -1155,20 +1156,22 @@
      * @return void
      */
     run : function() {
-
       console.group("Game::run()");
+      console.groupEnd();
 
       if ( !this._running ) {
         var self = this;
         _Sound.preload(self._game.preload.snd, function() {
-          _Graphic.preload(self._game.preload.gfx, function() {
-            self.prepare(self._game.data);
-            self._run();
-          });
+          setTimeout(function() {
+            _Graphic.preload(self._game.preload.gfx, function() {
+              setTimeout(function() {
+                self.prepare(self._game.data);
+                self._run();
+              }, 0);
+            });
+          }, 0);
         });
       }
-
-      console.groupEnd();
     },
 
     /**
@@ -2573,7 +2576,7 @@
     console.group("window::onload()");
     console.log("Browser agent", navigator.userAgent);
     console.log("Browser features", SUPPORT);
-
+    console.groupEnd();
 
     // Initialize graphics engine (required)
     if ( SUPPORT.json && SUPPORT.canvas && SUPPORT.xhr ) {
@@ -2591,8 +2594,6 @@
     } else {
       alert("Your browser is not supported!");
     }
-
-    console.groupEnd();
   };
 
   /**
