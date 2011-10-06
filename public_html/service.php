@@ -24,20 +24,15 @@ header("Pragma: no-cache");
 /**
  * Handle GET Requests
  */
-if ( isset($_GET["action"]) ) {
-  switch ( $_GET["action"] ) {
-    // Load a file from data directory
-    case "load_file" :
-      if ( isset($_GET['type']) && isset($_GET['file']) ) {
-        if ( $data = Service::LoadFile($_GET['type'], $_GET['file']) ) {
-          list($mime, $out) = $data;
-          if ( $mime && $out ) {
-            header("Content-type: $mime");
-            die($out);
-          }
-        }
+if ( isset($_GET["preload"]) ) {
+  if ( isset($_GET['file']) ) {
+    if ( $data = Service::LoadFile($_GET['preload'], $_GET['file']) ) {
+      list($mime, $out) = $data;
+      if ( $mime && $out ) {
+        header("Content-type: $mime");
+        die($out);
       }
-    break;
+    }
   }
 }
 

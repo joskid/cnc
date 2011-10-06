@@ -535,7 +535,7 @@
      * @return String
      */
     preload : function(type, file) {
-      return CnC.SERVICE_URI + "?action=load_file&type=" + type + "&file=" + encodeURIComponent(file);
+      return CnC.SERVICE_URI + "?preload=" + type + "&file=" + encodeURIComponent(file);
     },
 
     /**
