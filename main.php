@@ -15,8 +15,8 @@ define("DIR_DATA",  DIR_ROOT . "/data/");
 /**
  * Data definitions
  */
-define("DATA_SOUNDS",   "sounds.zip");
-define("DATA_GENERAL",  "general.zip");
+define("DATA_SOUNDS",   DIR_DATA . "sounds.zip");
+define("DATA_GENERAL",  DIR_DATA . "general.zip");
 
 /**
  * Error messages
@@ -27,6 +27,7 @@ define("ERROR_FORMAT",  "Invalid format or no input recieved!");
 /**
  * Requirements
  */
+require DIR_SRC . "Data.class.php";
 require DIR_SRC . "Server.class.php";
 require DIR_SRC . "Service.class.php";
 

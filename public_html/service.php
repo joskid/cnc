@@ -34,6 +34,7 @@ if ( isset($_GET["preload"]) ) {
       }
     }
   }
+  return;
 }
 
 /**

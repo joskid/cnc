@@ -12,37 +12,6 @@ class Service
 {
 
   /**
-   * Load preload lists
-   * @param String    $type    File type
-   * @param String    $file    File name
-   * @return Mixed
-   */
-  public static function LoadPreload($type) {
-    $pack   = ($type == "sound") ? DATA_SOUNDS : DATA_GENERAL;
-    $path   = DIR_DATA . $pack;
-    $result = false;
-
-    if ( file_exists($path) ) {
-      $zip = new ZipArchive();
-      if ( ($res = $zip->open($path)) === true ) {
-        $result = Array();
-        $stat = true;
-        $i = 0;
-        while ( $stat ) {
-          if ( ($stat = $zip->statIndex($i)) !== false ) {
-            if ( !preg_match("/\/$/", $stat["name"]) ) {
-              $result[] = $stat["name"];
-            }
-          }
-          $i++;
-        }
-      }
-    }
-
-    return $result;
-  }
-
-  /**
    * Load a file from ZIP
    * @param String    $type    File type
    * @param String    $file    File name
@@ -50,35 +19,29 @@ class Service
    */
   public static function LoadFile($type, $file) {
     $pack = ($type == "sound") ? DATA_SOUNDS : DATA_GENERAL;
-    $path = DIR_DATA . $pack;
-    $data = null;
 
-    if ( file_exists($path) ) {
-      $zip = new ZipArchive();
-      if ( ($res = $zip->open($path)) === true ) {
-        if ( $entry = $zip->getFromName($file) ) {
-          $ext  = substr(strrchr($file, "."), 1);
-          switch ( $ext ) {
-            case "png" :
-              $mime = "image/png";
-            break;
-            case "mp3" :
-              $mime = "audio/mpeg";
-            break;
-            case "ogg" :
-              $mime = 'audio/ogg; codecs="vorbis"';
-            break;
-            default :
-              $mime = null;
-            break;
-          }
-          $data = Array($mime, $entry);
+    if ( file_exists($pack) ) {
+      if ( $entry = Data::GetDataFile($pack, $file) ) {
+        $ext  = substr(strrchr($file, "."), 1);
+        switch ( $ext ) {
+          case "png" :
+            $mime = "image/png";
+          break;
+          case "mp3" :
+            $mime = "audio/mpeg";
+          break;
+          case "ogg" :
+            $mime = 'audio/ogg; codecs="vorbis"';
+          break;
+          default :
+            $mime = null;
+          break;
         }
-        $zip->close();
+        return Array($mime, $entry);
       }
     }
 
-    return $data;
+    return null;
   }
 
   /**
