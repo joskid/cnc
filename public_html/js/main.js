@@ -2282,10 +2282,8 @@
       this._minirect.style.top  = (rectY - 1) + 'px';
 
       // Map
-      var scaleX = this.__width / MINIMAP_WIDTH;
-      var scaleY = this.__height / MINIMAP_HEIGHT;
-      var mapX = -parseInt((rectX * scaleX), 10);
-      var mapY = -parseInt((rectY * scaleY), 10);
+      var mapX = -parseInt((rectX * this._scaleX), 10);
+      var mapY = -parseInt((rectY * this._scaleY), 10);
 
       this._root.style.left     = (mapX) + "px";
       this._root.style.top      = (mapY) + "px";
