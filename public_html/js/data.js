@@ -15,14 +15,20 @@
   //
   // INTERNALS
   //
-  CnC.OBJECT_UNIT      = _ou;
-  CnC.OBJECT_VEHICLE   = _ov;
-  CnC.OBJECT_BUILDING  = _ob;
+  CnC.OBJECT_UNIT        = _ou;
+  CnC.OBJECT_VEHICLE     = _ov;
+  CnC.OBJECT_BUILDING    = _ob;
 
-  CnC.SOUND_SELECT     = 0;
-  CnC.SOUND_MOVE       = 1;
-  CnC.SOUND_ATTACK     = 2;
-  CnC.SOUND_DIE        = 3;
+  CnC.OBJECT_CLASSNAMES  = {
+    1 : "MapObjectUnit",
+    2 : "MapObjectVehicle",
+    3 : "MapObjectBuilding"
+  };
+
+  CnC.SOUND_SELECT       = 0;
+  CnC.SOUND_MOVE         = 1;
+  CnC.SOUND_ATTACK       = 2;
+  CnC.SOUND_DIE          = 3;
 
   CnC.AUDIO_CODECS = {
     "ogg" : 'audio/ogg; codecs="vorbis"', // OGG
@@ -561,7 +567,8 @@
               'src' : "gdi/units/minigunner_sprite",
               'cw'  : 50,
               'ch'  : 39,
-              'rot' : 45
+              'rot' : 45,
+              'mov' : 65
             },
             'attrs'  : {
               'movable'   : true,
@@ -840,20 +847,81 @@
     }
   }; // Public namespace
 
-  // Fix rotation for objects
-  var o = CnC.MapObjectsMeta.GDI.units;
-  for ( var i in o ) {
-    if ( o.hasOwnProperty(i) ) {
-      if ( o[i].object && o[i].object.sprite ) {
-        var px = 0;
-        o[i].object.sprite.rotation = {};
-        for ( var j = 360; j > 0; j -= o[i].object.sprite.rot ) {
-          o[i].object.sprite.rotation[j] = px;
-          px += o[i].object.sprite.cw;
+
+  /**
+   * Main function for data.js
+   * @return void
+   */
+  (function() {
+
+    /**
+     * Apply animations on objects
+     * @return void
+     */
+    function ApplyAnimations(o) {
+      var ref, obj, i, j, t, px, movment;
+
+      for ( i in o ) {
+        if ( o.hasOwnProperty(i) ) {
+          ref = o[i];           // { image, title, desc, object, ... }
+          obj = ref.object;     //  => { type, width, height, sprite, ... }
+
+          if ( obj && obj.sprite )
+          {
+            movment = (obj.sprite.mov !== undefined);
+
+            //
+            // Add rotation and movment animations for objects
+            //
+            if ( obj.sprite.rot !== undefined ) {
+              obj.sprite.rotation = {};
+              if ( movment ) {
+                obj.sprite.movment = {};
+              }
+
+              //
+              // Rotation
+              //
+              px = 0;
+              for ( j = 360; j > 0; j -= obj.sprite.rot ) {
+                obj.sprite.rotation[j] = px;
+                if ( movment ) {
+                  obj.sprite.movment[j]  = [];
+                }
+                px += obj.sprite.cw;
+              }
+
+              //
+              // Movment
+              //
+              if ( movment ) {
+                /*
+                var tmp = px; /// 399
+                var rot = (360 / obj.sprite.rot); /// 8
+                var mov = obj.sprite.mov; // 65
+                for ( j = 0; j < mov; j++ ) {
+                  for ( t in obj.sprite.movment ) {
+                    if ( obj.sprite.movment.hasOwnProperty(t) ) {
+                      obj.sprite.movment[t].push(px);
+                    }
+                  }
+                  px += obj.sprite.cw;
+                }
+                */
+              }
+            }
+
+          }
         }
       }
+
+      //console.info("data.js: Fixed objects", o);
     }
-  }
+
+    // Apply all animations
+    ApplyAnimations(CnC.MapObjectsMeta.GDI.units);
+    ApplyAnimations(CnC.MapObjectsMeta.NOD.units);
+  })();
 
 })();
 

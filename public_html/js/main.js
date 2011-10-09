@@ -12,7 +12,9 @@
   // CONSTANTS
   /////////////////////////////////////////////////////////////////////////////
 
+  //
   // Supported browser features
+  //
   var SUPPORT = {
     'json'           : (!!window.JSON),
     'canvas'         : (!!document.createElement('canvas').getContext),
@@ -32,33 +34,34 @@
     'xhr'            : (!!window.XMLHttpRequest)
   };
 
+  //
   // Internals
-  var LOOP_INTERVAL      = (1000 / 30);
-  var SLEEP_INTERVAL     = 500;
-  var TILE_SIZE          = 24;
-  var MINIMAP_WIDTH      = 180;
-  var MINIMAP_HEIGHT     = 180;
-  var OBJECT_ICON_WIDTH  = 62;
-  var OBJECT_ICON_HEIGHT = 46;
-  var SELECTION_SENSE    = 10;
-
-  var SOUND_SELECT     = 0;
-  var SOUND_MOVE       = 1;
-  var SOUND_ATTACK     = 2;
-  var SOUND_DIE        = 3;
+  //
+  var LOOP_INTERVAL      = (1000 / 30);     // FPS (setInterval)
+  var SLEEP_INTERVAL     = 500;             // Standard waiting interval
+  var TILE_SIZE          = 24;              // Tile size (x)x(x)
+  var MINIMAP_WIDTH      = 180;             // MiniMap Width in pixels
+  var MINIMAP_HEIGHT     = 180;             // MiniMap Height in pixles
+  var OBJECT_ICON_WIDTH  = 62;              // GUI MapObject icon Width in pixels
+  var OBJECT_ICON_HEIGHT = 46;              // GUI MapObject icon Height in pixels
+  var SELECTION_SENSE    = 10;              // Rectangle selection sensitivity
 
   /////////////////////////////////////////////////////////////////////////////
   // GLOBALS
   /////////////////////////////////////////////////////////////////////////////
 
+  //
   // References
+  //
   var _Main     = null;
   var _Graphic  = null;
   var _Sound    = null;
   var _Net      = null;
   var _GUI      = null;
 
+  //
   // Variables
+  //
   var _FPS        = 0;
   var _Player     = 0;
   var _PlayerTeam = "GDI";
@@ -70,14 +73,14 @@
     "ALT"   : false
   };
 
+  //
   // MapObject "statics"
+  //
   var _MapObjectCount = 0;
-  var _MapObjectTypes = {};
-      _MapObjectTypes[CnC.OBJECT_UNIT]      =  "MapObjectUnit";
-      _MapObjectTypes[CnC.OBJECT_VEHICLE]   =  "MapObjectVehicle";
-      _MapObjectTypes[CnC.OBJECT_BUILDING]  =  "MapObjectBuilding";
 
+  //
   // Debugging elements
+  //
   var _DebugMap     = null;
   var _DebugFPS     = null;
   var _DebugObjects = null;
@@ -192,8 +195,8 @@
         if ( o.getSelectable() ) {
           o.select();
 
-          if ( (!snd) && o.getSound(SOUND_SELECT) ) {
-            snd = o.getSound(SOUND_SELECT);
+          if ( (!snd) && o.getSound(CnC.SOUND_SELECT) ) {
+            snd = o.getSound(CnC.SOUND_SELECT);
           }
         }
       }
@@ -223,8 +226,8 @@
         if ( o.getMovable() ) {
           o.move(pos);
 
-          if ( !snd && o.getSound(SOUND_MOVE) ) {
-            snd = o.getSound(SOUND_MOVE);
+          if ( !snd && o.getSound(CnC.SOUND_MOVE) ) {
+            snd = o.getSound(CnC.SOUND_MOVE);
           }
         }
       }
@@ -1473,7 +1476,7 @@
       // Misc
       this.getRoot().className = "MapObject MapObjectBuilding";
 
-      console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::init()", "x:" + x, "y:" + y, "a:" + a);
+      console.group("MapObject[" + this._iid + "]::" + CnC.OBJECT_CLASSNAMES[this._type] + "::init()", "x:" + x, "y:" + y, "a:" + a);
       console.log(opts, this);
       console.groupEnd();
 
@@ -1652,7 +1655,7 @@
     _toggle : function(t) {
       this._selected = t;
 
-      console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::toggle()");
+      console.group("MapObject[" + this._iid + "]::" + CnC.OBJECT_CLASSNAMES[this._type] + "::toggle()");
       console.log("Selected", this._selected);
       console.groupEnd();
     },
@@ -1682,7 +1685,7 @@
         return;
       }
 
-      console.group("MapObject[" + this._iid + "]::" + _MapObjectTypes[this._type] + "::move()");
+      console.group("MapObject[" + this._iid + "]::" + CnC.OBJECT_CLASSNAMES[this._type] + "::move()");
 
       // Calculate positions
       var w  = this.getDimension()[0],
