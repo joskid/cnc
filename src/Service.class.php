@@ -56,17 +56,15 @@ class Service
    * Load a Game
    * @return Mixed
    */
-  public static function LoadGame() {
-    $path = DIR_DATA . "level000.php";
-    if ( file_exists($path) ) {
-      ob_start();
-      require $path;
-      $data = ob_get_contents();
-      ob_end_clean();
+  public static function LoadGame($level = "000") {
+    $file = "level{$level}.json";
+    $pack = DATA_LOCAL;
+    if ( file_exists($pack) ) {
+      if ( $entry = Data::GetDataFile($pack, $file) ) {
+        return $entry;
+      }
 
-      return $data;
     }
-
     return false;
   }
 }

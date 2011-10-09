@@ -17,6 +17,7 @@ define("DIR_DATA",  DIR_ROOT . "/data/");
  */
 define("DATA_SOUNDS",   DIR_DATA . "sounds.zip");
 define("DATA_GENERAL",  DIR_DATA . "general.zip");
+define("DATA_LOCAL",    DIR_DATA . "local.zip");
 
 /**
  * Error messages
