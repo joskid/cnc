@@ -87,6 +87,29 @@
   /////////////////////////////////////////////////////////////////////////////
 
   /**
+   * Print or hide loading statuses
+   * @return void
+   */
+  var LoadingStatus = (function() {
+
+    function _print(el, text) {
+      el.innerHTML += "<div>" + text + "</div>";
+      el.scrollTop = el.scrollHeight;
+    }
+
+    return function(text) {
+      var _el = document.getElementById("Loading");
+      if ( text === false ) {
+        _el.style.display = "none";
+      } else {
+        _el.style.display = "block";
+        _print(_el, text);
+      }
+    };
+
+  })();
+
+  /**
    * CreateObject -- Create an object
    * @return MapObject
    */
@@ -800,7 +823,7 @@
         tsrc = item + ".png";
         src  = _Net.preload("general", tsrc);
 
-        //console.log(i+1 + "/" + count, item, tsrc);
+        LoadingStatus([i+1 + "/" + count, item].join(" "));
 
         s = new Image();
         s.onload = (function(ii, cc, cb) {
@@ -949,7 +972,7 @@
           tsrc = this._codec + "/" + item + "." + this._ext;
           src  = _Net.preload("sound", tsrc); //
 
-          //console.log(i+1 + "/" + count, item, tsrc);
+          LoadingStatus([i+1 + "/" + count, item].join(" "));
 
           s            = new Audio(src);
           s.type       = this._codec;
@@ -1231,12 +1254,18 @@
 
       if ( !this._running ) {
         var self = this;
+        LoadingStatus("<b>Loading audio files...</b>");
         _Sound.preload(self._game.preload.snd, function() {
           setTimeout(function() {
+            LoadingStatus("<b>Loading graphic files...</b>");
             _Graphic.preload(self._game.preload.gfx, function() {
               setTimeout(function() {
                 self.prepare(self._game.data);
                 self._run();
+
+                setTimeout(function() {
+                  LoadingStatus(false);
+                }, 500);
               }, 0);
             });
           }, 0);
@@ -1250,11 +1279,15 @@
      */
     prepare : function(data) {
       if ( !this._running ) {
+        LoadingStatus("<b>Loading game...</b>");
+
         // Set players
         _Player     = data.player.index === undefined ? _Player      : parseInt(data.player.index, 10);
         _PlayerTeam = data.player.team  === undefined ? _PlayerTeam  : data.player.team;
         _Enemy      = data.enemy.index  === undefined ? _Enemy       : parseInt(data.enemy.index, 10);
         _EnemyTeam  = data.enemy.team   === undefined ? _EnemyTeam   : data.enemy.team;
+
+        LoadingStatus("<b>Player:</b> " + _Player + " (" + _PlayerTeam + ")");
 
         // Create map
         var mt = data.map.type;
@@ -1263,6 +1296,8 @@
         var sy = parseInt(data.map.sy, 10);
 
         this._map = new Map(mt, sx, sy, dt);
+
+        LoadingStatus("<b>Map:</b> " + sx + "x" + sy + " (" + mt + ")");
 
         // Create objects
         var os = data.objects;

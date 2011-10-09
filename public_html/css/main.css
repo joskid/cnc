@@ -326,6 +326,20 @@ body.CursorMove {
   font-size : 10px;
 }
 
+#Loading {
+  position : absolute;
+  top : 0px;
+  left : 0px;
+  right : 0px;
+  bottom : 0px;
+  overflow : hidden;
+  z-index  : 3000001;
+  background : #000;
+  font-family : Monospace;
+  font-size : 12px;
+  padding : 10px;
+}
+
 /* CANVAS CLASSES */
 
 .Map {
