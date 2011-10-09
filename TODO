@@ -1,11 +1,63 @@
+Urgent:
+-------------------------------------------------------------------------------
+* Finish path finding
+* Add path finding to move()
+* Fix environment data for map overlays
+* Add environment data for buildings (dynamic)
+* MinMap overlay colors
+* Finish animation for movment
+
 High:
-* Fix path-finding
+-------------------------------------------------------------------------------
+* Finish animation for attacking
+* Add object view radius
+* Add object attack speed
+* Add object reload speed
+* Add object attack radius
+* Add attack(), attacked() methods
+* Add die() and animations
+* Add attacking bullets
+* Add attacking on enemy objects
+* Collision detection (redirect) on crash on movment
+* Construction of buildings must use environment data (collision detection)
+* No sounds on enemy objects
 
 Medium:
-* Fog of War
+-------------------------------------------------------------------------------
+* Construction timers
+* NOD Structures and Units objects
+* NOD-GDI *
+* GDI-NOD *
+* Construction of units come out of buildings
+  * Begin with out of HQ
+* Tiberium data
+* Tiberium gathering
+* Tiberium storage
+* Power data
+* Power usage
 
 Low:
-* Network connection and communication (multiplayer)
+-------------------------------------------------------------------------------
+* Finish up main menu (buttons, dialogs)
+* GUI Sounds
+* Music playback (playlist, controls)
+* Technology (builing) tree
+* Fog of War (blocks)
+* Player FOV (blocks)
+* Game Saving and Loading
 
-Browsers:
-* IE Browser support ?!
+Plans:
+-------------------------------------------------------------------------------
+* Network connection and communication (multiplayer)
+  * Multiplayer
+
+Refactors:
+-------------------------------------------------------------------------------
+* MiniMap in it's own class
+* Move data.js to server-side ?!
+
+Browser support:
+-------------------------------------------------------------------------------
+* Check Opera
+* Check Safari
+* Add IE support (SVG/Canvas, CSS mainly)
