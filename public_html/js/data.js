@@ -25,6 +25,9 @@
     3 : "MapObjectBuilding"
   };
 
+  //
+  // SOUND MANAGMENT
+  //
   CnC.SOUND_SELECT       = 0;
   CnC.SOUND_MOVE         = 1;
   CnC.SOUND_ATTACK       = 2;
@@ -36,7 +39,7 @@
   };
 
   //
-  // Overlays
+  // MAP OVERLAY IMAGES
   //
   CnC.MapOverlays = {
     'rock1' : {
@@ -133,7 +136,9 @@
     }
   }; // Public namespace
 
-  // Object Metadata
+  //
+  // MapObject Metadata
+  //
   CnC.MapObjectsMeta = {
     "GDI" : {
       "structures" : {
@@ -908,6 +913,7 @@
                   px += obj.sprite.cw;
                 }
                 */
+                (function(){})();
               }
             }
 
