@@ -242,8 +242,8 @@ var CanvasObject = Class.extend({
    * CanvasObject::getContext -- Get the canvas context
    * @return Context
    */
-  getContext : function() {
-    return this.__context;
+  getContext : function(o) {
+    return o ? this.__coverlay : this.__context;
   },
 
   /**

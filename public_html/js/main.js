@@ -1726,6 +1726,26 @@
       console.log("Tile", tx, "x", ty);
       console.log("Path", this._path);
       console.groupEnd();
+
+      if ( this._path.length ) { // FIXME
+        var cc = _Main.getMap().getContext(true);
+        var px, py;
+
+        cc.fillStyle = "rgba(0,255,0,0.3)";
+        cc.beginPath();
+        for ( var p = 0; p < this._path.length; p++ ) {
+          px = (this._path[p][0] * TILE_SIZE) - 1;
+          py = (this._path[p][1] * TILE_SIZE) - 1;
+
+          cc.fillRect(px, py, TILE_SIZE - 1, TILE_SIZE - 1);
+        }
+        cc.stroke();
+        cc.closePath();
+
+        setTimeout(function() {
+          cc.clearRect(0, 0, _Main.getMap().__width, _Main.getMap().__height);
+        }, 2000);
+      }
     },
 
     /**
