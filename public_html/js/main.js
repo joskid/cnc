@@ -879,18 +879,30 @@
    * @class
    */
   var Sounds = Class.extend({
-    _enabled     : (CnC.CONFIG.audio_on),
+    _enabled       : (CnC.CONFIG.audio_on),       // Audio enabled (changed in init() if no support)
+    _music_enabled : (CnC.CONFIG.music_on),       // Music enabled (changed in init() if no support)
 
-    _codec       : "mp3",     // Current <audio> codec
-    _ext         : "mp3",     // Current <audio> file-extension
+    _codec       : "mp3",                         // Current <audio> codec
+    _ext         : "mp3",                         // Current <audio> file-extension
 
-    _webaudio    : false,     // WebAudio supported and enabled
-    _context     : null,      // WebAudio context
-    _csource     : null,      // WebAudio context sources
-    _cfilters    : {},        // WebAudio context filters
-    _cpanners    : null,      // WebAudio context filter:panner
+    _webaudio    : false,                         // WebAudio supported and enabled
+    _context     : null,                          // WebAudio context
+    _csource     : null,                          // WebAudio context sources
+    _cfilters    : {},                            // WebAudio context filters
+    _cpanners    : null,                          // WebAudio context filter:panner
 
-    _preloaded   : {},        // Preloaded objects container
+    _preloaded   : {},                            // Preloaded objects container
+    _playlist    : [                              // Audio track playlist
+    ],
+
+    _song        : null,                          // Current audio track <audio>
+    _track       : 0,                             // Current audio track
+    _playing     : false,                         // Current audio track playing
+    _track_time  : null,                          // Current audio track playing time
+
+    _volume_gui    : (CnC.CONFIG.audio_gui),      // Volume GUI
+    _volume_sfx    : (CnC.CONFIG.audio_sfx),      // Volume SFX
+    _volume_music  : (CnC.CONFIG.audio_music),    // Volume Music
 
     /**
      * @constructor
@@ -918,6 +930,10 @@
         this._codec   = codec;
         this._ext     = codec;
         this._enabled = codec ? true : false;
+
+        if ( this._music_enabled ) {
+          this._music_enabled = this._enabled;
+        }
 
         // Check for supported audio context
         if ( SUPPORT.webaudio ) {
@@ -1017,16 +1033,19 @@
       }
     },
 
+    //
+    // SOUND EFFECTS
+    //
+
     /**
      * Sounds::play -- Play a preloaded sound
      * @return void
      */
     play : function(snd, obj) {
-      var t = obj ? "audio_sfx" : "audio_gui";
-
       if ( this._enabled ) {
         var s    = this._preloaded[snd];
-        var vol  = (parseInt(CnC.CONFIG[t], 10) || 100) / 100;
+        var t    = obj ? this._volume_sfx : this._volume_gui;
+        var vol  = (parseInt(t, 10) || 100) / 100;
         //var time = 0;
         if ( s ) {
           var ss = new Audio(s.src);
@@ -1035,6 +1054,152 @@
           ss.play();
         }
       }
+    },
+
+    //
+    // MUSIC TRACKS
+    //
+
+    /**
+     * Sounds::playSong -- Play a song from playlist
+     * @return Mixed
+     */
+    playSong : function(song) {
+      song = song || this._track;
+      if ( this._music_enabled ) {
+        if ( this._playlist[song] !== undefined ) {
+          var src      = _Net.preload("sound", this._playlist[song]);
+          var a        = new Audio(src);
+          a.volume     = ((parseInt(this._volume_music, 10) || 100) / 100);
+          a.type       = this._codec;
+          a.preload    = "auto";
+          a.controls   = false;
+          a.autobuffer = true;
+          a.loop       = false;
+          a.play();
+
+          this._track = song;
+          this._song  = a;
+
+          console.log("Sounds::playSong()", this._track, a);
+
+          return this._track;
+        }
+      }
+
+      return false;
+    },
+
+    /**
+     * Sounds::playNextSong -- Play next track
+     * @return Mixed
+     */
+    playNextSong : function() {
+      if ( this._track < this._playlist.length ) {
+        this._track++;
+
+        this.playSong(this._track);
+
+        console.log("Sounds::playNextSong()", this._track);
+
+        return this._track;
+      }
+
+      return false;
+    },
+
+    /**
+     * Sounds::playPreviusSong -- Play previus track
+     * @return Mixed
+     */
+    playPreviusSong : function() {
+      if ( this._track > 0 ) {
+        this._track--;
+
+        this.playSong(this._track);
+
+        console.log("Sounds::playPreviusSong()", this._track);
+
+        return this._track;
+      }
+      return false;
+    },
+
+    /**
+     * Sounds::pauseSong -- Pause music playback
+     * @return Mixed
+     */
+    pauseSong : function() {
+      if ( this._song ) {
+        console.log("Sounds::pauseSong()");
+
+        this._song.pause();
+
+        return true;
+      }
+      return false;
+    },
+
+    /**
+     * Sounds::stopSong -- Stop the music playback
+     * @return Mixed
+     */
+    stopSong : function(unset) {
+      if ( this.pauseSong() ) {
+        console.log("Sounds::stopSong()");
+
+        this._song.currentTime = 0;
+      }
+      if ( unset ) {
+        this._song = null;
+        this._track = 0;
+      }
+    },
+
+    /**
+     * Sounds::seekSong -- Seek a song (move current time)
+     * @return Mixed
+     */
+    seekSong : function(pos) {
+      if ( this._song ) {
+        this._song.currentTime = pos;
+      }
+    },
+
+    /**
+     * Sounds::setGUIVolume -- Set current GUI volume
+     * @return Mixed
+     */
+    setGUIVolume : function(vol) {
+      vol = ((parseInt(vol, 10) || 100) / 100);
+      this._volume_gui = vol;
+
+      console.log("Sounds::setGUIVolume()", this._volume_gui);
+    },
+
+    /**
+     * Sounds::setSFXVolume -- Set current SFX volume
+     * @return Mixed
+     */
+    setSFXVolume : function(vol) {
+      vol = ((parseint(vol, 10) || 100) / 100);
+      this._volume_sfx = vol;
+
+      console.log("Sounds::setSFXVolume()", this._volume_sfx);
+    },
+
+    /**
+     * Sounds::setMusicVolume -- Set current volume for music
+     * @return Mixed
+     */
+    setMusicVolume : function(vol) {
+      vol = ((parseInt(vol, 10) || 100) / 100);
+      if ( this._song ) {
+        this._song.volume = vol;
+      }
+      this._volume_sfx = vol;
+
+      console.log("Sounds::setMusicVolume()", this._volume_sfx);
     }
   });
 
@@ -1196,6 +1361,7 @@
         }
 
         // Unload data
+        _Sound.stopSong(true);
         _Sound.unload();
         _Graphic.unload();
 
@@ -1204,6 +1370,37 @@
         this._running = false;
       }
       console.groupEnd();
+    },
+
+    /**
+     * Game::run -- Run Game
+     * @return void
+     */
+    run : function() {
+      console.group("Game::run()");
+      console.groupEnd();
+
+      if ( !this._running ) {
+        var self = this;
+        LoadingStatus("<b>Loading audio files...</b>");
+        _Sound.preload(self._game.preload.snd, function() {
+          setTimeout(function() {
+            LoadingStatus("<b>Loading graphic files...</b>");
+            _Graphic.preload(self._game.preload.gfx, function() {
+              setTimeout(function() {
+                self.prepare(self._game.data);
+                self._run();
+
+                _Sound.playSong();
+
+                setTimeout(function() {
+                  LoadingStatus(false);
+                }, 500);
+              }, 0);
+            });
+          }, 0);
+        });
+      }
     },
 
     /**
@@ -1244,35 +1441,6 @@
             self.loop(tick);
           }, LOOP_INTERVAL);
         }
-      }
-    },
-
-    /**
-     * Game::run -- Run Game
-     * @return void
-     */
-    run : function() {
-      console.group("Game::run()");
-      console.groupEnd();
-
-      if ( !this._running ) {
-        var self = this;
-        LoadingStatus("<b>Loading audio files...</b>");
-        _Sound.preload(self._game.preload.snd, function() {
-          setTimeout(function() {
-            LoadingStatus("<b>Loading graphic files...</b>");
-            _Graphic.preload(self._game.preload.gfx, function() {
-              setTimeout(function() {
-                self.prepare(self._game.data);
-                self._run();
-
-                setTimeout(function() {
-                  LoadingStatus(false);
-                }, 500);
-              }, 0);
-            });
-          }, 0);
-        });
       }
     },
 

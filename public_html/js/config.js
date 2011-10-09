@@ -16,6 +16,8 @@
     // Main configuration
     CONFIG     : {
       'audio_on'     : true,
+      'music_on'     : true,
+
       'audio_sfx'    : 90,
       'audio_gui'    : 100,
       'audio_music'  : 80
